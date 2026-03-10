@@ -70,7 +70,7 @@ export default function Sidebar({
               <button
                 type="button"
                 onClick={onNewNote}
-                className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+                className="flex h-9 w-9 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
                 title="New note (Cmd+N)"
               >
                 <HiMiniPlus size={16} />
@@ -78,7 +78,7 @@ export default function Sidebar({
             </div>
 
             <div className="mt-3">
-              <label className="flex h-8 items-center gap-2 rounded-lg bg-[var(--bg-surface)] px-2.5">
+              <label className="flex h-8 items-center gap-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2.5">
                 <HiMagnifyingGlass size={14} className="shrink-0 text-[var(--text-muted)]" />
                 <input
                   type="text"
@@ -122,7 +122,7 @@ export default function Sidebar({
                   return (
                     <div
                       key={note.id}
-                      className={`group flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors ${
+                      className={`group flex items-center gap-2 rounded-lg px-2 py-2.5 md:py-1.5 transition-colors ${
                         isActive
                           ? 'bg-[var(--bg-surface)] text-[var(--text-primary)]'
                           : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'
@@ -155,7 +155,7 @@ export default function Sidebar({
                           event.stopPropagation()
                           onDeleteNote(note.id)
                         }}
-                        className="hidden shrink-0 rounded p-0.5 text-[var(--text-muted)] transition-colors hover:text-[var(--danger)] group-hover:block"
+                        className="shrink-0 rounded p-1 text-[var(--text-muted)] transition-colors hover:text-[var(--danger)] max-md:opacity-40 md:opacity-0 md:group-hover:opacity-100"
                       >
                         <HiXMark size={12} />
                       </button>

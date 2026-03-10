@@ -481,7 +481,7 @@ body {
   --callout-bg: color-mix(in srgb, var(--callout-color) 5%, var(--bg-surface));
   --callout-border: color-mix(in srgb, var(--callout-color) 18%, transparent);
   border: 1px solid var(--callout-border);
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   background: var(--callout-bg);
   overflow: hidden;
   max-width: 100%;
@@ -576,6 +576,13 @@ body {
 :root[data-theme="light"] .obsidian-callout-caution,
 :root[data-theme="light"] .obsidian-callout-question {
   --callout-color: #a07830;
+}
+
+/* Light mode placeholder and muted text contrast fix */
+:root[data-theme="light"] input::placeholder,
+:root[data-theme="light"] textarea::placeholder {
+  color: #8b92a5;
+  opacity: 1;
 }
 
 .notion-slash-menu {
@@ -728,5 +735,13 @@ body {
 
   .notion-block-empty {
     padding: 0.1rem 0.25rem;
+    min-height: 2.5rem;
+    border: 1px dashed var(--border-subtle);
+    border-radius: 0.375rem;
+    opacity: 0.4;
+  }
+
+  .notion-block-rendered:active {
+    background: color-mix(in srgb, var(--bg-surface) 30%, transparent);
   }
 }

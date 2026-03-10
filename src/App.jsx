@@ -44,22 +44,67 @@ function saveNotes(notes) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(notes))
 }
 
-const SAMPLE_NOTE = `# Canvas Knowledge Base
+const SAMPLE_NOTE = `> [!NOTE]
+> Welcome to your local-first markdown workspace. Everything is stored in your browser — no account needed.
 
-> [!NOTE]
-> Welcome to your local-first markdown workspace.
+Type \`/\` on a blank line to open **slash commands**, or use the command palette to search notes and run actions.
 
-Use this note to try the first v1 workflows:
+## Formatting
 
-- Press \`/\` on a blank line for slash commands
-- Open the command palette with \`Cmd/Ctrl+K\`
-- Search titles, tags, and note content from the sidebar
-- Markdown styling appears as soon as syntax is complete
+You can write in *italics*, **bold**, ***bold italics***, or ~~strikethrough~~. Inline \`code\` works too.
 
-## Next Steps
+Links look like this: [Canvas on GitHub](https://github.com/bm611/aura)
 
-- Capture ideas with tags and callouts
-- Build notes in a single editor surface
+## Lists
+
+Unordered lists:
+
+- First item
+- Second item
+- Third item
+
+Ordered lists:
+
+1. Step one
+2. Step two
+3. Step three
+
+## Tasks
+
+- [x] Set up the workspace
+- [x] Try the slash commands
+- [ ] Add your first real note
+- [ ] Explore tags and search
+
+## Callouts
+
+> [!TIP]
+> Type \`/callout\` to insert one of these. They support different types like note, tip, warning, and more.
+
+> [!WARNING]
+> Notes are saved to your browser's local storage. Clearing site data will remove them.
+
+## Code
+
+\`\`\`js
+function greet(name) {
+  return \`Hello, \${name}!\`
+}
+
+console.log(greet("Canvas"))
+\`\`\`
+
+## Quotes
+
+> The best way to predict the future is to invent it.
+
+---
+
+## Getting Started
+
+1. Create a new note from the sidebar
+2. Use tags in the **Details** panel to organize your notes
+3. Search across all notes from the sidebar or command palette
 `
 
 function matchesQuery(query, values) {
@@ -102,6 +147,8 @@ export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('canvas-theme') || 'light')
   const [fontId, setFontId] = useState(() => localStorage.getItem('canvas-font') || 'lora')
   const [editorReady, setEditorReady] = useState(false)
+  const [deletedNote, setDeletedNote] = useState(null)
+  const deleteTimerRef = useRef(null)
 
   const editorApiRef = useRef(null)
 
@@ -166,18 +213,45 @@ export default function App() {
 
   const handleDeleteNote = useCallback(
     (id) => {
+      const noteToDelete = notes.find((note) => note.id === id)
+      if (!noteToDelete) return
+
+      // Clear any pending delete
+      if (deleteTimerRef.current) {
+        clearTimeout(deleteTimerRef.current)
+      }
+
+      // Remove from list immediately
       setNotes((previousNotes) => {
         const updatedNotes = previousNotes.filter((note) => note.id !== id)
-
         if (activeNoteId === id) {
           setActiveNoteId(updatedNotes[0]?.id || null)
         }
-
         return updatedNotes
       })
+
+      // Store for undo
+      setDeletedNote(noteToDelete)
+
+      // Auto-dismiss after 5 seconds
+      deleteTimerRef.current = setTimeout(() => {
+        setDeletedNote(null)
+        deleteTimerRef.current = null
+      }, 5000)
     },
-    [activeNoteId]
+    [activeNoteId, notes]
   )
+
+  const handleUndoDelete = useCallback(() => {
+    if (!deletedNote) return
+    if (deleteTimerRef.current) {
+      clearTimeout(deleteTimerRef.current)
+      deleteTimerRef.current = null
+    }
+    setNotes((previousNotes) => [deletedNote, ...previousNotes])
+    setActiveNoteId(deletedNote.id)
+    setDeletedNote(null)
+  }, [deletedNote])
 
   const handleUpdateNote = useCallback((id, updates) => {
     setNotes((previousNotes) =>
@@ -334,6 +408,22 @@ export default function App() {
           closeCommandPalette()
         }}
       />
+
+      {deletedNote && (
+        <div
+          className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-4 py-3 shadow-lg"
+          style={{ fontFamily: "'Inter', sans-serif" }}
+        >
+          <span className="text-sm text-[var(--text-secondary)]">Note deleted</span>
+          <button
+            type="button"
+            onClick={handleUndoDelete}
+            className="text-sm font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
+          >
+            Undo
+          </button>
+        </div>
+      )}
     </>
   )
 }
