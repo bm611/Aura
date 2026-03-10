@@ -24,7 +24,7 @@ import {
   LuPencil, LuFlame, LuInfo, LuTriangleAlert, LuOctagonX,
   LuBug, LuList, LuMessageSquareQuote, LuCircleCheck, LuCircleHelp,
   LuCircleX, LuFileText, LuCircleAlert, LuClipboardList,
-  LuChevronDown,
+  LuChevronDown, LuSquare, LuSquareCheck,
 } from 'react-icons/lu'
 
 hljs.registerLanguage('javascript', javascript)
@@ -316,13 +316,31 @@ function Block({
         })() : null}
         {type === 'checkedTask' ? (
           <div className="notion-task notion-task-checked">
-            <span className="notion-task-icon">✓</span>
+            <span
+              className="notion-task-icon"
+              onClick={(e) => {
+                e.stopPropagation()
+                onUpdate(index, raw.replace(/^- \[[xX]\]\s*/, '- [ ] '))
+              }}
+              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            >
+              <LuSquareCheck size={16} />
+            </span>
             <span dangerouslySetInnerHTML={{ __html: html }} />
           </div>
         ) : null}
         {type === 'task' ? (
           <div className="notion-task">
-            <span className="notion-task-icon">☐</span>
+            <span
+              className="notion-task-icon"
+              onClick={(e) => {
+                e.stopPropagation()
+                onUpdate(index, raw.replace(/^- \[\s\]\s*/, '- [x] '))
+              }}
+              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            >
+              <LuSquare size={16} />
+            </span>
             <span dangerouslySetInnerHTML={{ __html: html }} />
           </div>
         ) : null}
@@ -706,8 +724,46 @@ export default function LiveMarkdownEditor({
 
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault()
+      const target = event.currentTarget
+      const caretPos = target.selectionStart || 0
+      
+      const currentRaw = currentBlock.raw
+      const textBeforeCaret = currentRaw.slice(0, caretPos)
+      const textAfterCaret = currentRaw.slice(caretPos)
+      
+      const listMatch = textBeforeCaret.match(/^(\s*(?:[-*+]\s+\[[ xX]\]\s+|[-*+]\s+|\d+\.\s+))(.*)$/)
+      
       const nextBlocks = [...blocksRef.current]
-      nextBlocks.splice(index + 1, 0, makeBlock(''))
+
+      if (listMatch) {
+        const prefix = listMatch[1]
+        const content = listMatch[2]
+
+        if (content.trim() === '' && textAfterCaret.trim() === '') {
+          // Empty list item -> turn current block into empty paragraph
+          nextBlocks[index] = makeBlock('')
+          commitBlocks(nextBlocks, { index, caret: 0 })
+          return
+        } else {
+          // Non-empty list item -> create new list item below
+          let nextPrefix = prefix
+          const numberMatch = prefix.match(/^(\s*)(\d+)(\.\s+)$/)
+          if (numberMatch) {
+            const nextNumber = parseInt(numberMatch[2], 10) + 1
+            nextPrefix = `${numberMatch[1]}${nextNumber}${numberMatch[3]}`
+          } else if (/\[[xX]\]/.test(prefix)) {
+            nextPrefix = prefix.replace(/\[[xX]\]/, '[ ]')
+          }
+          
+          nextBlocks[index] = makeBlock(textBeforeCaret)
+          nextBlocks.splice(index + 1, 0, makeBlock(nextPrefix + textAfterCaret))
+          commitBlocks(nextBlocks, { index: index + 1, caret: nextPrefix.length })
+          return
+        }
+      }
+
+      nextBlocks[index] = makeBlock(textBeforeCaret)
+      nextBlocks.splice(index + 1, 0, makeBlock(textAfterCaret))
       commitBlocks(nextBlocks, { index: index + 1, caret: 0 })
       return
     }
