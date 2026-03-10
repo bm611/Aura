@@ -11,6 +11,7 @@ import {
 import Sidebar from './components/Sidebar'
 import NoteEditor from './components/NoteEditor'
 import CommandPalette from './components/CommandPalette'
+import LandingPage from './components/LandingPage'
 import { getEditorCommands } from './utils/editorCommands'
 import { searchNotes } from './utils/knowledgeBase'
 import { getNoteDisplayTitle, normalizeNote } from './utils/noteMeta'
@@ -118,6 +119,7 @@ function matchesQuery(query, values) {
 }
 
 export default function App() {
+  const [hasStarted, setHasStarted] = useState(false)
   const [notes, setNotes] = useState(() => {
     const saved = loadNotes()
     if (saved.length > 0) {
@@ -365,6 +367,14 @@ export default function App() {
   }))
 
   const paletteItems = [...actionItems, ...fontItems, ...noteItems, ...editorItems]
+
+  const handleStart = useCallback(() => {
+    setHasStarted(true)
+  }, [])
+
+  if (!hasStarted) {
+    return <LandingPage onStart={handleStart} />
+  }
 
   return (
     <>
