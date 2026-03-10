@@ -1,0 +1,813 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { buildCommandInsertion, getEditorCommandById, getEditorCommands } from '../utils/editorCommands'
+import hljs from 'highlight.js/lib/core'
+import javascript from 'highlight.js/lib/languages/javascript'
+import typescript from 'highlight.js/lib/languages/typescript'
+import python from 'highlight.js/lib/languages/python'
+import css from 'highlight.js/lib/languages/css'
+import xml from 'highlight.js/lib/languages/xml'
+import json from 'highlight.js/lib/languages/json'
+import bash from 'highlight.js/lib/languages/bash'
+import markdown from 'highlight.js/lib/languages/markdown'
+import sql from 'highlight.js/lib/languages/sql'
+import rust from 'highlight.js/lib/languages/rust'
+import go from 'highlight.js/lib/languages/go'
+import java from 'highlight.js/lib/languages/java'
+import c from 'highlight.js/lib/languages/c'
+import cpp from 'highlight.js/lib/languages/cpp'
+import yaml from 'highlight.js/lib/languages/yaml'
+import ruby from 'highlight.js/lib/languages/ruby'
+import swift from 'highlight.js/lib/languages/swift'
+import kotlin from 'highlight.js/lib/languages/kotlin'
+import php from 'highlight.js/lib/languages/php'
+import {
+  LuPencil, LuFlame, LuInfo, LuTriangleAlert, LuOctagonX,
+  LuBug, LuList, LuMessageSquareQuote, LuCircleCheck, LuCircleHelp,
+  LuCircleX, LuFileText, LuCircleAlert, LuClipboardList,
+  LuChevronDown,
+} from 'react-icons/lu'
+
+hljs.registerLanguage('javascript', javascript)
+hljs.registerLanguage('js', javascript)
+hljs.registerLanguage('jsx', javascript)
+hljs.registerLanguage('typescript', typescript)
+hljs.registerLanguage('ts', typescript)
+hljs.registerLanguage('tsx', typescript)
+hljs.registerLanguage('python', python)
+hljs.registerLanguage('py', python)
+hljs.registerLanguage('css', css)
+hljs.registerLanguage('html', xml)
+hljs.registerLanguage('xml', xml)
+hljs.registerLanguage('json', json)
+hljs.registerLanguage('bash', bash)
+hljs.registerLanguage('sh', bash)
+hljs.registerLanguage('shell', bash)
+hljs.registerLanguage('markdown', markdown)
+hljs.registerLanguage('md', markdown)
+hljs.registerLanguage('sql', sql)
+hljs.registerLanguage('rust', rust)
+hljs.registerLanguage('rs', rust)
+hljs.registerLanguage('go', go)
+hljs.registerLanguage('java', java)
+hljs.registerLanguage('c', c)
+hljs.registerLanguage('cpp', cpp)
+hljs.registerLanguage('yaml', yaml)
+hljs.registerLanguage('yml', yaml)
+hljs.registerLanguage('ruby', ruby)
+hljs.registerLanguage('rb', ruby)
+hljs.registerLanguage('swift', swift)
+hljs.registerLanguage('kotlin', kotlin)
+hljs.registerLanguage('kt', kotlin)
+hljs.registerLanguage('php', php)
+
+function highlightCode(code, language) {
+  if (!code) return ''
+  try {
+    if (language && hljs.getLanguage(language)) {
+      return hljs.highlight(code, { language }).value
+    }
+    return hljs.highlightAuto(code).value
+  } catch {
+    return code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  }
+}
+
+let blockIdCounter = 0
+
+function makeBlock(raw = '') {
+  blockIdCounter += 1
+  return { id: `block-${blockIdCounter}`, raw }
+}
+
+function contentToBlocks(content = '') {
+  const lines = typeof content === 'string' ? content.split('\n') : ['']
+  const blocks = []
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index]
+
+    if (/^```/.test(line)) {
+      const fencedLines = [line]
+
+      while (index + 1 < lines.length) {
+        index += 1
+        fencedLines.push(lines[index])
+
+        if (/^```/.test(lines[index])) {
+          break
+        }
+      }
+
+      blocks.push(makeBlock(fencedLines.join('\n')))
+      continue
+    }
+
+    // Group Obsidian callouts: > [!type] on first line, then consecutive > lines
+    if (/^> \[!/.test(line)) {
+      const calloutLines = [line]
+
+      while (index + 1 < lines.length && /^> /.test(lines[index + 1])) {
+        index += 1
+        calloutLines.push(lines[index])
+      }
+
+      blocks.push(makeBlock(calloutLines.join('\n')))
+      continue
+    }
+
+    blocks.push(makeBlock(line))
+  }
+
+  return blocks.length ? blocks : [makeBlock('')]
+}
+
+function blocksToContent(blocks) {
+  return blocks.map((block) => block.raw).join('\n')
+}
+
+function escapeHtml(text) {
+  return text
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+}
+
+function parseInline(text) {
+  return escapeHtml(text)
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/_(.+?)_/g, '<em>$1</em>')
+    .replace(/~~(.+?)~~/g, '<del>$1</del>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>')
+}
+
+function getBlockType(line) {
+  if (/^# /.test(line)) return { type: 'h1', content: line.slice(2) }
+  if (/^## /.test(line)) return { type: 'h2', content: line.slice(3) }
+  if (/^### /.test(line)) return { type: 'h3', content: line.slice(4) }
+  // Obsidian callout: > [!type][-+]? Optional title\n> body lines...
+  const calloutMatch = line.match(/^> \[!([A-Za-z-]+)\]([+-])?\s*(.*)/)
+  if (calloutMatch) {
+    const calloutType = calloutMatch[1].toLowerCase()
+    const foldChar = calloutMatch[2] || ''        // '-' = collapsed, '+' = expanded, '' = not foldable
+    const titleRest = calloutMatch[3] || ''
+    const allLines = line.split('\n')
+    const bodyLines = allLines.slice(1).map(l => l.replace(/^> ?/, ''))
+    const body = bodyLines.join('\n').trim()
+    return {
+      type: 'callout',
+      content: body,
+      label: calloutType,
+      calloutTitle: titleRest.trim() || calloutType.charAt(0).toUpperCase() + calloutType.slice(1),
+      foldable: foldChar === '-' || foldChar === '+',
+      defaultCollapsed: foldChar === '-',
+    }
+  }
+  if (/^> /.test(line)) return { type: 'blockquote', content: line.slice(2) }
+  if (/^- \[x\] /i.test(line)) return { type: 'checkedTask', content: line.slice(6) }
+  if (/^- \[ \] /.test(line)) return { type: 'task', content: line.slice(6) }
+  if (/^[-*] /.test(line)) return { type: 'li', content: line.slice(2) }
+  if (/^\d+\. /.test(line)) return { type: 'oli', content: line.replace(/^\d+\. /, '') }
+  if (/^---$/.test(line.trim())) return { type: 'hr', content: '' }
+  if (/^```/.test(line)) {
+    const lines = line.split('\n')
+    const language = lines[0].slice(3).trim()
+    const hasClosingFence = lines.length > 1 && /^```/.test(lines.at(-1) || '')
+    const content = hasClosingFence ? lines.slice(1, -1).join('\n') : lines.slice(1).join('\n')
+    return { type: 'codeblock', content, language, isOpen: !hasClosingFence }
+  }
+  return { type: 'p', content: line }
+}
+
+function isFencedCodeBlock(raw = '') {
+  return /^```/.test(raw)
+}
+
+function resizeTextarea(element) {
+  if (!element) {
+    return
+  }
+
+  element.style.height = 'auto'
+  element.style.height = `${element.scrollHeight}px`
+}
+
+function getOrderedListNumber(blocks, index) {
+  let number = 0
+
+  for (let cursor = index; cursor >= 0; cursor -= 1) {
+    if (/^\d+\. /.test(blocks[cursor].raw)) {
+      number += 1
+    } else if (cursor !== index && blocks[cursor].raw.trim()) {
+      break
+    }
+  }
+
+  return number || 1
+}
+
+const calloutIcons = {
+  note: LuPencil,
+  tip: LuFlame,
+  info: LuInfo,
+  warning: LuTriangleAlert,
+  danger: LuOctagonX,
+  bug: LuBug,
+  example: LuList,
+  quote: LuMessageSquareQuote,
+  success: LuCircleCheck,
+  question: LuCircleHelp,
+  failure: LuCircleX,
+  abstract: LuFileText,
+  todo: LuClipboardList,
+  important: LuCircleAlert,
+  caution: LuTriangleAlert,
+}
+
+function Block({
+  block,
+  index,
+  blocks,
+  isFocused,
+  onUpdate,
+  onFocus,
+  onKeyDown,
+  onPaste,
+  onSelectionChange,
+  registerInput,
+}) {
+  const { raw } = block
+  const { type, content, label, language, calloutTitle, foldable, defaultCollapsed } = getBlockType(raw)
+  const html = parseInline(content)
+  const textareaRef = useRef(null)
+  const [collapsed, setCollapsed] = useState(defaultCollapsed ?? false)
+
+  useEffect(() => {
+    if (isFocused) {
+      resizeTextarea(textareaRef.current)
+    }
+  }, [isFocused, raw])
+
+  const placeholders = {
+    h1: 'Heading 1',
+    h2: 'Heading 2',
+    h3: 'Heading 3',
+    p: "Type '/' for commands, or just start writing...",
+  }
+
+  const placeholder = placeholders[type] || ''
+  const isEmpty = raw.trim() === ''
+
+  if (!isFocused) {
+    if (isEmpty) {
+      return (
+        <button
+          type="button"
+          className="notion-block-empty"
+          onClick={() => onFocus(index)}
+          aria-label="Edit block"
+        />
+      )
+    }
+
+    return (
+      <div
+        className="notion-block-rendered"
+        onClick={() => onFocus(index)}
+        data-index={index}
+        style={{ cursor: 'text' }}
+      >
+        {type === 'h1' ? <h1 dangerouslySetInnerHTML={{ __html: html }} /> : null}
+        {type === 'h2' ? <h2 dangerouslySetInnerHTML={{ __html: html }} /> : null}
+        {type === 'h3' ? <h3 dangerouslySetInnerHTML={{ __html: html }} /> : null}
+        {type === 'blockquote' ? <blockquote dangerouslySetInnerHTML={{ __html: html }} /> : null}
+        {type === 'callout' ? (() => {
+          const IconComponent = calloutIcons[label] || calloutIcons.note
+          return (
+            <div className={`obsidian-callout obsidian-callout-${label}`}>
+              <div
+                className="obsidian-callout-header"
+                onClick={foldable ? (e) => {
+                  e.stopPropagation()
+                  setCollapsed(prev => !prev)
+                } : undefined}
+              >
+                <span className="obsidian-callout-icon"><IconComponent size={16} /></span>
+                <span className="obsidian-callout-title">{calloutTitle}</span>
+                {foldable ? (
+                  <span className={`obsidian-callout-fold ${collapsed ? 'is-collapsed' : ''}`}>
+                    <LuChevronDown size={14} />
+                  </span>
+                ) : null}
+              </div>
+              {(!foldable || !collapsed) && content ? (
+                <div className="obsidian-callout-body">
+                  {content.split('\n').map((line, i) => (
+                    <p key={i} dangerouslySetInnerHTML={{ __html: parseInline(line) }} />
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          )
+        })() : null}
+        {type === 'checkedTask' ? (
+          <div className="notion-task notion-task-checked">
+            <span className="notion-task-icon">✓</span>
+            <span dangerouslySetInnerHTML={{ __html: html }} />
+          </div>
+        ) : null}
+        {type === 'task' ? (
+          <div className="notion-task">
+            <span className="notion-task-icon">☐</span>
+            <span dangerouslySetInnerHTML={{ __html: html }} />
+          </div>
+        ) : null}
+        {type === 'li' ? (
+          <div className="notion-list-item">
+            <span className="notion-bullet">•</span>
+            <span dangerouslySetInnerHTML={{ __html: html }} />
+          </div>
+        ) : null}
+        {type === 'oli' ? (
+          <div className="notion-list-item">
+            <span className="notion-bullet notion-bullet-ordered">{getOrderedListNumber(blocks, index)}.</span>
+            <span dangerouslySetInnerHTML={{ __html: html }} />
+          </div>
+        ) : null}
+        {type === 'hr' ? <hr /> : null}
+        {type === 'codeblock' ? (
+          <pre data-language={language || undefined}>
+            <code
+              className={language ? `hljs language-${language}` : 'hljs'}
+              dangerouslySetInnerHTML={{ __html: highlightCode(content, language) }}
+            />
+          </pre>
+        ) : null}
+        {type === 'p' ? <p dangerouslySetInnerHTML={{ __html: html }} /> : null}
+      </div>
+    )
+  }
+
+  return (
+    <div className="notion-block-edit" data-index={index}>
+      <textarea
+        ref={(element) => {
+          textareaRef.current = element
+          registerInput(index, element)
+          resizeTextarea(element)
+        }}
+        value={raw}
+        placeholder={placeholder}
+        onChange={(event) => onUpdate(index, event.target.value)}
+        onKeyDown={(event) => onKeyDown(event, index)}
+        onPaste={(event) => onPaste(event, index)}
+        onFocus={() => onFocus(index)}
+        onSelect={(event) => onSelectionChange(index, event.currentTarget.selectionStart, event.currentTarget.selectionEnd)}
+        onClick={(event) => onSelectionChange(index, event.currentTarget.selectionStart, event.currentTarget.selectionEnd)}
+        onKeyUp={(event) => onSelectionChange(index, event.currentTarget.selectionStart, event.currentTarget.selectionEnd)}
+        rows={1}
+        onInput={(event) => resizeTextarea(event.currentTarget)}
+      />
+    </div>
+  )
+}
+
+function getSlashQuery(text) {
+  const trimmed = text.trimStart()
+
+  if (!/^\/[a-z0-9-]*$/i.test(trimmed)) {
+    return null
+  }
+
+  return trimmed.slice(1)
+}
+
+function applyInsertion(blocks, index, selection, insertion) {
+  const currentBlock = blocks[index] ?? makeBlock('')
+  const start = selection?.start ?? currentBlock.raw.length
+  const end = selection?.end ?? start
+  const nextRaw = `${currentBlock.raw.slice(0, start)}${insertion.text}${currentBlock.raw.slice(end)}`
+  const replacementBlocks = /^```[\s\S]*\n```$/.test(nextRaw)
+    ? [makeBlock(nextRaw)]
+    : nextRaw.split('\n').map((line) => makeBlock(line))
+  const nextBlocks = [...blocks]
+  nextBlocks.splice(index, 1, ...replacementBlocks)
+
+  let remainingOffset = start + insertion.cursorOffset
+  let focusIndex = index
+  let caret = 0
+
+  replacementBlocks.some((block, blockOffset) => {
+    if (remainingOffset <= block.raw.length) {
+      focusIndex = index + blockOffset
+      caret = remainingOffset
+      return true
+    }
+
+    remainingOffset -= block.raw.length + 1
+    return false
+  })
+
+  if (remainingOffset > 0) {
+    focusIndex = index + replacementBlocks.length - 1
+    caret = replacementBlocks[replacementBlocks.length - 1].raw.length
+  }
+
+  return { nextBlocks, focusIndex, caret }
+}
+
+function applyPaste(blocks, index, selection, text) {
+  const currentBlock = blocks[index] ?? makeBlock('')
+  const start = selection?.start ?? currentBlock.raw.length
+  const end = selection?.end ?? start
+  const prefix = currentBlock.raw.slice(0, start)
+  const suffix = currentBlock.raw.slice(end)
+  const insertedBlocks = contentToBlocks(text).map((block) => block.raw)
+
+  if (insertedBlocks.length === 0) {
+    return { nextBlocks: blocks, focusIndex: index, caret: start }
+  }
+
+  insertedBlocks[0] = `${prefix}${insertedBlocks[0]}`
+  insertedBlocks[insertedBlocks.length - 1] = `${insertedBlocks.at(-1) ?? ''}${suffix}`
+
+  const replacementBlocks = insertedBlocks.map((raw) => makeBlock(raw))
+  const nextBlocks = [...blocks]
+  nextBlocks.splice(index, 1, ...replacementBlocks)
+
+  const focusIndex = index + replacementBlocks.length - 1
+  const caret = Math.max((replacementBlocks.at(-1)?.raw.length ?? 0) - suffix.length, 0)
+
+  return { nextBlocks, focusIndex, caret }
+}
+
+export default function LiveMarkdownEditor({
+  value,
+  onChange,
+  onRegisterEditorApi,
+}) {
+  const [blocks, setBlocks] = useState(() => contentToBlocks(value))
+  const [focusedIndex, setFocusedIndex] = useState(() => (value.trim() ? null : 0))
+  const [slashActiveIndex, setSlashActiveIndex] = useState(0)
+  const inputRefs = useRef({})
+  const containerRef = useRef(null)
+  const blocksRef = useRef(blocks)
+  const pendingFocusRef = useRef(null)
+  const selectionRef = useRef({ index: 0, start: 0, end: 0 })
+  const onChangeRef = useRef(onChange)
+  const onRegisterEditorApiRef = useRef(onRegisterEditorApi)
+
+  useEffect(() => {
+    blocksRef.current = blocks
+  }, [blocks])
+
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
+
+  useEffect(() => {
+    onRegisterEditorApiRef.current = onRegisterEditorApi
+  }, [onRegisterEditorApi])
+
+  useEffect(() => {
+    const pendingFocus = pendingFocusRef.current
+
+    if (!pendingFocus) {
+      return
+    }
+
+    window.requestAnimationFrame(() => {
+      const element = inputRefs.current[pendingFocus.index]
+
+      if (element) {
+        element.focus()
+
+        if (pendingFocus.selectAll) {
+          element.setSelectionRange(0, element.value.length)
+          resizeTextarea(element)
+          selectionRef.current = {
+            index: pendingFocus.index,
+            start: 0,
+            end: element.value.length,
+          }
+        } else {
+          element.setSelectionRange(pendingFocus.caret, pendingFocus.caret)
+          resizeTextarea(element)
+          selectionRef.current = {
+            index: pendingFocus.index,
+            start: pendingFocus.caret,
+            end: pendingFocus.caret,
+          }
+        }
+      }
+
+      pendingFocusRef.current = null
+    })
+  }, [blocks, focusedIndex])
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setFocusedIndex(null)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const commitBlocks = useCallback((nextBlocks, focus = null) => {
+    blocksRef.current = nextBlocks
+    setBlocks(nextBlocks)
+    onChangeRef.current(blocksToContent(nextBlocks))
+
+    if (focus) {
+      pendingFocusRef.current = focus
+      setFocusedIndex(focus.index)
+    }
+  }, [])
+
+  const focusBlock = useCallback((index, caret = 0) => {
+    pendingFocusRef.current = { index, caret }
+    setFocusedIndex(index)
+  }, [])
+
+  const handleUpdate = useCallback((index, nextRaw) => {
+    const nextBlocks = [...blocksRef.current]
+    nextBlocks[index] = { ...nextBlocks[index], raw: nextRaw }
+    commitBlocks(nextBlocks)
+    selectionRef.current = {
+      index,
+      start: nextRaw.length,
+      end: nextRaw.length,
+    }
+  }, [commitBlocks])
+
+  const handleSelectionChange = useCallback((index, start, end) => {
+    selectionRef.current = { index, start, end }
+  }, [])
+
+  const handlePaste = useCallback((event, index) => {
+    const pastedText = event.clipboardData?.getData('text/plain') ?? ''
+
+    if (!pastedText.includes('\n')) {
+      return
+    }
+
+    event.preventDefault()
+
+    const selection = selectionRef.current.index === index
+      ? { start: selectionRef.current.start, end: selectionRef.current.end }
+      : {
+          start: blocksRef.current[index]?.raw.length ?? 0,
+          end: blocksRef.current[index]?.raw.length ?? 0,
+        }
+
+    const { nextBlocks, focusIndex, caret } = applyPaste(blocksRef.current, index, selection, pastedText)
+    commitBlocks(nextBlocks, { index: focusIndex, caret })
+  }, [commitBlocks])
+
+  const runEditorCommand = useCallback((commandId) => {
+    const command = getEditorCommandById(commandId)
+    const insertion = buildCommandInsertion(command)
+
+    if (!insertion) {
+      return
+    }
+
+    const baseBlocks = blocksRef.current.length ? blocksRef.current : [makeBlock('')]
+    const index = focusedIndex ?? Math.max(baseBlocks.length - 1, 0)
+    const selection = selectionRef.current.index === index
+      ? { start: selectionRef.current.start, end: selectionRef.current.end }
+      : { start: baseBlocks[index]?.raw.length ?? 0, end: baseBlocks[index]?.raw.length ?? 0 }
+    const { nextBlocks, focusIndex, caret } = applyInsertion(baseBlocks, index, selection, insertion)
+
+    commitBlocks(nextBlocks, { index: focusIndex, caret })
+  }, [commitBlocks, focusedIndex])
+
+  useEffect(() => {
+    onRegisterEditorApiRef.current?.({
+      focus() {
+        const index = focusedIndex ?? Math.max(blocksRef.current.length - 1, 0)
+        focusBlock(index, blocksRef.current[index]?.raw.length ?? 0)
+      },
+      runCommand(commandId) {
+        runEditorCommand(commandId)
+      },
+    })
+
+    return () => {
+      onRegisterEditorApiRef.current?.(null)
+    }
+  }, [focusBlock, focusedIndex, runEditorCommand])
+
+  const slashQuery = focusedIndex === null ? null : getSlashQuery(blocks[focusedIndex]?.raw || '')
+  const slashCommands = useMemo(
+    () => (slashQuery === null ? [] : getEditorCommands(slashQuery).slice(0, 8)),
+    [slashQuery]
+  )
+  const activeSlashIndex = Math.min(slashActiveIndex, Math.max(slashCommands.length - 1, 0))
+
+  const applySlashCommand = useCallback((command) => {
+    if (focusedIndex === null) {
+      return
+    }
+
+    const insertion = buildCommandInsertion(command)
+
+    if (!insertion) {
+      return
+    }
+
+    const block = blocksRef.current[focusedIndex]
+    const slashStart = block.raw.indexOf('/')
+    const { nextBlocks, focusIndex, caret } = applyInsertion(
+      blocksRef.current,
+      focusedIndex,
+      {
+        start: slashStart === -1 ? 0 : slashStart,
+        end: block.raw.length,
+      },
+      insertion
+    )
+
+    commitBlocks(nextBlocks, { index: focusIndex, caret })
+  }, [commitBlocks, focusedIndex])
+
+  const handleKeyDown = useCallback((event, index) => {
+    const currentBlock = blocksRef.current[index]
+
+    // Ctrl/Cmd+A: if entire current block is already selected, merge all
+    // blocks into one so the user can select all content natively
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'a') {
+      const target = event.currentTarget
+      const isFullySelected =
+        target.selectionStart === 0 && target.selectionEnd === target.value.length
+
+      if (isFullySelected && blocksRef.current.length > 1) {
+        event.preventDefault()
+        const fullContent = blocksToContent(blocksRef.current)
+        const merged = [makeBlock(fullContent)]
+        commitBlocks(merged)
+        pendingFocusRef.current = { index: 0, caret: 0, selectAll: true }
+        setFocusedIndex(0)
+        return
+      }
+    }
+
+    if (slashCommands.length > 0) {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        setSlashActiveIndex((current) => Math.min(current + 1, slashCommands.length - 1))
+        return
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        setSlashActiveIndex((current) => Math.max(current - 1, 0))
+        return
+      }
+
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault()
+        applySlashCommand(slashCommands[activeSlashIndex])
+        return
+      }
+
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        const nextBlocks = [...blocksRef.current]
+        const current = nextBlocks[index]
+        nextBlocks[index] = { ...current, raw: current.raw.replace(/^\/[a-z0-9-]*$/i, '') }
+        commitBlocks(nextBlocks)
+        return
+      }
+    }
+
+    // Inside a fenced code block: allow Enter to add newlines normally,
+    // but Escape exits the block by creating a new empty block below
+    if (isFencedCodeBlock(currentBlock.raw)) {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        const nextBlocks = [...blocksRef.current]
+        nextBlocks.splice(index + 1, 0, makeBlock(''))
+        commitBlocks(nextBlocks, { index: index + 1, caret: 0 })
+        return
+      }
+
+      if (event.key === 'Enter' && !event.shiftKey) {
+        return
+      }
+    }
+
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      const nextBlocks = [...blocksRef.current]
+      nextBlocks.splice(index + 1, 0, makeBlock(''))
+      commitBlocks(nextBlocks, { index: index + 1, caret: 0 })
+      return
+    }
+
+    if (event.key === 'Backspace' && blocksRef.current[index].raw === '' && blocksRef.current.length > 1) {
+      event.preventDefault()
+      const nextBlocks = [...blocksRef.current]
+      nextBlocks.splice(index, 1)
+      const previousIndex = Math.max(0, index - 1)
+      commitBlocks(nextBlocks, {
+        index: previousIndex,
+        caret: nextBlocks[previousIndex].raw.length,
+      })
+      return
+    }
+
+    if (event.key === 'ArrowUp' && index > 0) {
+      const target = event.currentTarget
+      if (target.selectionStart === 0 && target.selectionEnd === 0) {
+        event.preventDefault()
+        focusBlock(index - 1, blocksRef.current[index - 1].raw.length)
+      }
+      return
+    }
+
+    if (event.key === 'ArrowDown' && index < blocksRef.current.length - 1) {
+      const target = event.currentTarget
+      if (target.selectionStart === target.value.length && target.selectionEnd === target.value.length) {
+        event.preventDefault()
+        focusBlock(index + 1, 0)
+      }
+    }
+  }, [activeSlashIndex, applySlashCommand, commitBlocks, focusBlock, slashCommands])
+
+  const handleClickBottom = useCallback(() => {
+    const lastIndex = blocksRef.current.length - 1
+    const lastBlock = blocksRef.current[lastIndex]
+
+    // If the last block is empty, just focus it
+    if (lastBlock && lastBlock.raw === '') {
+      focusBlock(lastIndex, 0)
+      return
+    }
+
+    // Otherwise, create a new empty block at the end
+    const nextBlocks = [...blocksRef.current, makeBlock('')]
+    commitBlocks(nextBlocks, { index: nextBlocks.length - 1, caret: 0 })
+  }, [commitBlocks, focusBlock])
+
+  return (
+    <div ref={containerRef} className="notion-editor">
+      <div className="notion-blocks">
+        {blocks.map((block, index) => (
+          <div key={block.id} className="notion-block-row">
+            <Block
+              block={block}
+              index={index}
+              blocks={blocks}
+              isFocused={focusedIndex === index}
+              onUpdate={handleUpdate}
+              onFocus={(nextIndex) => focusBlock(nextIndex, blocksRef.current[nextIndex]?.raw.length ?? 0)}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              onSelectionChange={handleSelectionChange}
+              registerInput={(nextIndex, element) => {
+                if (element) {
+                  inputRefs.current[nextIndex] = element
+                } else {
+                  delete inputRefs.current[nextIndex]
+                }
+              }}
+            />
+
+            {focusedIndex === index && slashCommands.length > 0 ? (
+              <div className="notion-slash-menu">
+                {slashCommands.map((command, commandIndex) => (
+                  <button
+                    key={command.id}
+                    type="button"
+                    className={`notion-slash-item ${commandIndex === activeSlashIndex ? 'is-active' : ''}`}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => applySlashCommand(command)}
+                  >
+                    <span className="notion-slash-trigger">/{command.trigger}</span>
+                    <span className="notion-slash-title">{command.title}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ))}
+      </div>
+      {/* Clickable zone below all blocks to create/focus a new block */}
+      <button
+        type="button"
+        className="notion-block-empty"
+        onClick={handleClickBottom}
+        style={{ minHeight: '8rem' }}
+        aria-label="Add new block"
+      />
+    </div>
+  )
+}
