@@ -10,7 +10,8 @@ import {
   IconChevronDown,
   IconFilePlus,
   IconFolderPlus,
-  IconMinus
+  IconMinus,
+  IconHome
 } from '@tabler/icons-react';
 
 // ─── File Tree Helpers ─────────────────────────────────────────────────────────
@@ -614,12 +615,13 @@ export default function Sidebar({
               >
                 <IconLayoutSidebarLeftCollapse size={18} stroke={1.5} />
               </button>
-              <span className="text-[28px] text-[var(--h1-color)] leading-none select-none mt-1 tracking-tight" style={{ fontFamily: '"Italiana", serif', textShadow: '0 2px 10px var(--accent-muted)' }}>
+              <span className="text-[28px] text-[var(--h1-color)] leading-none select-none mt-1 tracking-tight cursor-pointer hover:opacity-80 transition-opacity" onClick={() => { onSelectNote(null); if (window.innerWidth < 768) onToggleCollapse(); }} style={{ fontFamily: '"Italiana", serif', textShadow: '0 2px 10px var(--accent-muted)' }} title="Go home">
                 Aura
               </span>
             </div>
 
             <div className="sb-actions">
+              <button title="Home" onClick={() => { onSelectNote(null); if (window.innerWidth < 768) onToggleCollapse(); }}><IconHome size={16} stroke={1.5} /></button>
               <button title="New File" onClick={() => handleRootCreate("file")}><Icon n="newFile" s={16} /></button>
               <button title="New Folder" onClick={() => handleRootCreate("folder")}><Icon n="newFolder" s={16} /></button>
             </div>
