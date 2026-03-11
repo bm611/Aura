@@ -7,7 +7,7 @@ import {
   IconMoon,
   IconSun,
   IconX,
-  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarFilled,
 } from '@tabler/icons-react'
 import { countBodyWords, estimateReadTime, formatCreatedAt, getNoteDisplayTitle } from '../utils/noteMeta'
 
@@ -19,6 +19,31 @@ function EditorFallback() {
       Loading...
     </div>
   )
+}
+
+function getGradientForNote(id) {
+  // Simple deterministic hash of the ID
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  // Color palette for gradients
+  const colors = [
+    'var(--accent)',
+    '#5e9fb8',
+    '#aba1c4',
+    '#d17b88',
+    '#7eb5cc',
+    '#c5bce0',
+    '#e895a2'
+  ];
+
+  const color1 = colors[Math.abs(hash) % colors.length];
+  const color2 = colors[Math.abs(hash * 31) % colors.length];
+
+  return `radial-gradient(ellipse at top left, color-mix(in srgb, ${color1} 15%, transparent) 0%, transparent 50%),
+          radial-gradient(ellipse at top right, color-mix(in srgb, ${color2} 15%, transparent) 0%, transparent 50%)`;
 }
 
 export default function NoteEditor({
@@ -112,7 +137,7 @@ export default function NoteEditor({
               className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
               title="Open sidebar (Cmd+B)"
             >
-              <IconLayoutSidebarLeftCollapse size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
+              <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
             </button>
           ) : (
             <div className="w-10" />
@@ -139,7 +164,7 @@ export default function NoteEditor({
                 <circle cx="100" cy="100" r="80" strokeDasharray="2 12" opacity="0.2">
                   <animateTransform attributeName="transform" type="rotate" from="360 100 100" to="0 100 100" dur="40s" repeatCount="indefinite" />
                 </circle>
-                
+
                 {/* Document Base */}
                 <path d="M70 50 H120 C125.5 50 130 54.5 130 60 V140 C130 145.5 125.5 150 120 150 H70 C64.5 150 60 145.5 60 140 V60 C60 54.5 64.5 50 70 50 Z" opacity="0.8" fill="var(--bg-surface)" strokeWidth="1.5">
                   <animate attributeName="stroke-dasharray" values="0 400; 400 0" dur="2s" fill="freeze" />
@@ -172,12 +197,12 @@ export default function NoteEditor({
                   <animate attributeName="opacity" values="0;1;0" dur="4s" begin="1.5s" repeatCount="indefinite" />
                   <path d="M50 120 L51 123 L54 124 L51 125 L50 128 L49 125 L46 124 L49 123 Z" fill="currentColor" stroke="none" />
                 </g>
-                
+
                 {/* Floating Pen */}
                 <g opacity="0">
                   <animate attributeName="opacity" values="0;1" dur="0.5s" begin="0.5s" fill="freeze" />
                   <animateTransform attributeName="transform" type="translate" values="10 10; 0 0; 10 10" dur="6s" repeatCount="indefinite" />
-                  
+
                   <path d="M135 115 L145 105 C147 103 150 103 152 105 L155 108 C157 110 157 113 155 115 L145 125 Z" fill="var(--bg-surface)" />
                   <path d="M135 115 L130 130 L145 125 Z" fill="var(--bg-hover)" />
                   <path d="M131 127 L130 130 L133 129 Z" fill="currentColor" stroke="none" />
@@ -321,16 +346,28 @@ export default function NoteEditor({
 
   return (
     <div
-      className={`relative flex flex-1 flex-col min-h-0 min-w-0 w-full bg-[var(--bg-primary)] transition-[border-radius] duration-300 ${
+      className={`relative flex flex-1 flex-col min-h-0 min-w-0 w-full bg-[var(--bg-primary)] transition-[border-radius] duration-300 overflow-hidden ${
         focusMode ? 'rounded-none' : 'max-md:rounded-none rounded-2xl'
       }`}
     >
+      {/* Subtle grainy gradient background for the banner area */}
+      {!focusMode && (
+        <div
+          className="pointer-events-none absolute left-0 right-0 top-0 h-[35vh] opacity-100 transition-colors duration-700 z-0"
+          style={{
+            backgroundImage: getGradientForNote(note.id),
+            maskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)'
+          }}
+        />
+      )}
+
       {/* Zen mode exit button — floats in the top-right corner */}
       {focusMode && (
         <button
           type="button"
           onClick={onToggleFocusMode}
-          className="absolute top-3 right-3 z-10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 opacity-20 transition-all hover:opacity-80 hover:bg-[var(--bg-hover)] select-none"
+          className="absolute top-3 right-3 z-50 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 opacity-20 transition-all hover:opacity-80 hover:bg-[var(--bg-hover)] select-none"
           style={{ fontFamily: "'DM Sans', sans-serif", color: 'var(--text-muted)', fontSize: '11px' }}
           title="Exit focus mode (⌘⇧F)"
         >
@@ -341,7 +378,7 @@ export default function NoteEditor({
 
       {/* Top bar — hidden in focus mode */}
       {!focusMode && (
-        <div className="flex items-center justify-between px-4 py-2 md:px-6">
+        <div className="flex items-center justify-between px-4 py-2 md:px-6 relative z-10">
           {sidebarCollapsed ? (
             <button
               type="button"
@@ -349,7 +386,7 @@ export default function NoteEditor({
               className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
               title="Open sidebar (Cmd+B)"
             >
-              <IconLayoutSidebarLeftCollapse size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
+              <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
             </button>
           ) : (
             <div className="w-10" />
@@ -376,7 +413,7 @@ export default function NoteEditor({
       )}
 
       {/* Scrollable content */}
-      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
         <div
           className={`mx-auto max-w-3xl px-4 pb-32 sm:px-6 md:px-10 ${
             focusMode ? 'pt-[12vh]' : ''

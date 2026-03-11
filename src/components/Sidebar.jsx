@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   IconSearch,
-  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarFilled,
   IconFolder,
   IconFile,
   IconTrash,
@@ -613,7 +613,7 @@ export default function Sidebar({
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] transition-all hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:scale-105 active:scale-95"
                 title="Toggle sidebar (Cmd+B)"
               >
-                <IconLayoutSidebarLeftCollapse size={18} stroke={1.5} />
+                <IconLayoutSidebarFilled size={18} stroke={1.5} />
               </button>
               <span className="text-[28px] text-[var(--h1-color)] leading-none select-none mt-1 tracking-tight cursor-pointer hover:opacity-80 transition-opacity" onClick={() => { onSelectNote(null); if (window.innerWidth < 768) onToggleCollapse(); }} style={{ fontFamily: '"Italiana", serif', textShadow: '0 2px 10px var(--accent-muted)' }} title="Go home">
                 Aura
