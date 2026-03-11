@@ -180,18 +180,20 @@ export default function NoteEditor({
               </g>
             </svg>
           </div>
-          <p
-            className="animate-fade-in-up-delay-1 text-sm tracking-wide text-[var(--text-muted)]"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
-          >
-            {dateStr}
-          </p>
-          <h1
-            className="animate-fade-in-up-delay-1 mt-2 text-4xl font-black tracking-tight text-[var(--text-primary)] sm:text-5xl"
-            style={{ fontFamily: "'Fraunces', serif" }}
-          >
-            Welcome to <span className="font-normal text-[var(--h1-color)]" style={{ fontFamily: '"Italiana", serif', fontSize: '1.2em' }}>Aura</span>.
-          </h1>
+          <div className="animate-fade-in-up-delay-1 flex flex-col items-center">
+            <h1
+              className="text-6xl tracking-tight text-[var(--h1-color)] sm:text-7xl"
+              style={{ fontFamily: '"Italiana", serif', textShadow: '0 4px 24px var(--accent-muted)' }}
+            >
+              Aura.
+            </h1>
+            <p
+              className="mt-3 text-[15px] text-[var(--text-muted)] tracking-wide"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              Welcome back. It's {dateStr}.
+            </p>
+          </div>
 
           <div className="animate-fade-in-up-delay-2 mt-6">
             <button

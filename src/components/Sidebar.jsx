@@ -541,7 +541,7 @@ export default function Sidebar({
               >
                 <IconLayoutSidebarLeftCollapse size={18} stroke={1.5} />
               </button>
-              <span className="text-[26px] text-[var(--text-primary)] leading-none select-none opacity-90 mt-1" style={{ fontFamily: '"Italiana", serif' }}>
+              <span className="text-[28px] text-[var(--h1-color)] leading-none select-none mt-1 tracking-tight" style={{ fontFamily: '"Italiana", serif', textShadow: '0 2px 10px var(--accent-muted)' }}>
                 Aura
               </span>
             </div>

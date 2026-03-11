@@ -55,67 +55,91 @@ function saveTree(tree) {
   localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree))
 }
 
-const SAMPLE_NOTE = `> [!NOTE]
+const SAMPLE_NOTE = `# Welcome to Aura
+
+> [!NOTE]
 > Welcome to your local-first markdown workspace. Everything is stored in your browser — no account needed.
 
-Type \`/\` on a blank line to open **slash commands**, or use the command palette to search notes and run actions.
+This note is a walkthrough of what you can do. Try typing \`/\` on a blank line to open the **slash command menu**, or press \`Cmd+K\` (or \`Ctrl+K\`) to open the **command palette**.
 
-## Formatting
+---
 
-You can write in *italics*, **bold**, ***bold italics***, or ~~strikethrough~~. Inline \`code\` works too.
+## ✍️ Rich Formatting
 
-Links look like this: [Aura on GitHub](https://github.com/bm611/aura)
+Aura supports all your favorite markdown formatting. You can write in *italics*, **bold**, ***bold italics***, or ~~strikethrough~~. You can also use \`inline code\`.
 
-## Lists
+Links are easy: [Aura on GitHub](https://github.com/bm611/aura)
 
-Unordered lists:
+## 📋 Organization
 
-- First item
-- Second item
-- Third item
+Keep things structured with lists and tasks.
 
-Ordered lists:
+### Lists
 
-1. Step one
-2. Step two
-3. Step three
+*   **Unordered lists** for loose items
+    *   Like this nested one
+*   And another item
 
-## Tasks
+1.  **Ordered lists** for steps
+2.  Step two
+3.  Step three
+
+### Tasks
+
+Stay on top of what you need to do:
 
 - [x] Set up the workspace
 - [x] Try the slash commands
 - [ ] Add your first real note
 - [ ] Explore tags and search
 
-## Callouts
+## 💡 Callouts
+
+Draw attention to important information using callouts. Type \`/callout\` to quickly insert one.
 
 > [!TIP]
-> Type \`/callout\` to insert one of these. They support different types like note, tip, warning, and more.
+> Did you know you can change the editor font and theme? Open the command palette (\`Cmd+K\`) and search for "theme" or "font".
 
 > [!WARNING]
-> Notes are saved to your browser's local storage. Clearing site data will remove them.
+> Because Aura is local-first, notes are saved to your browser's local storage. Clearing site data will remove them!
 
-## Code
+## 💻 Code Blocks
+
+Share code with syntax highlighting:
 
 \`\`\`js
 function greet(name) {
-  return \`Hello, \${name}!\`
+  return \`Hello, \${name}! Welcome to Aura.\`;
 }
 
-console.log(greet("Aura"))
+console.log(greet("Friend"));
 \`\`\`
 
-## Quotes
+## 📊 Tables
 
-> The best way to predict the future is to invent it.
+You can even create tables to organize data:
+
+| Feature | Shortcut | Description |
+| --- | --- | --- |
+| Command Palette | \`Cmd+K\` | Search notes and run actions |
+| New Note | \`Cmd+N\` | Create a new blank note |
+| Toggle Sidebar | \`Cmd+B\` | Show/hide the sidebar |
+| Focus Mode | \`Cmd+Shift+F\` | Distraction-free writing |
+
+## 📅 Quick Actions
+
+Type \`/today\` to instantly insert today's date. 
+
+> "The best way to predict the future is to invent it." 
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
-1. Create a new note from the sidebar
-2. Use tags in the **Details** panel to organize your notes
-3. Search across all notes from the sidebar or command palette
+1. Use the **sidebar** to create a new note.
+2. Add **tags** in the Details panel to keep things organized.
+3. Switch between **Dark Mode** and **Light Mode** using the button in the top right.
+4. Try **Focus Mode** for distraction-free writing!
 `
 
 function matchesQuery(query, values) {
