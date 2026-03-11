@@ -125,7 +125,7 @@ export default function NoteEditor({
 
         {/* Welcome content */}
         <div className="flex flex-1 flex-col items-center px-6 pt-[4vh] md:pt-[6vh]">
-          <div className="mb-4 flex justify-center text-[var(--accent)] opacity-80 mix-blend-luminosity">
+          <div className="animate-fade-in-up mb-4 flex justify-center text-[var(--accent)] opacity-80 mix-blend-luminosity">
             <svg width="120" height="120" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
               <g stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 {/* Background abstract shapes */}
@@ -182,22 +182,22 @@ export default function NoteEditor({
             </svg>
           </div>
           <p
-            className="text-sm tracking-wide text-[var(--text-muted)]"
+            className="animate-fade-in-up-delay-1 text-sm tracking-wide text-[var(--text-muted)]"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
           >
             {dateStr}
           </p>
           <h1
-            className="mt-2 text-4xl font-black tracking-tight text-[var(--text-primary)] sm:text-5xl"
+            className="animate-fade-in-up-delay-1 mt-2 text-4xl font-black tracking-tight text-[var(--text-primary)] sm:text-5xl"
             style={{ fontFamily: "'Fraunces', serif" }}
           >
             Welcome back.
           </h1>
 
-          <div className="mt-6">
+          <div className="animate-fade-in-up-delay-2 mt-6">
             <button
               onClick={() => onNewNote?.()}
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-hover)] active:scale-[0.98]"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-[var(--accent-hover)] hover:scale-[1.02] active:scale-[0.98]"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               <IconPlus size={18} stroke={2} />
@@ -206,7 +206,7 @@ export default function NoteEditor({
           </div>
 
           {recentNotes.length > 0 && (
-            <div className="mt-8 w-full max-w-2xl">
+            <div className="animate-fade-in-up-delay-2 mt-8 w-full max-w-2xl">
               <p
                 className="mb-4 text-md text-[var(--text-muted)]"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -325,7 +325,7 @@ export default function NoteEditor({
           type="button"
           onClick={onToggleFocusMode}
           className="absolute top-3 right-3 z-10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 opacity-20 transition-all hover:opacity-80 hover:bg-[var(--bg-hover)] select-none"
-          style={{ fontFamily: "'Inter', sans-serif", color: 'var(--text-muted)', fontSize: '11px' }}
+          style={{ fontFamily: "'DM Sans', sans-serif", color: 'var(--text-muted)', fontSize: '11px' }}
           title="Exit focus mode (⌘⇧F)"
         >
           <IconArrowsMaximize size={12} stroke={1.5} />
@@ -393,7 +393,7 @@ export default function NoteEditor({
           {!focusMode && (
             <div
               className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[12px] text-[var(--text-muted)]"
-              style={{ fontFamily: "'Inter', sans-serif" }}
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               <span className="inline-flex items-center gap-1.5">
                 <IconCalendar size={14} stroke={1.5} className="opacity-70" />
@@ -454,7 +454,7 @@ export default function NoteEditor({
       {/* Stats bar — bottom right */}
       <div
         className="absolute bottom-4 right-4 flex flex-col items-end gap-1.5"
-        style={{ fontFamily: "'Inter', sans-serif" }}
+        style={{ fontFamily: "'DM Sans', sans-serif" }}
       >
         {/* Word goal progress bar */}
         {wordGoal !== null && !showGoalInput && (

@@ -169,8 +169,8 @@ export default function App() {
   const [sidebarSearch, setSidebarSearch] = useState('')
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [commandPaletteQuery, setCommandPaletteQuery] = useState('')
-  const [theme, setTheme] = useState(() => localStorage.getItem('canvas-theme') || 'light')
-  const [fontId, setFontId] = useState(() => localStorage.getItem('canvas-font') || 'lora')
+  const [theme, setTheme] = useState(() => localStorage.getItem('canvas-theme') || 'dark')
+  const [fontId, setFontId] = useState(() => localStorage.getItem('canvas-font') || 'dm-sans')
   const [editorReady, setEditorReady] = useState(false)
   const [deletedNote, setDeletedNote] = useState(null)
   const [focusMode, setFocusMode] = useState(false)
@@ -506,7 +506,7 @@ export default function App() {
       {deletedNote && (
         <div
           className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-4 py-3 shadow-lg"
-          style={{ fontFamily: "'Inter', sans-serif" }}
+          style={{ fontFamily: "'DM Sans', sans-serif" }}
         >
           <span className="text-sm text-[var(--text-secondary)]">Note deleted</span>
           <button

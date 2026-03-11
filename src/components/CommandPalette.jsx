@@ -105,11 +105,11 @@ export default function CommandPalette({
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="Search..."
             className="w-full bg-transparent text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]"
-            style={{ fontFamily: "'Inter', sans-serif" }}
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
           />
           <kbd
             className="shrink-0 rounded border border-[var(--border-subtle)] px-1.5 py-0.5 text-[10px] text-[var(--text-muted)]"
-            style={{ fontFamily: "'Inter', sans-serif" }}
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
           >
             esc
           </kbd>
@@ -129,7 +129,7 @@ export default function CommandPalette({
                     <div
                       key={entry.id}
                       className="px-3 pt-3 pb-1 text-[10px] uppercase tracking-widest text-[var(--text-muted)]"
-                      style={{ fontFamily: "'Inter', sans-serif" }}
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
                     >
                       {entry.label}
                     </div>
@@ -155,7 +155,7 @@ export default function CommandPalette({
                       {item.icon ? <span className="shrink-0 text-[var(--text-muted)]">{item.icon}</span> : null}
                       <span
                         className="truncate text-[13px] font-medium"
-                        style={{ fontFamily: "'Inter', sans-serif" }}
+                        style={{ fontFamily: "'DM Sans', sans-serif" }}
                       >
                         {item.title}
                       </span>
