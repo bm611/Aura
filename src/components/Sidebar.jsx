@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   IconSearch,
   IconLayoutSidebarLeftCollapse,
@@ -219,9 +219,23 @@ export default function Sidebar({
 
   const handleRootCreate = (type) => setCreatingIn({ parentId: null, type });
 
-  // Optional: filter tree based on searchQuery
-  const renderTree = () => {
-    if (!searchQuery.trim()) return tree;
+  const visibleTree = useMemo(() => {
+    // Sort a list of nodes so folders come first
+    const sortNodes = (nodes) => {
+      return [...nodes].sort((a, b) => {
+        if (a.type === 'folder' && b.type !== 'folder') return -1;
+        if (a.type !== 'folder' && b.type === 'folder') return 1;
+        // Optional: alphabetical sort for nodes of the same type
+        return a.name.localeCompare(b.name);
+      }).map(node => {
+        if (node.type === 'folder' && node.children) {
+          return { ...node, children: sortNodes(node.children) };
+        }
+        return node;
+      });
+    };
+
+    if (!searchQuery.trim()) return sortNodes(tree);
     const lowerQ = searchQuery.toLowerCase();
 
     // A simple function to filter files by name
@@ -239,10 +253,64 @@ export default function Sidebar({
       }
       return result;
     };
-    return filterNodes(tree);
-  };
+    return sortNodes(filterNodes(tree));
+  }, [tree, searchQuery]);
 
-  const visibleTree = renderTree();
+  const getVisibleFiles = useCallback((nodes) => {
+    let result = [];
+    for (const node of nodes) {
+      if (node.type === 'file') result.push(node);
+      if (node.type === 'folder' && expanded.has(node.id) && node.children) {
+        result = result.concat(getVisibleFiles(node.children));
+      }
+    }
+    return result;
+  }, [expanded]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const activeEl = document.activeElement;
+      if (
+        activeEl && 
+        (activeEl.tagName === 'INPUT' || 
+         activeEl.tagName === 'TEXTAREA' || 
+         activeEl.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        const files = getVisibleFiles(visibleTree);
+        if (files.length === 0) return;
+
+        let currentIndex = files.findIndex(f => f.id === activeNoteId);
+        let nextIndex = currentIndex;
+
+        if (e.key === 'ArrowUp') {
+          nextIndex = currentIndex > 0 ? currentIndex - 1 : currentIndex;
+          if (currentIndex === -1) nextIndex = files.length > 0 ? files.length - 1 : -1;
+        } else if (e.key === 'ArrowDown') {
+          nextIndex = currentIndex !== -1 && currentIndex < files.length - 1 ? currentIndex + 1 : currentIndex;
+          if (currentIndex === -1) nextIndex = 0;
+        }
+        
+        if (nextIndex !== -1 && nextIndex !== currentIndex && nextIndex >= 0 && nextIndex < files.length) {
+          e.preventDefault();
+          onSelectNote(files[nextIndex].id);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeNoteId, visibleTree, getVisibleFiles, onSelectNote]);
+
+  useEffect(() => {
+    const activeNode = document.querySelector('.tree-node.active');
+    if (activeNode) {
+      activeNode.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [activeNoteId]);
 
   return (
     <>
