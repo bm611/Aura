@@ -13,6 +13,7 @@ export function normalizeNote(note) {
     tags: Array.isArray(note.tags) ? note.tags : [],
     createdAt: note.createdAt || fallbackTimestamp,
     updatedAt: note.updatedAt || note.createdAt || fallbackTimestamp,
+    wordGoal: typeof note.wordGoal === 'number' && note.wordGoal > 0 ? note.wordGoal : null,
   }
 }
 
@@ -50,4 +51,11 @@ export function countBodyWords(content = '') {
 
 export function getNoteDisplayTitle(note) {
   return note?.title?.trim() || 'Untitled'
+}
+
+export function estimateReadTime(content = '') {
+  const words = countBodyWords(content)
+  if (words === 0) return ''
+  const minutes = Math.round(words / 200)
+  return minutes < 1 ? '<1 min read' : `~${minutes} min read`
 }

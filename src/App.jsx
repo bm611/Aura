@@ -1,5 +1,7 @@
 import { useEffect, useCallback, useRef, useState } from 'react'
 import {
+  HiArrowsPointingIn,
+  HiArrowsPointingOut,
   HiCommandLine,
   HiMagnifyingGlass,
   HiMoon,
@@ -150,6 +152,7 @@ export default function App() {
   const [fontId, setFontId] = useState(() => localStorage.getItem('canvas-font') || 'lora')
   const [editorReady, setEditorReady] = useState(false)
   const [deletedNote, setDeletedNote] = useState(null)
+  const [focusMode, setFocusMode] = useState(false)
   const deleteTimerRef = useRef(null)
 
   const editorApiRef = useRef(null)
@@ -255,11 +258,12 @@ export default function App() {
     setDeletedNote(null)
   }, [deletedNote])
 
-  const handleUpdateNote = useCallback((id, updates) => {
+  const handleUpdateNote = useCallback((id, updates, options = {}) => {
     setNotes((previousNotes) =>
       previousNotes.map((note) => {
         if (note.id === id) {
-          return { ...note, ...updates, updatedAt: new Date().toISOString() }
+          const timeUpdate = options.skipTimestamp ? {} : { updatedAt: new Date().toISOString() }
+          return { ...note, ...updates, ...timeUpdate }
         }
 
         return note
@@ -269,6 +273,14 @@ export default function App() {
 
   const toggleTheme = useCallback(() => {
     setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))
+  }, [])
+
+  const toggleFocusMode = useCallback(() => {
+    setFocusMode((current) => {
+      const next = !current
+      if (next) setSidebarCollapsed(true)
+      return next
+    })
   }, [])
 
   useEffect(() => {
@@ -287,13 +299,26 @@ export default function App() {
         event.preventDefault()
         openCommandPalette()
       }
+
+      if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'f') {
+        event.preventDefault()
+        toggleFocusMode()
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleNewNote, openCommandPalette])
+  }, [handleNewNote, openCommandPalette, toggleFocusMode])
 
   const activeNote = notes.find((note) => note.id === activeNoteId) || null
+
+  // Exit focus mode automatically if there's no active note to write in
+  useEffect(() => {
+    if (!activeNote && focusMode) {
+      setFocusMode(false)
+    }
+  }, [activeNote, focusMode])
+
   const sidebarResults = sidebarSearch.trim() ? searchNotes(notes, sidebarSearch) : searchNotes(notes, '')
   const paletteNoteResults = searchNotes(notes, commandPaletteQuery).slice(0, 8)
   const paletteCommandResults = editorReady ? getEditorCommands(commandPaletteQuery).slice(0, 6) : []
@@ -325,6 +350,15 @@ export default function App() {
       icon: <HiMagnifyingGlass size={16} />,
       keywords: ['search', 'find', 'sidebar'],
       run: () => setSidebarCollapsed(false),
+    },
+    {
+      id: 'action-focus-mode',
+      section: 'Actions',
+      title: focusMode ? 'Exit focus mode' : 'Focus mode',
+      subtitle: focusMode ? 'Restore the full editor UI' : 'Hide all chrome for distraction-free writing',
+      icon: focusMode ? <HiArrowsPointingOut size={16} /> : <HiArrowsPointingIn size={16} />,
+      keywords: ['focus', 'zen', 'distraction', 'write', 'story', 'fullscreen'],
+      run: () => toggleFocusMode(),
     },
   ].filter((item) =>
     matchesQuery(commandPaletteQuery, [item.title, item.subtitle, ...(item.keywords || [])])
@@ -391,7 +425,7 @@ export default function App() {
           onSearchChange={setSidebarSearch}
         />
 
-        <div className="flex flex-1 min-w-0 p-2 pl-0">
+        <div className={`flex flex-1 min-w-0 transition-[padding] duration-300 ${focusMode ? 'p-0' : 'p-2 pl-0'}`}>
           <NoteEditor
             note={activeNote}
             notes={notes}
@@ -405,6 +439,8 @@ export default function App() {
             onToggleTheme={toggleTheme}
             sidebarCollapsed={sidebarCollapsed}
             onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
+            focusMode={focusMode}
+            onToggleFocusMode={toggleFocusMode}
           />
         </div>
       </div>
