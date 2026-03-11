@@ -51,7 +51,7 @@ export default function Sidebar({
               </button>
               <span
                 className="text-sm font-semibold tracking-tight text-[var(--text-primary)]"
-                style={{ fontFamily: "'Inter', sans-serif" }}
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 Canvas
               </span>
@@ -62,10 +62,9 @@ export default function Sidebar({
               type="button"
               onClick={onNewNote}
               className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent-muted)] px-3 py-2 text-xs font-medium text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-white"
-              style={{ fontFamily: "'Inter', sans-serif" }}
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
               title="New note (Cmd+N)"
             >
-              <HiMiniPlus size={14} />
               New Note
             </button>
 
@@ -78,7 +77,7 @@ export default function Sidebar({
                   onChange={(event) => onSearchChange(event.target.value)}
                   placeholder="Search notes..."
                   className="w-full bg-transparent text-xs text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
                 />
               </label>
             </div>
@@ -90,7 +89,7 @@ export default function Sidebar({
               <div className="mb-1 px-2">
                 <span
                   className="text-[10px] uppercase tracking-widest text-[var(--text-muted)]"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
                   {notes.length} result{notes.length !== 1 ? 's' : ''}
                 </span>
@@ -129,7 +128,7 @@ export default function Sidebar({
                       >
                         <span
                           className="block truncate text-[13px]"
-                          style={{ fontFamily: "'Inter', sans-serif" }}
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
                         >
                           {title}
                         </span>

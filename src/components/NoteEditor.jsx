@@ -85,10 +85,10 @@ export default function NoteEditor({
         </div>
 
         {/* Welcome content */}
-        <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
+        <div className="flex flex-1 flex-col items-center px-6 pt-[12vh]">
           <p
             className="text-sm tracking-wide text-[var(--text-muted)]"
-            style={{ fontFamily: "'Inter', sans-serif" }}
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
           >
             {dateStr}
           </p>
@@ -103,7 +103,7 @@ export default function NoteEditor({
             <div className="mt-10 w-full max-w-2xl">
               <p
                 className="mb-4 text-[11px] uppercase tracking-widest text-[var(--text-muted)]"
-                style={{ fontFamily: "'Inter', sans-serif" }}
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 Recent notes
               </p>
@@ -125,21 +125,21 @@ export default function NoteEditor({
                     >
                       <span
                         className="truncate text-[13px] font-medium text-[var(--text-primary)]"
-                        style={{ fontFamily: "'Inter', sans-serif" }}
+                        style={{ fontFamily: "'DM Sans', sans-serif" }}
                       >
                         {title}
                       </span>
                       {preview && (
                         <span
                           className="line-clamp-2 text-[12px] leading-relaxed text-[var(--text-muted)]"
-                          style={{ fontFamily: "'Inter', sans-serif" }}
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
                         >
                           {preview}
                         </span>
                       )}
                       <span
                         className="mt-auto text-[10px] text-[var(--text-muted)]"
-                        style={{ fontFamily: "'Inter', sans-serif" }}
+                        style={{ fontFamily: "'DM Sans', sans-serif" }}
                       >
                         {time}
                       </span>
