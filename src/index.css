@@ -747,8 +747,8 @@ input[type='number'] {
 
   .notion-block-edit textarea {
     font-size: 0.9rem;
-    padding: 0.1rem 0.25rem;
-    line-height: 1.55;
+    padding: 0.05rem 0.15rem;
+    line-height: 1.45;
   }
 
   .notion-block-edit[data-block-type="codeblock"] textarea,
@@ -756,25 +756,26 @@ input[type='number'] {
   .notion-block-rendered pre code,
   .notion-block-rendered pre code.hljs {
     font-size: 0.82rem;
-    line-height: 1.5;
+    line-height: 1.4;
   }
 
   .notion-block-rendered {
-    padding: 0.1rem 0.25rem;
+    padding: 0.05rem 0.15rem;
   }
 
   .notion-block-rendered h1 {
     font-size: 1.5rem;
-    margin: 0.35rem 0 0.05rem;
+    margin: 0.2rem 0 0.05rem;
   }
 
   .notion-block-rendered h2 {
     font-size: 1.2rem;
-    margin: 0.3rem 0 0.05rem;
+    margin: 0.2rem 0 0.05rem;
   }
 
   .notion-block-rendered h3 {
     font-size: 1.05rem;
+    margin: 0.15rem 0 0.05rem;
   }
 
   .notion-block-rendered p,
@@ -782,7 +783,7 @@ input[type='number'] {
   .notion-task,
   .notion-block-rendered blockquote {
     font-size: 0.9rem;
-    line-height: 1.5;
+    line-height: 1.45;
   }
 
   .notion-block-rendered pre {
