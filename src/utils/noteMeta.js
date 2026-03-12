@@ -10,7 +10,6 @@ export function normalizeNote(note) {
     ...note,
     title: typeof note.title === 'string' ? note.title : '',
     content: typeof note.content === 'string' ? note.content : '',
-    tags: Array.isArray(note.tags) ? note.tags : [],
     createdAt: note.createdAt || fallbackTimestamp,
     updatedAt: note.updatedAt || note.createdAt || fallbackTimestamp,
     wordGoal: typeof note.wordGoal === 'number' && note.wordGoal > 0 ? note.wordGoal : null,

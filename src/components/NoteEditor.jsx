@@ -3,10 +3,8 @@ import {
   IconArrowsMinimize,
   IconArrowsMaximize,
   IconCalendar,
-  IconHash,
   IconMoon,
   IconSun,
-  IconX,
   IconLayoutSidebarFilled,
   IconCommand,
   IconPlus,
@@ -63,7 +61,6 @@ export default function NoteEditor({
   onToggleFocusMode,
   onOpenCommandPalette,
 }) {
-  const [tagInput, setTagInput] = useState('')
   const [showGoalInput, setShowGoalInput] = useState(false)
   const [goalInputVal, setGoalInputVal] = useState('')
 
@@ -90,26 +87,6 @@ export default function NoteEditor({
       e.preventDefault()
       editorApiRef.current?.focus()
     }
-  }
-
-  const handleAddTag = (event) => {
-    if (event.key !== 'Enter' || !tagInput.trim()) {
-      return
-    }
-
-    event.preventDefault()
-    const newTag = tagInput.trim().toLowerCase().replace(/[^a-z0-9-]/g, '')
-
-    if (newTag && !(note.tags || []).includes(newTag)) {
-      onUpdateNote(note.id, { tags: [...(note.tags || []), newTag] })
-    }
-
-    setTagInput('')
-  }
-
-  const handleRemoveTag = (tagToRemove) => {
-    const newTags = (note.tags || []).filter((tag) => tag !== tagToRemove)
-    onUpdateNote(note.id, { tags: newTags })
   }
 
   if (!note) {
@@ -259,7 +236,6 @@ export default function NoteEditor({
 
   // ── Derived state ───────────────────────────────────────────────────────────
 
-  const tags = note.tags || []
   const createdAtLabel = formatCreatedAt(note.createdAt)
   const wordCount = countBodyWords(note.content)
   const readTime = estimateReadTime(note.content)
@@ -392,7 +368,7 @@ export default function NoteEditor({
               value={note.title}
               onChange={(event) => onUpdateNote(note.id, { title: event.target.value })}
               onKeyDown={handleTitleKeyDown}
-              className="w-full bg-transparent text-5xl font-black tracking-tight text-[var(--title-color)] outline-none placeholder:text-[var(--text-muted)] md:text-5xl"
+              className="note-title-input w-full bg-transparent text-3xl font-black tracking-tight text-[var(--title-color)] outline-none placeholder:text-[var(--text-muted)] md:text-5xl"
               style={{ fontFamily: "'Fraunces', serif" }}
               placeholder="Untitled"
             />
@@ -409,41 +385,6 @@ export default function NoteEditor({
                 {createdAtLabel}
               </span>
 
-              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
-                {tags.map((tag, i) => {
-                  const c = i % 8
-                  return (
-                    <span
-                      key={tag}
-                      className="group/tag relative inline-flex items-center gap-1 rounded-full px-2 py-0.5 transition-all max-md:pr-5 md:hover:pr-5 border border-[var(--border-subtle)]"
-                      style={{
-                        backgroundColor: `var(--tag-${c}-bg)`,
-                        color: `var(--tag-${c}-text)`,
-                      }}
-                    >
-                      <IconHash size={12} stroke={1.5} className="opacity-60" />
-                      {tag}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveTag(tag)}
-                        className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-0.5 transition-opacity hover:text-red-400 max-md:opacity-60 md:opacity-0 md:group-hover/tag:opacity-100"
-                        aria-label={`Remove ${tag}`}
-                      >
-                        <IconX size={10} stroke={2} />
-                      </button>
-                    </span>
-                  )
-                })}
-
-                <input
-                  type="text"
-                  value={tagInput}
-                  onChange={(event) => setTagInput(event.target.value)}
-                  onKeyDown={handleAddTag}
-                  placeholder={tags.length === 0 ? '+ Add tag' : '+'}
-                  className="w-16 bg-transparent py-0.5 text-[16px] md:text-[12px] text-[var(--text-muted)] outline-none placeholder:text-[var(--text-muted)] focus:text-[var(--text-primary)] transition-colors"
-                />
-              </div>
             </div>
           )}
 
@@ -545,6 +486,7 @@ export default function NoteEditor({
           )}
         </div>
       </div>
+
       {/* Mobile action bar — floating liquid glass */}
       {!focusMode && (
         <div className="mobile-action-bar" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>

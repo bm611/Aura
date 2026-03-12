@@ -91,7 +91,7 @@ Stay on top of what you need to do:
 - [x] Set up the workspace
 - [x] Try the slash commands
 - [ ] Add your first real note
-- [ ] Explore tags and search
+- [ ] Explore search
 
 ## 💡 Callouts
 
@@ -124,9 +124,8 @@ console.log(greet("Friend"));
 ## 🚀 Getting Started
 
 1. Use the **sidebar** to create a new note.
-2. Add **tags** in the Details panel to keep things organized.
-3. Switch between **Dark Mode** and **Light Mode** using the button in the top right.
-4. Try **Focus Mode** for distraction-free writing!
+2. Switch between **Dark Mode** and **Light Mode** using the button in the top right.
+3. Try **Focus Mode** for distraction-free writing!
 `
 
 function matchesQuery(query, values) {
@@ -162,7 +161,6 @@ export default function App() {
         name: 'Aura Knowledge Base',
         title: 'Aura Knowledge Base',
         content: SAMPLE_NOTE,
-        tags: ['aura', 'knowledge-base'],
         createdAt: now,
         updatedAt: now,
       },
@@ -226,7 +224,6 @@ export default function App() {
         name: overrides.title || 'Untitled',
         title: overrides.title || '',
         content: '',
-        tags: [],
         createdAt: now,
         updatedAt: now,
         ...overrides,
@@ -467,7 +464,7 @@ export default function App() {
     subtitle: result.excerpt,
     icon: <IconFileText size={16} stroke={1.5} />,
     hint: '',
-    keywords: ['note', ...(result.note.tags || [])],
+    keywords: ['note'],
     run: () => setActiveNoteId(result.note.id),
   }))
 

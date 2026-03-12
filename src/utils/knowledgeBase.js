@@ -62,9 +62,8 @@ export function searchNotes(notes, query = '') {
     .map((note) => {
       const title = getNoteDisplayTitle(note)
       const titleText = title.toLowerCase()
-      const tagText = (note.tags || []).join(' ').toLowerCase()
       const bodyText = stripMarkdown(note.content).toLowerCase()
-      const combined = `${titleText} ${tagText} ${bodyText}`
+      const combined = `${titleText} ${bodyText}`
 
       const allTermsPresent = terms.every((term) => combined.includes(term))
       if (!allTermsPresent) {
@@ -79,11 +78,6 @@ export function searchNotes(notes, query = '') {
         matches.push('title')
       }
 
-      if (tagText.includes(normalizedQuery)) {
-        score += 90
-        matches.push('tag')
-      }
-
       if (bodyText.includes(normalizedQuery)) {
         score += 50
         matches.push('content')
@@ -92,10 +86,6 @@ export function searchNotes(notes, query = '') {
       terms.forEach((term) => {
         if (titleText.includes(term)) {
           score += 32
-        }
-
-        if (tagText.includes(term)) {
-          score += 18
         }
 
         if (bodyText.includes(term)) {

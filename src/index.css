@@ -37,16 +37,6 @@
   --danger: #d17b88;
   --success: #5e9fb8;
 
-  /* Tag colors — muted tones for dark bg */
-  --tag-0-bg: rgba(209, 123, 136, 0.1); --tag-0-text: #d17b88;
-  --tag-1-bg: rgba(94, 159, 184, 0.1); --tag-1-text: #5e9fb8;
-  --tag-2-bg: rgba(171, 161, 196, 0.1); --tag-2-text: #aba1c4;
-  --tag-3-bg: rgba(212, 207, 199, 0.1); --tag-3-text: #d4cfc7;
-  --tag-4-bg: rgba(209, 123, 136, 0.15); --tag-4-text: #e895a2;
-  --tag-5-bg: rgba(94, 159, 184, 0.15); --tag-5-text: #7eb5cc;
-  --tag-6-bg: rgba(171, 161, 196, 0.15); --tag-6-text: #c5bce0;
-  --tag-7-bg: rgba(242, 240, 237, 0.1); --tag-7-text: #f2f0ed;
-
   /* Neumorphic shadows */
   --neu-shadow: 0 4px 0 #1a1a1d, 0 6px 12px rgba(0,0,0,0.35);
   --neu-shadow-hover: 0 3px 0 #1a1a1d, 0 4px 8px rgba(0,0,0,0.3);
@@ -95,16 +85,6 @@
   /* Semantic */
   --danger: #b86070;
   --success: #4b829c;
-
-  /* Tag colors — muted tones for light bg */
-  --tag-0-bg: rgba(184, 96, 112, 0.1); --tag-0-text: #b86070;
-  --tag-1-bg: rgba(75, 130, 156, 0.1); --tag-1-text: #4b829c;
-  --tag-2-bg: rgba(140, 123, 163, 0.1); --tag-2-text: #8c7ba3;
-  --tag-3-bg: rgba(92, 88, 86, 0.1); --tag-3-text: #5c5856;
-  --tag-4-bg: rgba(184, 96, 112, 0.15); --tag-4-text: #a04d5d;
-  --tag-5-bg: rgba(75, 130, 156, 0.15); --tag-5-text: #3a687d;
-  --tag-6-bg: rgba(140, 123, 163, 0.15); --tag-6-text: #73648a;
-  --tag-7-bg: rgba(45, 42, 41, 0.1); --tag-7-text: #2d2a29;
 
   /* Neumorphic shadows — light mode */
   --neu-shadow: 0 4px 0 #d8d2d0, 0 6px 12px rgba(0,0,0,0.08);
@@ -942,7 +922,7 @@ input[type='number'] {
   }
 
   /* Prevent iOS auto-zoom on input focus (skip inputs that set their own large size) */
-  input[type="text"],
+  input[type="text"]:not(.note-title-input),
   input[type="number"],
   textarea {
     font-size: max(1em, 16px);

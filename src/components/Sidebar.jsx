@@ -289,7 +289,6 @@ export default function Sidebar({
         name,
         title: name,
         content: '',
-        tags: [],
         createdAt: now,
         updatedAt: now,
       };
