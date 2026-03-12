@@ -49,10 +49,10 @@ export default function LandingPage({ onStart, onCreateNew }) {
 
       <div className="relative z-20 grid w-full grid-cols-1 lg:grid-cols-2">
         {/* Left Content */}
-        <div className="flex flex-col justify-center px-8 sm:px-16 lg:px-24">
+        <div className="flex flex-col justify-center px-6 sm:px-16 lg:px-24">
           <div className={`transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] delay-100 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
             
-            <h1 className="mb-6 max-w-2xl text-6xl leading-[1.05] tracking-tight sm:text-7xl lg:text-8xl xl:text-[10rem] text-[#d17b88]" style={{ fontFamily: '"Italiana", serif' }}>
+            <h1 className="mb-6 max-w-2xl text-5xl leading-[1.05] tracking-tight sm:text-7xl lg:text-8xl xl:text-[10rem] text-[#d17b88]" style={{ fontFamily: '"Italiana", serif' }}>
               Aura.
             </h1>
             

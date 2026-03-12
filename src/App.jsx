@@ -330,6 +330,45 @@ export default function App() {
     window.addEventListener("mouseup", up)
   }, [sbWidth])
 
+  // Swipe-from-left-edge to open sidebar
+  useEffect(() => {
+    let startX = 0
+    let startY = 0
+    let tracking = false
+
+    const onTouchStart = (e) => {
+      const touch = e.touches[0]
+      if (touch.clientX < 24 && sidebarCollapsed) {
+        startX = touch.clientX
+        startY = touch.clientY
+        tracking = true
+      }
+    }
+
+    const onTouchMove = (e) => {
+      if (!tracking) return
+      const touch = e.touches[0]
+      const dx = touch.clientX - startX
+      const dy = Math.abs(touch.clientY - startY)
+      if (dx > 60 && dy < 40) {
+        setSidebarCollapsed(false)
+        tracking = false
+      }
+    }
+
+    const onTouchEnd = () => { tracking = false }
+
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchmove', onTouchMove, { passive: true })
+    window.addEventListener('touchend', onTouchEnd, { passive: true })
+
+    return () => {
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [sidebarCollapsed])
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'n') {
@@ -495,6 +534,7 @@ export default function App() {
             onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
             focusMode={focusMode}
             onToggleFocusMode={toggleFocusMode}
+            onOpenCommandPalette={openCommandPalette}
           />
         </div>
       </div>
@@ -514,7 +554,7 @@ export default function App() {
 
       {deletedNote && (
         <div
-          className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-5 py-3"
+          className="fixed bottom-20 md:bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-5 py-3"
           style={{ fontFamily: "'DM Sans', sans-serif", boxShadow: 'var(--neu-shadow)' }}
         >
           <span className="text-sm text-[var(--text-secondary)]">Note deleted</span>

@@ -8,6 +8,8 @@ import {
   IconSun,
   IconX,
   IconLayoutSidebarFilled,
+  IconCommand,
+  IconPlus,
 } from '@tabler/icons-react'
 import { countBodyWords, estimateReadTime, formatCreatedAt, getNoteDisplayTitle } from '../utils/noteMeta'
 
@@ -59,6 +61,7 @@ export default function NoteEditor({
   onToggleSidebar,
   focusMode,
   onToggleFocusMode,
+  onOpenCommandPalette,
 }) {
   const [tagInput, setTagInput] = useState('')
   const [showGoalInput, setShowGoalInput] = useState(false)
@@ -128,8 +131,8 @@ export default function NoteEditor({
 
     return (
       <div className="flex flex-1 min-w-0 flex-col max-md:rounded-none rounded-2xl bg-[var(--bg-primary)]">
-        {/* Top bar */}
-        <div className="flex items-center justify-between px-4 py-2 md:px-6">
+        {/* Top bar — hidden on mobile (actions are in bottom bar) */}
+        <div className="hidden md:flex items-center justify-between px-4 py-2 md:px-6">
           {sidebarCollapsed ? (
             <button
               type="button"
@@ -153,7 +156,7 @@ export default function NoteEditor({
         </div>
 
         {/* Welcome content */}
-        <div className="flex flex-1 flex-col items-center px-6 pt-[5vh]">
+        <div className="flex flex-1 flex-col items-center px-6 pt-[12vh] md:pt-[5vh] pb-24 md:pb-6 overflow-y-auto">
           <div className="animate-fade-in-up flex flex-col items-center">
             <h1
               className="text-6xl tracking-tight text-[var(--h1-color)] sm:text-7xl"
@@ -230,6 +233,25 @@ export default function NoteEditor({
               </div>
             </div>
           )}
+        </div>
+        {/* Mobile action bar — floating liquid glass */}
+        <div className="mobile-action-bar" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+          <div className="mobile-action-bar-inner">
+            <button type="button" onClick={onToggleSidebar}>
+              <IconLayoutSidebarFilled size={18} stroke={1.5} />
+            </button>
+            <button type="button" onClick={() => onNewNote?.()}>
+              <IconPlus size={18} stroke={1.5} />
+            </button>
+            {onOpenCommandPalette && (
+              <button type="button" onClick={onOpenCommandPalette}>
+                <IconCommand size={18} stroke={1.5} />
+              </button>
+            )}
+            <button type="button" onClick={onToggleTheme}>
+              {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -327,19 +349,19 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
+              className="neu-icon-btn hidden md:flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
               title="Open sidebar (Cmd+B)"
             >
               <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
             </button>
           ) : (
-            <div className="w-10" />
+            <div className="hidden md:block w-10" />
           )}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 max-md:ml-auto">
             <button
               type="button"
               onClick={onToggleFocusMode}
-              className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
+              className="neu-icon-btn hidden md:flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
               title="Focus mode (⌘⇧F)"
             >
               <IconArrowsMinimize size={18} stroke={1.5} />
@@ -347,7 +369,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleTheme}
-              className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
+              className="neu-icon-btn hidden md:flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
@@ -359,8 +381,8 @@ export default function NoteEditor({
       {/* Scrollable content */}
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
         <div
-          className={`mx-auto max-w-3xl px-4 pb-32 sm:px-6 md:px-10 ${
-            focusMode ? 'pt-[12vh]' : ''
+          className={`mx-auto max-w-3xl px-4 pb-44 md:pb-32 sm:px-6 md:px-10 ${
+            focusMode ? 'pt-[12vh]' : 'pt-6 md:pt-0'
           }`}
         >
           {/* Title — hidden in focus mode */}
@@ -370,7 +392,7 @@ export default function NoteEditor({
               value={note.title}
               onChange={(event) => onUpdateNote(note.id, { title: event.target.value })}
               onKeyDown={handleTitleKeyDown}
-              className="w-full bg-transparent text-3xl font-black tracking-tight text-[var(--title-color)] outline-none placeholder:text-[var(--text-muted)] sm:text-4xl md:text-5xl"
+              className="w-full bg-transparent text-5xl font-black tracking-tight text-[var(--title-color)] outline-none placeholder:text-[var(--text-muted)] md:text-5xl"
               style={{ fontFamily: "'Fraunces', serif" }}
               placeholder="Untitled"
             />
@@ -379,7 +401,7 @@ export default function NoteEditor({
           {/* Metadata — hidden in focus mode */}
           {!focusMode && (
             <div
-              className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[12px] text-[var(--text-muted)]"
+              className="mt-3 text-[12px] text-[var(--text-muted)]"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               <span className="inline-flex items-center gap-1.5">
@@ -387,41 +409,41 @@ export default function NoteEditor({
                 {createdAtLabel}
               </span>
 
-              {tags.length > 0 && <span className="text-[var(--border-default)]">·</span>}
-
-              {tags.map((tag, i) => {
-                const c = i % 8
-                return (
-                  <span
-                    key={tag}
-                    className="group/tag relative inline-flex items-center gap-1 rounded-full px-2 py-0.5 transition-all max-md:pr-5 md:hover:pr-5 border border-[var(--border-subtle)]"
-                    style={{
-                      backgroundColor: `var(--tag-${c}-bg)`,
-                      color: `var(--tag-${c}-text)`,
-                    }}
-                  >
-                    <IconHash size={12} stroke={1.5} className="opacity-60" />
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTag(tag)}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-0.5 transition-opacity hover:text-red-400 max-md:opacity-60 md:opacity-0 md:group-hover/tag:opacity-100"
-                      aria-label={`Remove ${tag}`}
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+                {tags.map((tag, i) => {
+                  const c = i % 8
+                  return (
+                    <span
+                      key={tag}
+                      className="group/tag relative inline-flex items-center gap-1 rounded-full px-2 py-0.5 transition-all max-md:pr-5 md:hover:pr-5 border border-[var(--border-subtle)]"
+                      style={{
+                        backgroundColor: `var(--tag-${c}-bg)`,
+                        color: `var(--tag-${c}-text)`,
+                      }}
                     >
-                      <IconX size={10} stroke={2} />
-                    </button>
-                  </span>
-                )
-              })}
+                      <IconHash size={12} stroke={1.5} className="opacity-60" />
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-0.5 transition-opacity hover:text-red-400 max-md:opacity-60 md:opacity-0 md:group-hover/tag:opacity-100"
+                        aria-label={`Remove ${tag}`}
+                      >
+                        <IconX size={10} stroke={2} />
+                      </button>
+                    </span>
+                  )
+                })}
 
-              <input
-                type="text"
-                value={tagInput}
-                onChange={(event) => setTagInput(event.target.value)}
-                onKeyDown={handleAddTag}
-                placeholder={tags.length === 0 ? '+ Add tag' : '+'}
-                className="w-16 bg-transparent py-0.5 text-[12px] text-[var(--text-muted)] outline-none placeholder:text-[var(--text-muted)] focus:text-[var(--text-primary)] transition-colors"
-              />
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={(event) => setTagInput(event.target.value)}
+                  onKeyDown={handleAddTag}
+                  placeholder={tags.length === 0 ? '+ Add tag' : '+'}
+                  className="w-16 bg-transparent py-0.5 text-[16px] md:text-[12px] text-[var(--text-muted)] outline-none placeholder:text-[var(--text-muted)] focus:text-[var(--text-primary)] transition-colors"
+                />
+              </div>
             </div>
           )}
 
@@ -440,7 +462,7 @@ export default function NoteEditor({
 
       {/* Stats bar — bottom right */}
       <div
-        className="absolute bottom-4 right-4 flex flex-col items-end gap-1.5"
+        className="absolute bottom-0 right-0 left-0 md:left-auto flex flex-col items-center md:items-end gap-1.5 px-4 py-3 md:py-0 md:px-0 md:bottom-4 md:right-4"
         style={{ fontFamily: "'DM Sans', sans-serif" }}
       >
         {/* Word goal progress bar */}
@@ -523,6 +545,27 @@ export default function NoteEditor({
           )}
         </div>
       </div>
+      {/* Mobile action bar — floating liquid glass */}
+      {!focusMode && (
+        <div className="mobile-action-bar" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+          <div className="mobile-action-bar-inner">
+            <button type="button" onClick={onToggleSidebar}>
+              <IconLayoutSidebarFilled size={18} stroke={1.5} />
+            </button>
+            <button type="button" onClick={() => onNewNote?.()}>
+              <IconPlus size={18} stroke={1.5} />
+            </button>
+            {onOpenCommandPalette && (
+              <button type="button" onClick={onOpenCommandPalette}>
+                <IconCommand size={18} stroke={1.5} />
+              </button>
+            )}
+            <button type="button" onClick={onToggleTheme}>
+              {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

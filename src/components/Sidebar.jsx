@@ -11,7 +11,8 @@ import {
   IconFilePlus,
   IconFolderPlus,
   IconMinus,
-  IconHome
+  IconHome,
+  IconX
 } from '@tabler/icons-react';
 
 // ─── File Tree Helpers ─────────────────────────────────────────────────────────
@@ -90,7 +91,10 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
   const [hover, setHover] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [renameVal, setRenameVal] = useState(node.name);
+  const [contextMenu, setContextMenu] = useState(null); // { x, y } or null
   const renameRef = useRef(null);
+  const longPressRef = useRef(null);
+  const nodeRef = useRef(null);
   const isFolder = node.type === "folder";
   const isOpen = expanded.has(node.id);
   const isActive = activeId === node.id;
@@ -99,14 +103,58 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
 
   const submitRename = () => { if (renameVal.trim()) onRename(node.id, renameVal.trim()); setRenaming(false); };
 
+  const handleTouchStart = (e) => {
+    const touch = e.touches[0];
+    const rect = nodeRef.current?.getBoundingClientRect();
+    longPressRef.current = setTimeout(() => {
+      if (navigator.vibrate) navigator.vibrate(10);
+      setContextMenu({
+        x: Math.min(touch.clientX, window.innerWidth - 180),
+        y: rect ? rect.bottom + 4 : touch.clientY,
+      });
+    }, 500);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressRef.current) clearTimeout(longPressRef.current);
+  };
+
+  const handleTouchMove = () => {
+    if (longPressRef.current) clearTimeout(longPressRef.current);
+  };
+
+  // Close context menu when tapping elsewhere
+  useEffect(() => {
+    if (!contextMenu) return;
+    const close = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setContextMenu(null);
+    };
+    // Use a short delay so the menu renders first
+    const timer = setTimeout(() => {
+      document.addEventListener('touchstart', close, { once: true, capture: true });
+      document.addEventListener('mousedown', close, { once: true, capture: true });
+    }, 10);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('touchstart', close, { capture: true });
+      document.removeEventListener('mousedown', close, { capture: true });
+    };
+  }, [contextMenu]);
+
   return (
     <div>
       <div
+        ref={nodeRef}
         className={`tree-node ${isFolder ? "is-folder" : "is-file"}${isActive ? " active" : ""}`}
         style={{ paddingLeft: depth * 14 + 8 }}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
-        onClick={() => { if (!renaming) { isFolder ? toggleExpand(node.id) : onSelect(node.id); } }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchMove}
+        onClick={() => { if (!renaming && !contextMenu) { isFolder ? toggleExpand(node.id) : onSelect(node.id); } }}
       >
         <span className={`tn-arrow ${isOpen ? "open" : ""}`} style={{ opacity: isFolder ? 1 : 0 }}>
           <Icon n="chevR" s={11} />
@@ -134,6 +182,40 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
           </span>
         )}
       </div>
+
+      {/* Long-press context menu */}
+      {contextMenu && (
+        <div className="ctx-menu-overlay" onTouchStart={e => { e.stopPropagation(); }}>
+          <div
+            className="ctx-menu"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+            onTouchStart={e => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
+          >
+            {isFolder ? (
+              <>
+                <button onClick={() => { setCreatingIn({ parentId: node.id, type: "file" }); toggleExpand(node.id, true); setContextMenu(null); }}>
+                  <Icon n="newFile" s={14} />
+                  <span>New File</span>
+                </button>
+                <button onClick={() => { setCreatingIn({ parentId: node.id, type: "folder" }); toggleExpand(node.id, true); setContextMenu(null); }}>
+                  <Icon n="newFolder" s={14} />
+                  <span>New Folder</span>
+                </button>
+                <div className="ctx-divider" />
+              </>
+            ) : null}
+            <button onClick={() => { setRenaming(true); setRenameVal(node.name); setContextMenu(null); }}>
+              <Icon n="edit" s={14} />
+              <span>Rename</span>
+            </button>
+            <button className="ctx-danger" onClick={() => { onDelete(node.id); setContextMenu(null); }}>
+              <Icon n="trash" s={14} />
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {isFolder && isOpen && (
         <div className="tn-children">
@@ -357,10 +439,13 @@ export default function Sidebar({
           border: none;
           cursor: pointer;
           color: var(--text-muted);
-          padding: 5px;
+          width: 28px;
+          height: 28px;
+          padding: 0;
           border-radius: 9999px;
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           line-height: 1;
           transition: all 0.15s cubic-bezier(0.25, 1, 0.5, 1);
           box-shadow: var(--neu-shadow);
@@ -416,6 +501,21 @@ export default function Sidebar({
 
         .sb-search input::placeholder {
           color: var(--text-muted);
+        }
+
+        @media (max-width: 767px) {
+          .sb-search input {
+            font-size: 16px;
+          }
+
+          .ren-input {
+            font-size: 16px;
+          }
+
+          .tree-node {
+            min-height: 44px;
+            padding: 8px 12px;
+          }
         }
 
         .sb-tree {
@@ -592,6 +692,61 @@ export default function Sidebar({
         .resize-handle:hover, .resize-handle:active {
           background: var(--accent);
         }
+
+        /* Context menu */
+        .ctx-menu {
+          position: fixed;
+          z-index: 100;
+          min-width: 160px;
+          background: var(--bg-elevated);
+          border: 1px solid var(--border-subtle);
+          border-radius: 12px;
+          padding: 4px;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.4), var(--neu-shadow);
+          animation: ctxFadeIn 0.15s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .ctx-menu button {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          width: 100%;
+          padding: 10px 12px;
+          border: none;
+          border-radius: 8px;
+          background: transparent;
+          color: var(--text-secondary);
+          font-size: 13px;
+          font-family: 'DM Sans', sans-serif;
+          cursor: pointer;
+          transition: background 0.15s, color 0.15s;
+          min-height: auto;
+          min-width: auto;
+          box-shadow: none;
+        }
+
+        .ctx-menu button:hover, .ctx-menu button:active {
+          background: var(--bg-hover);
+          color: var(--text-primary);
+          transform: none;
+          box-shadow: none;
+        }
+
+        .ctx-menu button.ctx-danger:hover, .ctx-menu button.ctx-danger:active {
+          background: color-mix(in srgb, var(--danger) 12%, transparent);
+          color: var(--danger);
+        }
+
+        .ctx-divider {
+          height: 1px;
+          background: var(--border-subtle);
+          margin: 4px 8px;
+        }
+
+        @keyframes ctxFadeIn {
+          from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
       `}</style>
 
       {!collapsed && (
@@ -633,6 +788,16 @@ export default function Sidebar({
                 onChange={(event) => onSearchChange(event.target.value)}
                 placeholder="Search notes..."
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => onSearchChange('')}
+                  className="shrink-0 flex items-center justify-center w-5 h-5 rounded-full text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
+                  aria-label="Clear search"
+                >
+                  <IconX size={12} stroke={2} />
+                </button>
+              )}
             </label>
           </div>
 

@@ -122,6 +122,14 @@ html {
   overflow-x: hidden;
 }
 
+@supports (padding: env(safe-area-inset-bottom)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
 body {
   margin: 0;
   overflow-x: hidden;
@@ -931,5 +939,150 @@ input[type='number'] {
 
   .notion-block-rendered:active {
     background: color-mix(in srgb, var(--bg-surface) 30%, transparent);
+  }
+
+  /* Prevent iOS auto-zoom on input focus (skip inputs that set their own large size) */
+  input[type="text"],
+  input[type="number"],
+  textarea {
+    font-size: max(1em, 16px);
+  }
+
+  .notion-block-edit textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ──────────────────────────────────────────────
+   Mobile Touch & Interaction
+   ────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  /* Increase tap targets */
+  button {
+    min-height: 36px;
+    min-width: 36px;
+  }
+
+  /* Prevent text selection on interactive elements */
+  button,
+  [role="button"],
+  .tree-node,
+  .notion-slash-item {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Slash menu mobile positioning */
+  .notion-slash-menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    max-width: 100%;
+    min-width: 100%;
+    border-radius: 1rem 1rem 0 0;
+    padding: 0.5rem;
+    max-height: 40vh;
+    overflow-y: auto;
+    z-index: 50;
+    animation: slideUpMenu 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .notion-slash-item {
+    padding: 0.6rem 0.8rem;
+    min-height: 44px;
+  }
+}
+
+@keyframes slideUpMenu {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* ──────────────────────────────────────────────
+   Mobile Floating Action Bar — Liquid Glass
+   ────────────────────────────────────────────── */
+
+.mobile-action-bar {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-action-bar {
+    display: flex;
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+    justify-content: center;
+  }
+
+  .mobile-action-bar-inner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg-elevated) 55%, transparent);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    border: 1px solid color-mix(in srgb, var(--border-subtle) 50%, transparent);
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.25),
+      0 0 0 0.5px color-mix(in srgb, var(--text-primary) 6%, transparent),
+      inset 0 0.5px 0 0 color-mix(in srgb, var(--text-primary) 8%, transparent);
+    animation: actionBarIn 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .mobile-action-bar-inner button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    min-width: 40px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-action-bar-inner button:active {
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+    transform: scale(0.9);
+  }
+}
+
+:root[data-theme="light"] .mobile-action-bar-inner {
+  background: color-mix(in srgb, var(--bg-elevated) 65%, transparent);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    0 0 0 0.5px color-mix(in srgb, var(--text-primary) 8%, transparent),
+    inset 0 0.5px 0 0 rgba(255, 255, 255, 0.5);
+}
+
+@keyframes actionBarIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
   }
 }

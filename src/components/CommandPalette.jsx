@@ -87,14 +87,14 @@ export default function CommandPalette({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-[color-mix(in_srgb,var(--bg-deep)_60%,transparent)] px-4 pt-[12vh] backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end md:items-start justify-center bg-[color-mix(in_srgb,var(--bg-deep)_60%,transparent)] px-0 md:px-4 pt-0 md:pt-[12vh] backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose()
         }
       }}
     >
-      <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ boxShadow: 'var(--neu-shadow), 0 24px 80px color-mix(in srgb, var(--bg-deep) 50%, transparent)' }}>
+      <div className="w-full max-w-lg overflow-hidden rounded-t-2xl md:rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] max-md:max-h-[70vh] max-md:animate-[slideUpSheet_0.25s_ease-out]" style={{ boxShadow: 'var(--neu-shadow), 0 24px 80px color-mix(in srgb, var(--bg-deep) 50%, transparent)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         {/* Search input */}
         <div className="flex items-center gap-2.5 border-b border-[var(--border-subtle)] px-4 py-3">
           <IconSearch size={15} stroke={1.5} className="shrink-0 text-[var(--text-muted)]" />
