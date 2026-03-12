@@ -349,7 +349,7 @@ export default function Sidebar({
 
         .sb-actions {
           display: flex;
-          gap: 2px;
+          gap: 6px;
         }
 
         .sb-actions button, .tn-actions button {
@@ -608,19 +608,14 @@ export default function Sidebar({
         <div className="flex flex-col h-full w-full min-w-[200px]">
           {/* Header */}
           <div className="sb-header-wrapper">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={onToggleCollapse}
-                className="neu-icon-btn flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
-                title="Toggle sidebar (Cmd+B)"
-              >
-                <IconLayoutSidebarFilled size={18} stroke={1.5} />
-              </button>
-              <span className="text-[28px] text-[var(--h1-color)] leading-none select-none mt-1 tracking-tight cursor-pointer hover:opacity-80 transition-opacity" onClick={() => { onSelectNote(null); if (window.innerWidth < 768) onToggleCollapse(); }} style={{ fontFamily: '"Italiana", serif', textShadow: '0 2px 10px var(--accent-muted)' }} title="Go home">
-                Aura
-              </span>
-            </div>
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              className="neu-icon-btn flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
+              title="Toggle sidebar (Cmd+B)"
+            >
+              <IconLayoutSidebarFilled size={18} stroke={1.5} />
+            </button>
 
             <div className="sb-actions">
               <button title="Home" onClick={() => { onSelectNote(null); if (window.innerWidth < 768) onToggleCollapse(); }}><IconHome size={16} stroke={1.5} /></button>
