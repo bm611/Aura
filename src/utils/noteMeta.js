@@ -5,11 +5,17 @@ const createdAtFormatter = new Intl.DateTimeFormat(undefined, {
 
 export function normalizeNote(note) {
   const fallbackTimestamp = note.updatedAt || note.createdAt || new Date().toISOString()
+  const contentDoc =
+    note.contentDoc && typeof note.contentDoc === 'object' && !Array.isArray(note.contentDoc)
+      ? note.contentDoc
+      : undefined
 
   return {
     ...note,
     title: typeof note.title === 'string' ? note.title : '',
     content: typeof note.content === 'string' ? note.content : '',
+    contentDoc,
+    editorVersion: note.editorVersion === 2 ? 2 : undefined,
     createdAt: note.createdAt || fallbackTimestamp,
     updatedAt: note.updatedAt || note.createdAt || fallbackTimestamp,
     wordGoal: typeof note.wordGoal === 'number' && note.wordGoal > 0 ? note.wordGoal : null,

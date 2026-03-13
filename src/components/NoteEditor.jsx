@@ -403,8 +403,10 @@ export default function NoteEditor({
           <div className={focusMode ? 'mt-0' : 'mt-8'}>
             <Suspense fallback={<EditorFallback />}>
               <LiveMarkdownEditor
+                key={note.id}
                 value={note.content}
-                onChange={(content) => onUpdateNote(note.id, { content })}
+                contentDoc={note.contentDoc}
+                onChange={(updates) => onUpdateNote(note.id, updates)}
                 onRegisterEditorApi={onRegisterEditorApi}
               />
             </Suspense>
