@@ -148,7 +148,7 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
       <div
         ref={nodeRef}
         className={`tree-node ${isFolder ? "is-folder" : "is-file"}${isActive ? " active" : ""}`}
-        style={{ paddingLeft: depth * 14 + 8 }}
+        style={{ paddingLeft: depth * 14 + 10 }}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
         onTouchStart={handleTouchStart}
@@ -157,10 +157,10 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
         onClick={() => { if (!renaming && !contextMenu) { isFolder ? toggleExpand(node.id) : onSelect(node.id); } }}
       >
         <span className={`tn-arrow ${isOpen ? "open" : ""}`} style={{ opacity: isFolder ? 1 : 0 }}>
-          <Icon n="chevR" s={11} />
+          <Icon n="chevR" s={12} />
         </span>
-        <span className="tn-icon" style={{ color: isFolder ? "var(--h2-color)" : "var(--accent)" }}>
-          <Icon n={isFolder ? "folder" : "file"} s={14} />
+        <span className="tn-icon">
+          <Icon n={isFolder ? (isOpen ? "folder" : "folder") : "file"} s={14} />
         </span>
         {renaming ? (
           <input ref={renameRef} className="ren-input" value={renameVal}
@@ -219,6 +219,7 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
 
       {isFolder && isOpen && (
         <div className="tn-children">
+          <div className="tn-children-line" style={{ left: depth * 14 + 16 }} />
           {node.children?.map(child => (
             <TreeNode key={child.id} node={child} depth={depth + 1} activeId={activeId}
               onSelect={onSelect} onDelete={onDelete} onRename={onRename}
@@ -241,11 +242,11 @@ function InlineCreator({ depth, type, onConfirm, onCancel }) {
   const ref = useRef(null);
   useEffect(() => { ref.current?.focus(); }, []);
   return (
-    <div className="inline-creator" style={{ paddingLeft: depth * 14 + 8 }}>
-      <span className="tn-icon" style={{ color: type === "folder" ? "var(--h2-color)" : "var(--accent)" }}>
+    <div className="inline-creator" style={{ paddingLeft: depth * 14 + 10 }}>
+      <span className="tn-icon">
         <Icon n={type === "folder" ? "folder" : "file"} s={13} />
       </span>
-      <input ref={ref} className="ren-input" value={val} placeholder={type === "folder" ? "folder name" : "file name"}
+      <input ref={ref} className="ren-input focus:border-[var(--accent)]" value={val} placeholder={type === "folder" ? "folder name" : "file name"}
         onChange={e => setVal(e.target.value)}
         onKeyDown={e => { if (e.key === "Enter" && val.trim()) onConfirm(val.trim()); if (e.key === "Escape") onCancel(); }}
         onBlur={() => val.trim() ? onConfirm(val.trim()) : onCancel()} />
@@ -542,9 +543,9 @@ export default function Sidebar({
         .tree-node {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
           padding: 6px 12px;
-          margin-bottom: 3px;
+          margin-bottom: 2px;
           border-radius: 8px;
           cursor: pointer;
           font-size: 13.5px;
@@ -553,11 +554,12 @@ export default function Sidebar({
           overflow: hidden;
           min-height: 36px;
           position: relative;
-          transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+          transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+          border: 1px solid transparent;
         }
 
         .tree-node.is-folder {
-          font-weight: 600;
+          font-weight: 500;
           color: var(--text-primary);
           font-size: 14px;
         }
@@ -568,18 +570,19 @@ export default function Sidebar({
         }
 
         .tree-node.active {
-          background: color-mix(in srgb, var(--accent) 8%, transparent);
+          background: color-mix(in srgb, var(--bg-hover) 60%, transparent);
           color: var(--text-primary);
-          box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 15%, transparent);
+          border-color: var(--border-subtle);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
           font-weight: 600;
         }
 
         .tree-node.active::before {
           content: "";
           position: absolute;
-          left: 0;
-          top: 20%;
-          bottom: 20%;
+          left: 0px;
+          top: 25%;
+          bottom: 25%;
           width: 3px;
           border-radius: 0 4px 4px 0;
           background: var(--accent);
@@ -591,8 +594,13 @@ export default function Sidebar({
           color: var(--text-muted);
           display: flex;
           align-items: center;
+          justify-content: center;
           flex-shrink: 0;
-          transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+          transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), color 0.2s;
+        }
+        
+        .tree-node:hover .tn-arrow {
+          color: var(--text-secondary);
         }
 
         .tn-arrow.open {
@@ -602,13 +610,31 @@ export default function Sidebar({
         .tn-icon {
           display: flex;
           align-items: center;
+          justify-content: center;
+          width: 22px;
+          height: 22px;
+          border-radius: 6px;
           flex-shrink: 0;
-          opacity: 0.85;
-          transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+          transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .tree-node.is-folder .tn-icon {
+          color: var(--h2-color);
+        }
+        
+        .tree-node.is-file .tn-icon {
+          color: var(--accent);
         }
 
         .tree-node:hover .tn-icon {
-          transform: scale(1.08);
+          transform: scale(1.05);
+          background: var(--bg-elevated);
+          box-shadow: var(--neu-shadow-inset);
+        }
+        
+        .tree-node.active .tn-icon {
+          background: var(--bg-elevated);
+          box-shadow: var(--neu-shadow-inset);
         }
 
         .tn-name {
@@ -668,8 +694,24 @@ export default function Sidebar({
         }
 
         .tn-children {
+          position: relative;
           animation: slideDown 0.2s cubic-bezier(0.25, 1, 0.5, 1);
           transform-origin: top;
+        }
+        
+        .tn-children-line {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 1px;
+          background: color-mix(in srgb, var(--border-subtle) 60%, transparent);
+          z-index: 0;
+          transition: background 0.3s;
+        }
+        
+        .tn-children:hover > .tn-children-line {
+          background: var(--text-muted);
+          opacity: 0.4;
         }
 
         @keyframes slideDown {
