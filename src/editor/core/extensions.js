@@ -1,11 +1,11 @@
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
-import Placeholder from '@tiptap/extension-placeholder'
 import { Table } from '@tiptap/extension-table'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
-import TaskItem from '@tiptap/extension-task-item'
+import { ReactNodeViewRenderer } from '@tiptap/react'
+import { AuraTaskItem } from '../extensions/TaskItemNode'
 import TaskList from '@tiptap/extension-task-list'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { textblockTypeInputRule, wrappingInputRule } from '@tiptap/core'
@@ -13,6 +13,7 @@ import { createLowlight, all } from 'lowlight'
 import { CalloutNode } from '../extensions/CalloutNode'
 import { SlashCommand } from '../extensions/SlashCommand'
 import { MarkdownPaste } from '../extensions/MarkdownPaste'
+import TableView from '../extensions/TableView'
 
 const lowlight = createLowlight(all)
 
@@ -26,6 +27,45 @@ const AuraTaskList = TaskList.extend({
       }),
     ]
   },
+})
+
+const AuraTable = Table.extend({
+  addNodeView() {
+    return ReactNodeViewRenderer(TableView)
+  },
+  addKeyboardShortcuts() {
+    const parentShortcuts = this.parent?.() || {}
+    
+    const createDeleteHandler = (shortcutName) => (props) => {
+      // If parent handles it (like deleteTableWhenAllCellsSelected), let it win
+      if (parentShortcuts[shortcutName] && parentShortcuts[shortcutName](props)) {
+        return true
+      }
+
+      const { editor } = props
+      const { selection } = editor.state
+      
+      if (selection && typeof selection.isRowSelection === 'function' && selection.isRowSelection()) {
+        if (editor.chain().focus().deleteRow().run()) {
+          return true
+        }
+      }
+      if (selection && typeof selection.isColSelection === 'function' && selection.isColSelection()) {
+        if (editor.chain().focus().deleteColumn().run()) {
+          return true
+        }
+      }
+      return false
+    }
+
+    return {
+      ...parentShortcuts,
+      Backspace: createDeleteHandler('Backspace'),
+      Delete: createDeleteHandler('Delete'),
+      'Mod-Backspace': createDeleteHandler('Mod-Backspace'),
+      'Mod-Delete': createDeleteHandler('Mod-Delete'),
+    }
+  }
 })
 
 const AuraCodeBlockLowlight = CodeBlockLowlight.extend({
@@ -51,35 +91,17 @@ export function createAuraEditorExtensions() {
       link: false,
       codeBlock: false,
     }),
-    Placeholder.configure({
-      includeChildren: true,
-      placeholder: ({ editor, node, pos }) => {
-        if (node.type.name === 'taskItem') {
-          return 'To-do'
-        }
 
-        if (node.type.name === 'paragraph') {
-          const $pos = editor.state.doc.resolve(pos)
-          for (let d = $pos.depth; d > 0; d--) {
-            if ($pos.node(d).type.name === 'taskItem') {
-              return 'To-do'
-            }
-          }
-        }
-
-        return "Type '/' for commands, or just start writing..."
-      },
-    }),
     Link.configure({
       autolink: true,
       defaultProtocol: 'https',
       openOnClick: false,
     }),
     AuraTaskList,
-    TaskItem.configure({
+    AuraTaskItem.configure({
       nested: true,
     }),
-    Table.configure({
+    AuraTable.configure({
       resizable: true,
     }),
     TableRow,

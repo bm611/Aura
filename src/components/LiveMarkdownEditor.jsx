@@ -3,7 +3,6 @@ import { EditorContent, useEditor } from '@tiptap/react'
 import { createAuraEditorExtensions } from '../editor/core/extensions'
 import { runAuraEditorCommand } from '../editor/core/editorCommands'
 import { docToMarkdown, markdownToDoc } from '../editor/markdown/markdownConversion'
-import TableBubbleMenu from './TableBubbleMenu'
 
 function sanitizeDoc(doc, extensions) {
   if (!doc || doc.type !== 'doc') {
@@ -116,7 +115,6 @@ export default function LiveMarkdownEditor({
 
   return (
     <div className="aura-editor">
-      <TableBubbleMenu editor={editor} />
       <EditorContent editor={editor} />
     </div>
   )
