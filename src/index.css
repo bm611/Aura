@@ -410,6 +410,7 @@ body {
 .aura-editor .ProseMirror ul[data-type="taskList"] {
   list-style: none;
   padding-left: 0;
+  margin: 0.35rem 0;
 }
 
 .aura-editor .ProseMirror li[data-type="taskItem"] {

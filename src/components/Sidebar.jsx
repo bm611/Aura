@@ -473,20 +473,21 @@ export default function Sidebar({
 
         .sb-search {
           display: flex;
-          height: 36px;
+          height: 38px;
           align-items: center;
           gap: 10px;
           border-radius: 9999px;
-          background: var(--bg-surface);
-          padding: 0 14px;
+          background: color-mix(in srgb, var(--bg-surface) 60%, transparent);
+          padding: 0 16px;
           border: 1px solid var(--border-subtle);
-          transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-          box-shadow: var(--neu-shadow-inset);
+          transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+          box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .sb-search:focus-within {
+          background: var(--bg-surface);
           border-color: var(--accent);
-          box-shadow: var(--neu-shadow-inset), 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+          box-shadow: 0 0 0 3px var(--accent-muted), inset 0 1px 2px rgba(0,0,0,0.1);
         }
 
         .sb-search input {
@@ -543,16 +544,16 @@ export default function Sidebar({
           align-items: center;
           gap: 8px;
           padding: 6px 12px;
-          margin-bottom: 2px;
+          margin-bottom: 3px;
           border-radius: 8px;
           cursor: pointer;
           font-size: 13.5px;
           color: var(--text-secondary);
           white-space: nowrap;
           overflow: hidden;
-          min-height: 34px;
+          min-height: 36px;
           position: relative;
-          transition: background-color 0.2s ease, color 0.2s ease;
+          transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         .tree-node.is-folder {
@@ -562,7 +563,7 @@ export default function Sidebar({
         }
 
         .tree-node:hover {
-          background: var(--bg-hover);
+          background: color-mix(in srgb, var(--bg-hover) 80%, transparent);
           color: var(--text-primary);
         }
 

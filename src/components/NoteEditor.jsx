@@ -150,14 +150,18 @@ export default function NoteEditor({
             </p>
           </div>
 
-          <div className="animate-fade-in-up-delay-2 mt-8 mb-2">
+          <div className="animate-fade-in-up-delay-2 mt-8 mb-2 flex flex-col items-center gap-3">
             <button
               onClick={() => onNewNote?.()}
-              className="neu-btn-primary inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-8 py-4 text-[15px] font-semibold text-white transition-all duration-150 hover:translate-y-[2px] active:translate-y-[6px]"
+              className="neu-btn-primary group relative inline-flex items-center gap-2.5 rounded-full bg-[var(--accent)] px-8 py-4 text-[15px] font-semibold text-white transition-all duration-300 hover:translate-y-[2px] hover:shadow-[0_0_20px_rgba(209,123,136,0.3)] active:translate-y-[6px]"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
-              Create New Note
+              <IconPlus size={18} stroke={2} className="transition-transform duration-300 group-hover:rotate-90" />
+              <span>Create New Note</span>
             </button>
+            <span className="text-[11px] font-medium tracking-wider text-[var(--text-muted)] opacity-60">
+              PRESS <kbd className="font-sans px-1.5 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[9px] mx-1">⌘N</kbd> ANYTIME
+            </span>
           </div>
 
           {recentNotes.length > 0 && (
@@ -183,10 +187,10 @@ export default function NoteEditor({
                       key={n.id}
                       type="button"
                       onClick={() => onSelectNote(n.id)}
-                      className={`neu-card flex flex-col gap-2 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5 text-left transition-all duration-200 hover:border-[var(--border-default)] hover:translate-y-[1px] active:translate-y-[2px] ${index >= 2 ? 'hidden sm:flex' : ''}`}
+                      className={`neu-card group flex flex-col gap-2 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5 text-left transition-all duration-300 hover:border-[var(--accent)] hover:shadow-lg hover:shadow-[var(--accent-muted)] hover:-translate-y-1 active:translate-y-1 ${index >= 2 ? 'hidden sm:flex' : ''}`}
                     >
                       <span
-                        className="truncate text-[14px] font-semibold text-[var(--text-primary)]"
+                        className="truncate text-[14px] font-semibold text-[var(--text-primary)] transition-colors duration-200 group-hover:text-[var(--accent)]"
                         style={{ fontFamily: "'DM Sans', sans-serif" }}
                       >
                         {title}
@@ -416,7 +420,7 @@ export default function NoteEditor({
 
       {/* Stats bar — bottom right */}
       <div
-        className="absolute bottom-0 right-0 left-0 md:left-auto flex flex-col items-center md:items-end gap-1.5 px-4 py-3 md:py-0 md:px-0 md:bottom-4 md:right-4"
+        className="absolute bottom-0 right-0 left-0 md:left-auto flex flex-col items-center md:items-end gap-1.5 px-4 py-3 md:py-3 md:px-5 md:bottom-5 md:right-5 bg-gradient-to-t from-[var(--bg-primary)] to-transparent md:bg-none md:bg-[var(--bg-elevated)]/60 md:backdrop-blur-md md:rounded-2xl md:border border-[var(--border-subtle)] md:shadow-lg transition-all duration-500 z-20"
         style={{ fontFamily: "'DM Sans', sans-serif" }}
       >
         {/* Word goal progress bar */}

@@ -14,7 +14,7 @@ function TaskItemView({ node, updateAttributes }) {
       style={{
         display: 'flex',
         alignItems: 'center',
-        margin: '0.28rem 0',
+        margin: '0.05rem 0',
         listStyle: 'none',
       }}
     >

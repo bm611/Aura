@@ -32,6 +32,7 @@
     "@tiptap/react": "^3.20.1",
     "@tiptap/starter-kit": "^3.20.1",
     "@tiptap/suggestion": "^3.20.1",
+    "framer-motion": "^12.36.0",
     "highlight.js": "^11.11.1",
     "lowlight": "^3.3.0",
     "markdown-it": "^14.1.1",
