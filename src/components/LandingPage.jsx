@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { IconArrowRight, IconPlus } from '@tabler/icons-react';
+import { IconArrowRight, IconCloud } from '@tabler/icons-react';
 
-export default function LandingPage({ onStart, onCreateNew }) {
+export default function LandingPage({ onStart, onCreateNew, onSignIn }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -80,9 +80,22 @@ export default function LandingPage({ onStart, onCreateNew }) {
                     <IconArrowRight size={16} stroke={2} />
                   </div>
                 </button>
+
+                <button
+                  onClick={onSignIn}
+                  className="group inline-flex items-center gap-2.5 rounded-full px-6 py-4 text-[14px] font-medium text-[#a39e97] transition-all duration-300 hover:text-[#d17b88] hover:translate-y-[2px] active:translate-y-[4px]"
+                  style={{
+                    fontFamily: '"DM Sans", sans-serif',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgba(255,255,255,0.04)',
+                  }}
+                >
+                  <IconCloud size={16} stroke={1.5} className="transition-colors duration-300 group-hover:text-[#d17b88]" />
+                  <span>Sign in to sync</span>
+                </button>
               </div>
               <span className="text-[13px] text-[#a39e97] font-medium tracking-wide ml-2 opacity-80" style={{ fontFamily: '"DM Sans", sans-serif' }}>
-                 ✦ No sign-up required. Saved locally.
+                 ✦ Local-first. Sign in to sync across devices.
               </span>
             </div>
           </div>

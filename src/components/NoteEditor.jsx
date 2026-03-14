@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState, useRef, useCallback } from 'react'
+import { useAuth } from '../contexts/AuthContext'
 import {
   IconArrowsMinimize,
   IconArrowsMaximize,
@@ -8,11 +9,30 @@ import {
   IconLayoutSidebarFilled,
   IconCommand,
   IconPlus,
+  IconDownload,
+  IconLogout,
+  IconUser,
 } from '@tabler/icons-react'
 import { countBodyWords, estimateReadTime, formatCreatedAt, getNoteDisplayTitle } from '../utils/noteMeta'
+import { docToMarkdown } from '../editor/markdown/markdownConversion'
 import TagInput from './TagInput'
 
 const LiveMarkdownEditor = lazy(() => import('./LiveMarkdownEditor'))
+
+function exportNoteAsMarkdown(note) {
+  const markdown = note.contentDoc
+    ? docToMarkdown(note.contentDoc)
+    : (note.content || '')
+  const title = note.title?.trim() || 'untitled'
+  const fileName = title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.md'
+  const blob = new Blob([markdown], { type: 'text/markdown' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = fileName
+  a.click()
+  URL.revokeObjectURL(url)
+}
 
 function EditorFallback() {
   return (
@@ -61,7 +81,9 @@ export default function NoteEditor({
   focusMode,
   onToggleFocusMode,
   onOpenCommandPalette,
+  onOpenAuthModal,
 }) {
+  const { user, signOut } = useAuth()
   const [showGoalInput, setShowGoalInput] = useState(false)
   const [goalInputVal, setGoalInputVal] = useState('')
 
@@ -339,6 +361,16 @@ export default function NoteEditor({
             <div className="hidden md:block w-10" />
           )}
           <div className="flex items-center gap-1 max-md:ml-auto">
+            {note && (
+              <button
+                type="button"
+                onClick={() => exportNoteAsMarkdown(note)}
+                className="neu-icon-btn hidden md:flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
+                title="Export as Markdown"
+              >
+                <IconDownload size={18} stroke={1.5} />
+              </button>
+            )}
             <button
               type="button"
               onClick={onToggleFocusMode}
@@ -355,6 +387,26 @@ export default function NoteEditor({
             >
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
             </button>
+            {/* Auth: show sign-in or user avatar+signout */}
+            {user ? (
+              <button
+                type="button"
+                onClick={signOut}
+                className="neu-icon-btn hidden md:flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-red-400"
+                title={`Signed in as ${user.email} — click to sign out`}
+              >
+                <IconLogout size={18} stroke={1.5} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenAuthModal}
+                className="neu-icon-btn hidden md:flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--accent)]"
+                title="Sign in to sync"
+              >
+                <IconUser size={18} stroke={1.5} />
+              </button>
+            )}
           </div>
         </div>
       )}

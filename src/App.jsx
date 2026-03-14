@@ -13,9 +13,13 @@ import Sidebar, { flattenTree, insertNode, deleteNode, updateFileNode, findNode 
 import NoteEditor from './components/NoteEditor'
 import CommandPalette from './components/CommandPalette'
 import LandingPage from './components/LandingPage'
+import AuthModal from './components/AuthModal'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { getEditorCommands } from './utils/editorCommands'
 import { searchNotes } from './utils/knowledgeBase'
 import { getNoteDisplayTitle, normalizeNote } from './utils/noteMeta'
+import { fetchNotes, upsertNote, deleteNote as dbDeleteNote } from './lib/notesDb'
+import { docToMarkdown } from './editor/markdown/markdownConversion'
 
 const STORAGE_KEY = 'canvas-notes'
 const TREE_STORAGE_KEY = 'canvas-tree'
@@ -139,6 +143,15 @@ function matchesQuery(query, values) {
 }
 
 export default function App() {
+  return (
+    <AuthProvider>
+      <AppInner />
+    </AuthProvider>
+  )
+}
+
+function AppInner() {
+  const { user } = useAuth()
   const [hasStarted, setHasStarted] = useState(false)
   const [tree, setTree] = useState(() => {
     const savedTree = loadTree()
@@ -182,11 +195,35 @@ export default function App() {
   const [editorReady, setEditorReady] = useState(false)
   const [deletedNote, setDeletedNote] = useState(null)
   const [focusMode, setFocusMode] = useState(false)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
   const deleteTimerRef = useRef(null)
+  const cloudSaveTimers = useRef({})
 
   const [sbWidth, setSbWidth] = useState(240)
-
   const editorApiRef = useRef(null)
+
+  // ── Cloud sync: load notes when user signs in, revert on sign-out ────────
+  useEffect(() => {
+    if (!user) {
+      // Signed out — revert to localStorage tree
+      const savedTree = loadTree()
+      if (savedTree && savedTree.length > 0) {
+        setTree(savedTree)
+      }
+      return
+    }
+
+    // Signed in — load notes from Supabase
+    fetchNotes(user.id)
+      .then((cloudNotes) => {
+        if (cloudNotes.length > 0) {
+          setTree(cloudNotes)
+          setActiveNoteId(null)
+        }
+      })
+      .catch(console.error)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id])
 
   useEffect(() => {
     saveTree(tree)
@@ -231,6 +268,11 @@ export default function App() {
 
       setTree((previousTree) => insertNode(previousTree, null, note))
 
+      // Immediately persist to cloud if signed in
+      if (user) {
+        upsertNote(note, user.id).catch(console.error)
+      }
+
       if (options.activate !== false) {
         setActiveNoteId(note.id)
       }
@@ -241,7 +283,7 @@ export default function App() {
 
       return note
     },
-    [sidebarCollapsed]
+    [sidebarCollapsed, user]
   )
 
   const handleNewNote = useCallback(() => {
@@ -253,14 +295,20 @@ export default function App() {
       const nodeToDelete = findNode(tree, id)
       if (!nodeToDelete) return
 
-      // Clear any pending delete
       if (deleteTimerRef.current) {
         clearTimeout(deleteTimerRef.current)
       }
 
-      // Remove from list immediately
       setTree((previousTree) => deleteNode(previousTree, id))
-      
+
+      // Cloud delete immediately when signed in
+      if (user) {
+        const filesToDelete = nodeToDelete.type === 'folder'
+          ? flattenTree([nodeToDelete])
+          : [nodeToDelete]
+        filesToDelete.forEach((f) => dbDeleteNote(f.id).catch(console.error))
+      }
+
       if (activeNoteId === id) {
         setActiveNoteId(null)
       } else if (nodeToDelete.type === 'folder') {
@@ -270,7 +318,6 @@ export default function App() {
         }
       }
 
-      // Store for undo
       setDeletedNote(nodeToDelete)
 
       // Auto-dismiss after 5 seconds
@@ -300,7 +347,19 @@ export default function App() {
       if (!options.skipTimestamp) updated.updatedAt = new Date().toISOString()
       return updateFileNode(previousTree, id, updated)
     })
-  }, [])
+
+    // Debounced cloud save (1.5s after last keystroke)
+    if (user) {
+      clearTimeout(cloudSaveTimers.current[id])
+      cloudSaveTimers.current[id] = setTimeout(() => {
+        setTree((currentTree) => {
+          const note = flattenTree(currentTree).find(n => n.id === id)
+          if (note) upsertNote({ ...note, ...updates }, user.id).catch(console.error)
+          return currentTree
+        })
+      }, 1500)
+    }
+  }, [user])
 
   const toggleTheme = useCallback(() => {
     setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))
@@ -483,6 +542,30 @@ export default function App() {
 
   const paletteItems = [...actionItems, ...fontItems, ...noteItems, ...editorItems]
 
+  const exportItems = activeNote ? [
+    {
+      id: 'action-export-note',
+      section: 'Actions',
+      title: 'Export note as Markdown',
+      subtitle: 'Download the current note as a .md file',
+      keywords: ['export', 'download', 'markdown', 'md'],
+      run: () => {
+        const markdown = activeNote.contentDoc
+          ? docToMarkdown(activeNote.contentDoc)
+          : (activeNote.content || '')
+        const title = activeNote.title?.trim() || 'untitled'
+        const fileName = title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.md'
+        const blob = new Blob([markdown], { type: 'text/markdown' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url; a.download = fileName; a.click()
+        URL.revokeObjectURL(url)
+      },
+    }
+  ] : []
+
+  const allPaletteItems = [...actionItems, ...exportItems, ...fontItems, ...noteItems, ...editorItems]
+
   const handleStart = useCallback(() => {
     setHasStarted(true)
   }, [])
@@ -493,7 +576,16 @@ export default function App() {
   }, [handleNewNote])
 
   if (!hasStarted) {
-    return <LandingPage onStart={handleStart} onCreateNew={handleStartWithNewNote} />
+    return (
+      <>
+        <LandingPage
+          onStart={handleStart}
+          onCreateNew={handleStartWithNewNote}
+          onSignIn={() => setAuthModalOpen(true)}
+        />
+        <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+      </>
+    )
   }
 
   return (
@@ -532,6 +624,7 @@ export default function App() {
             focusMode={focusMode}
             onToggleFocusMode={toggleFocusMode}
             onOpenCommandPalette={openCommandPalette}
+            onOpenAuthModal={() => setAuthModalOpen(true)}
           />
         </div>
       </div>
@@ -540,7 +633,7 @@ export default function App() {
         key={commandPaletteOpen ? 'palette-open' : 'palette-closed'}
         open={commandPaletteOpen}
         query={commandPaletteQuery}
-        items={paletteItems}
+        items={allPaletteItems}
         onClose={closeCommandPalette}
         onQueryChange={setCommandPaletteQuery}
         onSelectItem={(item) => {
@@ -569,6 +662,8 @@ export default function App() {
           </button>
         </div>
       )}
+
+      <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </>
   )
 }
