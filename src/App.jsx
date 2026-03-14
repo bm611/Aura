@@ -203,6 +203,7 @@ function AppInner() {
   const [deletedNote, setDeletedNote] = useState(null)
   const [focusMode, setFocusMode] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [syncing, setSyncing] = useState(false)
   const deleteTimerRef = useRef(null)
   const cloudSaveTimers = useRef({})
 
@@ -361,13 +362,23 @@ function AppInner() {
 
     // Debounced cloud save (1.5s after last keystroke)
     if (user) {
+      setSyncing(true)
       clearTimeout(cloudSaveTimers.current[id])
       cloudSaveTimers.current[id] = setTimeout(() => {
         setTree((currentTree) => {
           const note = flattenTree(currentTree).find(n => n.id === id)
-          if (note) upsertNote({ ...note, ...updates }, user.id).catch(console.error)
+          if (note) {
+            upsertNote({ ...note, ...updates }, user.id)
+              .catch(console.error)
+              .finally(() => {
+                // Only clear syncing if no other timers are pending
+                const pending = Object.values(cloudSaveTimers.current).some(Boolean)
+                if (!pending) setSyncing(false)
+              })
+          }
           return currentTree
         })
+        cloudSaveTimers.current[id] = null
       }, 1500)
     }
   }, [user])
@@ -609,6 +620,7 @@ function AppInner() {
           onSelectNote={setActiveNoteId}
           onNewNote={createNote}
           onDeleteNote={handleDeleteNote}
+          syncing={syncing}
           collapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed((current) => !current)}
           searchQuery={sidebarSearch}

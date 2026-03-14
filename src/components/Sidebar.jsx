@@ -12,8 +12,13 @@ import {
   IconFolderPlus,
   IconMinus,
   IconHome,
-  IconX
+  IconX,
+  IconCloud,
+  IconCloudCheck,
+  IconDeviceFloppy,
+  IconLoader2,
 } from '@tabler/icons-react';
+import { useAuth } from '../contexts/AuthContext';
 
 // ─── File Tree Helpers ─────────────────────────────────────────────────────────
 
@@ -85,6 +90,36 @@ const Icon = ({ n, s = 14 }) => {
   if (n === 'minus') return <IconMinus {...props} />;
   return null;
 };
+
+// ─── Sync Status Badge ────────────────────────────────────────────────────────
+function SyncBadge({ syncing }) {
+  const { user } = useAuth()
+
+  if (!user) {
+    return (
+      <div className="sync-badge sync-badge--local" title="Notes saved locally in your browser">
+        <IconDeviceFloppy size={13} stroke={1.5} />
+        <span>Local</span>
+      </div>
+    )
+  }
+
+  if (syncing) {
+    return (
+      <div className="sync-badge sync-badge--syncing" title="Saving to cloud…">
+        <IconLoader2 size={13} stroke={2} className="sync-spin" />
+        <span>Syncing…</span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="sync-badge sync-badge--synced" title={`Synced to cloud as ${user.email}`}>
+      <IconCloudCheck size={13} stroke={1.5} />
+      <span>Synced</span>
+    </div>
+  )
+}
 
 // ─── Tree Node ─────────────────────────────────────────────────────────────────
 function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expanded, toggleExpand, creatingIn, setCreatingIn, onCreateConfirm }) {
@@ -267,7 +302,8 @@ export default function Sidebar({
   searchQuery,
   onSearchChange,
   width = 240,
-  onResizeStart
+  onResizeStart,
+  syncing = false,
 }) {
   const [expanded, setExpanded] = useState(new Set([1])); // default expand could be empty or root folder if needed
   const [creatingIn, setCreatingIn] = useState(null);
@@ -789,6 +825,57 @@ export default function Sidebar({
           from { opacity: 0; transform: scale(0.95) translateY(-4px); }
           to { opacity: 1; transform: scale(1) translateY(0); }
         }
+        /* Sync badge */
+        .sync-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 4px 10px 4px 8px;
+          border-radius: 9999px;
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          border: 1px solid transparent;
+          transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+          font-family: 'DM Sans', sans-serif;
+          user-select: none;
+        }
+
+        .sync-badge--local {
+          background: color-mix(in srgb, var(--text-muted) 10%, transparent);
+          border-color: color-mix(in srgb, var(--text-muted) 15%, transparent);
+          color: var(--text-muted);
+        }
+
+        .sync-badge--syncing {
+          background: color-mix(in srgb, #5e9fb8 12%, transparent);
+          border-color: color-mix(in srgb, #5e9fb8 20%, transparent);
+          color: #5e9fb8;
+        }
+
+        .sync-badge--synced {
+          background: color-mix(in srgb, var(--success) 12%, transparent);
+          border-color: color-mix(in srgb, var(--success) 20%, transparent);
+          color: var(--success);
+        }
+
+        .sync-spin {
+          animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        .sb-footer {
+          padding: 10px 16px;
+          border-top: 1px solid var(--border-subtle);
+          display: flex;
+          align-items: center;
+          flex-shrink: 0;
+        }
+
       `}</style>
 
       {!collapsed && (
@@ -868,6 +955,11 @@ export default function Sidebar({
                 No results found
               </div>
             )}
+          </div>
+
+          {/* Sync status footer */}
+          <div className="sb-footer">
+            <SyncBadge syncing={syncing} />
           </div>
         </div>
 
