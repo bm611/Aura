@@ -33,39 +33,6 @@ const AuraTable = Table.extend({
   addNodeView() {
     return ReactNodeViewRenderer(TableView)
   },
-  addKeyboardShortcuts() {
-    const parentShortcuts = this.parent?.() || {}
-    
-    const createDeleteHandler = (shortcutName) => (props) => {
-      // If parent handles it (like deleteTableWhenAllCellsSelected), let it win
-      if (parentShortcuts[shortcutName] && parentShortcuts[shortcutName](props)) {
-        return true
-      }
-
-      const { editor } = props
-      const { selection } = editor.state
-      
-      if (selection && typeof selection.isRowSelection === 'function' && selection.isRowSelection()) {
-        if (editor.chain().focus().deleteRow().run()) {
-          return true
-        }
-      }
-      if (selection && typeof selection.isColSelection === 'function' && selection.isColSelection()) {
-        if (editor.chain().focus().deleteColumn().run()) {
-          return true
-        }
-      }
-      return false
-    }
-
-    return {
-      ...parentShortcuts,
-      Backspace: createDeleteHandler('Backspace'),
-      Delete: createDeleteHandler('Delete'),
-      'Mod-Backspace': createDeleteHandler('Mod-Backspace'),
-      'Mod-Delete': createDeleteHandler('Mod-Delete'),
-    }
-  }
 })
 
 const AuraCodeBlockLowlight = CodeBlockLowlight.extend({
