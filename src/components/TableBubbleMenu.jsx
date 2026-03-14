@@ -22,9 +22,14 @@ export default function TableBubbleMenu({ editor }) {
   }, [])
 
   useEffect(() => {
-    if (!editor) return undefined
+    if (!editor || !editor.isEditable) return undefined
 
-    const editorEl = editor.view.dom
+    let editorEl
+    try {
+      editorEl = editor.view.dom
+    } catch {
+      return undefined
+    }
 
     const suppressNativeMenu = (e) => {
       if (isVisible.current) {
