@@ -1169,7 +1169,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 4px 10px;
   margin-bottom: 2px;
   border-radius: 8px;
   cursor: pointer;
@@ -1177,7 +1177,7 @@ body {
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
-  min-height: 36px;
+  min-height: 30px;
   position: relative;
   transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
   border: 1px solid transparent;
@@ -1253,10 +1253,8 @@ body {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: transform 0.2s var(--ease-out-quart);
+  /* No transform on hover for stability */
 }
-
-.tree-node:hover .tn-name { transform: translateX(2px); }
 
 .tn-actions {
   display: flex;
@@ -1541,7 +1539,7 @@ input[type='number'] { -moz-appearance: textfield; }
 @media (max-width: 767px) {
   .sb-search input { font-size: 16px; }
   .ren-input { font-size: 16px; }
-  .tree-node { min-height: 44px; padding: 8px 12px; }
+  .tree-node { min-height: 38px; padding: 6px 10px; }
 
   button:not(.tag-chip__remove) {
     min-height: 36px;

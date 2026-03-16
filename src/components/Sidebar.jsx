@@ -441,8 +441,8 @@ export default function Sidebar({
       )}
 
       <aside
-        className={`sidebar-vs ${collapsed ? 'w-0' : 'max-md:!w-[280px]'} fixed inset-y-0 left-0 z-40 md:relative md:z-auto h-screen shrink-0 overflow-hidden transition-all duration-300`}
-        style={{ width: collapsed ? 0 : width, maxWidth: '85vw' }}
+        className={`sidebar-vs ${collapsed ? 'w-0' : 'max-md:!w-full'} fixed inset-y-0 left-0 z-40 md:relative md:z-auto h-screen shrink-0 overflow-hidden transition-all duration-300`}
+        style={{ width: collapsed ? 0 : width, maxWidth: '100vw' }}
       >
         <div className="flex flex-col h-full w-full min-w-[200px]">
           {/* Header */}
