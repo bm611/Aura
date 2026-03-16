@@ -25,6 +25,7 @@ const STORAGE_KEY = 'canvas-notes'
 const TREE_STORAGE_KEY = 'canvas-tree'
 
 const FONT_OPTIONS = [
+  { id: 'outfit', name: 'Outfit', value: '"Outfit", sans-serif' },
   { id: 'lora', name: 'Lora', value: '"Lora", "Georgia", serif' },
   { id: 'fraunces', name: 'Fraunces', value: '"Fraunces", "Georgia", serif' },
   { id: 'newsreader', name: 'Newsreader', value: '"Newsreader", "Georgia", serif' },
@@ -237,7 +238,7 @@ function AppInner() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [commandPaletteQuery, setCommandPaletteQuery] = useState('')
   const [theme, setTheme] = useState(() => localStorage.getItem('canvas-theme') || 'dark')
-  const [fontId, setFontId] = useState(() => localStorage.getItem('canvas-font') || 'dm-sans')
+  const [fontId, setFontId] = useState(() => localStorage.getItem('canvas-font') || 'outfit')
   const [editorReady, setEditorReady] = useState(false)
   const [deletedNote, setDeletedNote] = useState(null)
   const [focusMode, setFocusMode] = useState(false)
