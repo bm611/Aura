@@ -51,7 +51,7 @@ function loadTree() {
   try {
     const raw = localStorage.getItem(TREE_STORAGE_KEY)
     if (raw) return JSON.parse(raw)
-  } catch {}
+  } catch { }
   return null
 }
 
@@ -186,9 +186,9 @@ function AppInner() {
       },
     ]
   })
-  
+
   const notes = flattenTree(tree)
-  
+
   const [activeNoteId, setActiveNoteId] = useState(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     // Start collapsed on mobile
@@ -234,7 +234,7 @@ function AppInner() {
         }
       })
       .catch(console.error)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
   useEffect(() => {
