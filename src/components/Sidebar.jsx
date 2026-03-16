@@ -191,7 +191,7 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
         onTouchMove={handleTouchMove}
         onClick={() => { if (!renaming && !contextMenu) { isFolder ? toggleExpand(node.id) : onSelect(node.id); } }}
       >
-        <span className={`tn-arrow ${isOpen ? "open" : ""}`} style={{ opacity: isFolder ? 1 : 0 }}>
+        <span className={`tn-arrow relative after:absolute after:-inset-2 ${isOpen ? "open" : ""}`} style={{ opacity: isFolder ? 1 : 0 }}>
           <Icon n="chevR" s={12} />
         </span>
         <span className="tn-icon">
@@ -212,8 +212,8 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
               <button title="New File" onClick={() => { setCreatingIn({ parentId: node.id, type: "file" }); toggleExpand(node.id, true); }}><Icon n="newFile" s={12} /></button>
               <button title="New Folder" onClick={() => { setCreatingIn({ parentId: node.id, type: "folder" }); toggleExpand(node.id, true); }}><Icon n="newFolder" s={12} /></button>
             </>}
-            <button title="Rename" onClick={() => setRenaming(true)}><Icon n="edit" s={12} /></button>
-            <button title="Delete" onClick={() => onDelete(node.id)} className="hover-danger"><Icon n="trash" s={12} /></button>
+            <button title="Rename" onClick={() => setRenaming(true)} className="relative transition-transform active:scale-[0.9] after:absolute after:-inset-2"><Icon n="edit" s={12} /></button>
+            <button title="Delete" onClick={() => onDelete(node.id)} className="hover-danger relative transition-transform active:scale-[0.9] after:absolute after:-inset-2"><Icon n="trash" s={12} /></button>
           </span>
         )}
       </div>
@@ -222,8 +222,8 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
       {contextMenu && (
         <div className="ctx-menu-overlay" onTouchStart={e => { e.stopPropagation(); }}>
           <div
-            className="ctx-menu"
-            style={{ top: contextMenu.y, left: contextMenu.x }}
+            className="ctx-menu animate-ctx-fade-in"
+            style={{ top: contextMenu.y, left: contextMenu.x, transformOrigin: 'top center' }}
             onTouchStart={e => e.stopPropagation()}
             onClick={e => e.stopPropagation()}
           >
@@ -450,16 +450,16 @@ export default function Sidebar({
             <button
               type="button"
               onClick={onToggleCollapse}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
+              className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3 flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
               title="Toggle sidebar (Cmd+B)"
             >
               <IconLayoutSidebarFilled size={18} stroke={1.5} />
             </button>
 
             <div className="sb-actions">
-              <button title="Home" onClick={() => { onSelectNote(null); if (window.innerWidth < 768) onToggleCollapse(); }}><IconHome size={16} stroke={1.5} /></button>
-              <button title="New File" onClick={() => handleRootCreate("file")}><Icon n="newFile" s={16} /></button>
-              <button title="New Folder" onClick={() => handleRootCreate("folder")}><Icon n="newFolder" s={16} /></button>
+              <button title="Home" onClick={() => { onSelectNote(null); if (window.innerWidth < 768) onToggleCollapse(); }} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3"><IconHome size={16} stroke={1.5} /></button>
+              <button title="New File" onClick={() => handleRootCreate("file")} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3"><Icon n="newFile" s={16} /></button>
+              <button title="New Folder" onClick={() => handleRootCreate("folder")} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3"><Icon n="newFolder" s={16} /></button>
             </div>
           </div>
 
@@ -476,7 +476,7 @@ export default function Sidebar({
                 <button
                   type="button"
                   onClick={() => onSearchChange('')}
-                  className="shrink-0 flex items-center justify-center w-5 h-5 rounded-full text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
+                  className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3 shrink-0 flex items-center justify-center w-5 h-5 rounded-full text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
                   aria-label="Clear search"
                 >
                   <IconX size={12} stroke={2} />
@@ -523,7 +523,7 @@ export default function Sidebar({
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="md:hidden absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] shadow-2xl backdrop-blur-xl transition-all active:scale-95"
+            className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3 md:hidden absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] shadow-2xl backdrop-blur-xl transition-all active:scale-95"
             aria-label="Close sidebar"
           >
             <IconX size={24} stroke={2} />

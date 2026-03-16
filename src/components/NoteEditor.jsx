@@ -49,8 +49,8 @@ function EditorFallback() {
 function FirstNotePrompt() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 24, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
       className="mt-10 flex flex-col items-center gap-6 select-none"
     >
@@ -322,7 +322,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
+              className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title="Open sidebar (Cmd+B)"
             >
               <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
@@ -334,7 +334,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleTheme}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
+              className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
@@ -343,7 +343,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={signOut}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-red-400 hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
+                className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-red-400 hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
                 title={`Signed in as ${user.email} — click to sign out`}
               >
                 <IconLogout size={18} stroke={1.5} />
@@ -352,7 +352,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={onOpenAuthModal}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--accent)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
+                className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--accent)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
                 title="Sign in to sync"
               >
                 <IconUser size={18} stroke={1.5} />
@@ -423,7 +423,7 @@ export default function NoteEditor({
                     >
                       <div className="flex w-20 shrink-0 items-center gap-3 md:w-24">
                         <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80" />
-                        <span className="text-[12px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] md:text-[13px]">
+                        <span className="text-[12px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] md:text-[13px] active:scale-[0.97] transition-transform">
                           {formattedDate}
                         </span>
                       </div>
@@ -525,7 +525,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={() => onSelectNote(null)}
-              className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
+              className="md:hidden relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] after:absolute after:-inset-2 active:scale-[0.97]"
               title="Back to Home"
             >
               <IconChevronLeft size={22} stroke={2} />
@@ -535,7 +535,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={onToggleSidebar}
-                className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
+                className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
                 title="Open sidebar (Cmd+B)"
               >
                 <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
@@ -549,7 +549,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={() => exportNoteAsMarkdown(note)}
-                className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
+                className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
                 title="Export as Markdown"
               >
                 <IconDownload size={18} stroke={1.5} />
@@ -558,7 +558,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleFocusMode}
-              className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
+              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title="Focus mode (⌘⇧F)"
             >
               <IconArrowsMinimize size={18} stroke={1.5} />
@@ -566,7 +566,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleTheme}
-              className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
+              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
@@ -576,7 +576,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={signOut}
-                className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-red-400 hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
+                className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-red-400 hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
                 title={`Signed in as ${user.email} — click to sign out`}
               >
                 <IconLogout size={18} stroke={1.5} />
@@ -585,7 +585,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={onOpenAuthModal}
-                className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--accent)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
+                className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--accent)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
                 title="Sign in to sync"
               >
                 <IconUser size={18} stroke={1.5} />
@@ -692,26 +692,26 @@ export default function NoteEditor({
       {!focusMode && (
         <div className="mobile-action-bar" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <div className="mobile-action-bar-inner">
-            <button type="button" onClick={onToggleSidebar}>
+            <button type="button" onClick={onToggleSidebar} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
               <IconLayoutSidebarFilled size={18} stroke={1.5} />
             </button>
-            <button type="button" onClick={() => onNewNote?.()}>
+            <button type="button" onClick={() => onNewNote?.()} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
               <IconPlus size={18} stroke={1.5} />
             </button>
             {onOpenCommandPalette && (
-              <button type="button" onClick={onOpenCommandPalette}>
+              <button type="button" onClick={onOpenCommandPalette} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
                 <IconCommand size={18} stroke={1.5} />
               </button>
             )}
-            <button type="button" onClick={onToggleTheme}>
+            <button type="button" onClick={onToggleTheme} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
             </button>
             {user ? (
-              <button type="button" onClick={signOut} title="Sign out">
+              <button type="button" onClick={signOut} title="Sign out" className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
                 <IconLogout size={18} stroke={1.5} />
               </button>
             ) : (
-              <button type="button" onClick={onOpenAuthModal} title="Sign in to sync">
+              <button type="button" onClick={onOpenAuthModal} title="Sign in to sync" className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
                 <IconUser size={18} stroke={1.5} />
               </button>
             )}

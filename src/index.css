@@ -58,15 +58,15 @@
     to { transform: translateY(0); }
   }
   @keyframes tag-pop-in {
-    from { opacity: 0; transform: scale(0.8); }
+    from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
   }
   @keyframes action-bar-in {
-    from { opacity: 0; transform: translateX(-50%) translateY(12px) scale(0.92); }
+    from { opacity: 0; transform: translateX(-50%) translateY(12px) scale(0.95); }
     to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
   }
   @keyframes ctx-fade-in {
-    from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+    from { opacity: 0; transform: scale(0.98) translateY(-4px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
   }
   @keyframes spin {
@@ -298,7 +298,9 @@ body {
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background-color: var(--border-subtle); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background-color: var(--text-muted); }
+@media (hover: hover) and (pointer: fine) {
+  ::-webkit-scrollbar-thumb:hover { background-color: var(--text-muted); }
+}
 
 /* ── Legacy animation classes (used in JSX) ── */
 
@@ -330,11 +332,16 @@ body {
 .neu-btn-primary {
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: var(--neu-btn-shadow);
+  will-change: transform;
+  transition: transform var(--duration-fast) var(--ease-out-quart), box-shadow var(--duration-fast);
 }
-.neu-btn-primary:hover {
-  box-shadow: var(--neu-btn-shadow-hover);
+@media (hover: hover) and (pointer: fine) {
+  .neu-btn-primary:hover {
+    box-shadow: var(--neu-btn-shadow-hover);
+  }
 }
 .neu-btn-primary:active {
+  transform: scale(0.97);
   box-shadow: var(--neu-btn-shadow-active);
 }
 
@@ -342,23 +349,30 @@ body {
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
   box-shadow: var(--neu-shadow);
+  will-change: transform;
+  transition: transform var(--duration-fast) var(--ease-out-quart), box-shadow var(--duration-fast);
 }
-.neu-icon-btn:hover {
-  transform: none;
-  box-shadow: var(--neu-shadow-hover);
+@media (hover: hover) and (pointer: fine) {
+  .neu-icon-btn:hover {
+    transform: none;
+    box-shadow: var(--neu-shadow-hover);
+  }
 }
 .neu-icon-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.97);
   box-shadow: var(--neu-shadow-active);
 }
 
 .neu-card {
   box-shadow: var(--neu-shadow);
 }
-.neu-card:hover {
-  box-shadow: var(--neu-shadow-hover);
+@media (hover: hover) and (pointer: fine) {
+  .neu-card:hover {
+    box-shadow: var(--neu-shadow-hover);
+  }
 }
 .neu-card:active {
+  transform: scale(0.97);
   box-shadow: var(--neu-shadow-active);
 }
 
