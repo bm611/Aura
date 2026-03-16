@@ -270,11 +270,7 @@ export default function NoteEditor({
   onOpenAuthModal,
 }) {
   const { user, signOut } = useAuth()
-  const [showGoalInput, setShowGoalInput] = useState(false)
-  const [goalInputVal, setGoalInputVal] = useState('')
 
-  // Prevents double-fire when Enter triggers both keydown and blur
-  const goalCommittedRef = useRef(false)
 
   // Session word count: capture baseline when a note is first opened
   const sessionBaseRef = useRef(null)
@@ -479,50 +475,12 @@ export default function NoteEditor({
   const createdAtLabel = formatCreatedAt(note.createdAt)
   const wordCount = countBodyWords(note.content)
   const readTime = estimateReadTime(note.content)
-  const wordGoal = note.wordGoal || null
-  const goalProgress = wordGoal ? Math.min(100, Math.round((wordCount / wordGoal) * 100)) : null
-
   // Session baseline: reset whenever the open note changes
   if (note.id !== prevNoteIdRef.current) {
     prevNoteIdRef.current = note.id
     sessionBaseRef.current = wordCount
   }
   const sessionDelta = wordCount - (sessionBaseRef.current ?? wordCount)
-
-  // ── Goal handlers ────────────────────────────────────────────────────────────
-
-  const openGoalInput = () => {
-    goalCommittedRef.current = false
-    setGoalInputVal(wordGoal !== null ? String(wordGoal) : '')
-    setShowGoalInput(true)
-  }
-
-  const commitGoal = (value) => {
-    if (goalCommittedRef.current) return
-    goalCommittedRef.current = true
-    const val = parseInt(value.trim(), 10)
-    if (!isNaN(val) && val > 0) {
-      onUpdateNote(note.id, { wordGoal: val }, { skipTimestamp: true })
-    } else {
-      onUpdateNote(note.id, { wordGoal: null }, { skipTimestamp: true })
-    }
-    setShowGoalInput(false)
-    setGoalInputVal('')
-  }
-
-  const handleGoalKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      commitGoal(goalInputVal)
-    } else if (e.key === 'Escape') {
-      goalCommittedRef.current = true // suppress blur commit
-      setShowGoalInput(false)
-      setGoalInputVal('')
-    }
-  }
-
-  const handleGoalBlur = () => {
-    commitGoal(goalInputVal)
-  }
 
   // ── Render ───────────────────────────────────────────────────────────────────
 
@@ -686,40 +644,6 @@ export default function NoteEditor({
       <div
         className="absolute bottom-0 right-0 left-0 md:left-auto flex flex-col items-center md:items-end gap-1.5 px-4 py-3 md:py-2.5 md:px-4 md:bottom-4 md:right-4 bg-gradient-to-t from-[var(--bg-primary)] to-transparent md:bg-none md:bg-[var(--bg-surface)]/80 md:backdrop-blur-lg md:rounded-xl md:border border-[var(--border-subtle)] transition-all duration-300 z-20"
       >
-        {/* Word goal progress bar */}
-        {wordGoal !== null && !showGoalInput && (
-          <div className="flex items-center gap-2">
-            <div className="h-[3px] w-28 overflow-hidden rounded-full bg-[var(--border-subtle)]">
-              <div
-                className="h-full rounded-full transition-[width] duration-500"
-                style={{
-                  width: `${goalProgress}%`,
-                  background: goalProgress >= 100 ? 'var(--success)' : 'var(--accent)',
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Inline goal input */}
-        {showGoalInput && (
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-[var(--text-muted)]">Word goal:</span>
-            <input
-              // eslint-disable-next-line jsx-a11y/no-autofocus
-              autoFocus
-              type="number"
-              min="1"
-              value={goalInputVal}
-              onChange={(e) => setGoalInputVal(e.target.value)}
-              onKeyDown={handleGoalKeyDown}
-              onBlur={handleGoalBlur}
-              placeholder="e.g. 5000"
-              className="w-20 rounded border border-[var(--border-default)] bg-[var(--bg-elevated)] px-1.5 py-0.5 text-[11px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)] tabular-nums"
-            />
-          </div>
-        )}
-
         {/* Stats line */}
         <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] tabular-nums select-none">
           {/* Session delta */}
@@ -732,36 +656,13 @@ export default function NoteEditor({
             </>
           )}
 
-          {/* Word count / goal */}
-          {wordGoal !== null ? (
-            <span>
-              {wordCount.toLocaleString()}&thinsp;/&thinsp;{wordGoal.toLocaleString()}
-              <span className="ml-1 opacity-60">({goalProgress}%)</span>
-            </span>
-          ) : (
-            <span>{new Intl.NumberFormat().format(wordCount)} words</span>
-          )}
+          <span>{new Intl.NumberFormat().format(wordCount)} words</span>
 
           {/* Reading time */}
           {readTime && (
             <>
               <span className="opacity-40">·</span>
               <span>{readTime}</span>
-            </>
-          )}
-
-          {/* Goal toggle — hidden in focus mode */}
-          {!focusMode && (
-            <>
-              <span className="opacity-40">·</span>
-              <button
-                type="button"
-                onClick={openGoalInput}
-                className="transition-colors hover:text-[var(--accent)]"
-                title={wordGoal ? 'Edit word goal' : 'Set a word goal'}
-              >
-                {wordGoal ? 'goal' : 'set goal'}
-              </button>
             </>
           )}
         </div>

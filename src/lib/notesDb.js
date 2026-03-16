@@ -44,7 +44,6 @@ function rowToNote(row) {
     contentDoc: row.content_doc || undefined,
     editorVersion: row.content_doc ? 2 : undefined,
     tags: row.tags || [],
-    wordGoal: row.word_goal || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -59,7 +58,6 @@ function noteToRow(note, userId) {
     content: note.content || '',
     content_doc: note.contentDoc || null,
     tags: note.tags || [],
-    word_goal: note.wordGoal || null,
   }
 }
 
