@@ -402,10 +402,7 @@ export default function NoteEditor({
             <div className="animate-fade-in-up-delay-2 mt-10 w-full max-w-2xl md:mt-16" style={{ fontFamily: '"Outfit", sans-serif' }}>
               <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-4">
                 <h2 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] md:text-5xl">Recent</h2>
-                <div className="flex items-center gap-1.5 opacity-40">
-                  <span className="text-xs font-light">/</span>
-                  <span className="text-[10px] font-bold uppercase tracking-[0.15em]">{recentNotes.length} Notes</span>
-                </div>
+                <span className="text-2xl font-light text-[var(--text-muted)] md:text-4xl">{recentNotes.length}</span>
               </div>
               <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60 md:mb-4 md:gap-12">
                  <div className="w-20 md:w-24">/ Date</div>
