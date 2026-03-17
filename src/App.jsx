@@ -81,11 +81,10 @@ Aura is a fast, local-first markdown editor designed for speed and clarity. This
 
 ## 🚀 Speed up with Slash Commands
 
-Type \`/\` on a new line to see all available components. Try these:
+Type \`/\` on a new line to see all available components. Try these new additions:
 
-- \`/h1\` or \`/h2\` — Quick headings
+- \`/note\`, \`/tip\` or \`/warning\` — Create themed callouts instantly
 - \`/todo\` — Insert a task checkbox
-- \`/callout\` — Add a beautiful info box (like the one above!)
 - \`/table\` — Insert a starter table
 - \`/divider\` — Add a horizontal rule
 - \`/today\` — Insert the current date
@@ -94,7 +93,7 @@ Type \`/\` on a new line to see all available components. Try these:
 
 ## 📝 Markdown Cheat Sheet
 
-Aura supports standard markdown. Here is how to format your thoughts:
+Aura supports standard markdown with some powerful enhancements:
 
 ### Typography
 - **Bold**: \`**text**\`
@@ -103,11 +102,17 @@ Aura supports standard markdown. Here is how to format your thoughts:
 - \`Inline Code\`: \` \`code\` \`
 - [Links are easy](https://github.com/bm611/aura)
 
-### Lists & Tasks
-- [ ] Task: \`- [ ] item\`
-- [x] Completed: \`- [x] item\`
-- Bullets: \`- item\`
-- Numbered: \`1. item\`
+### Nested Lists & Tasks
+Press \`Tab\` to indent and \`Shift + Tab\` to un-indent:
+- Parent bullet
+  - Nested child (circle)
+    - Deeper child (square)
+- [ ] Task lists support nesting too
+  - [x] Sub-task one
+  - [ ] Sub-task two
+1. Numbered lists have distinct styles
+  a. Alphabetic child
+    i. Roman numeral child
 
 ### Code Blocks
 Type \` \` \` \` followed by a language to start a block:
@@ -122,8 +127,13 @@ function hello() {
 
 ## 🏗️ Premium Components
 
-### Callouts
-Aura supports high-visibility callouts for expert organization. Use types like \`[!note]\`, \`[!tip]\`, \`[!warning]\`, and \`[!caution]\`.
+### Interactive Callouts
+Aura supports high-visibility callouts for expert organization. 
+
+> [!important] New Callout Controls
+> - **Change Type**: Click the icon in the top-left of any callout to cycle through types (Note, Tip, Warning, etc.).
+> - **Quick Delete**: Hover over a callout header to reveal the trash icon.
+> - **Collapsible**: Use \`> [!note]+\` or \`> [!note]-\` to make them foldable.
 
 > [!warning] - Local-First Storage
 > Your notes stay in your browser. Clearing site data will delete your notes unless you **sign in** to sync them to the cloud.
@@ -132,8 +142,8 @@ Aura supports high-visibility callouts for expert organization. Use types like \
 | Feature | Shortcut | Status |
 | :--- | :--- | :--- |
 | Slash Menu | \`/\` | ✅ |
-| Themes | \`Cmd + K\` | ✅ |
-| Export MD | Top Bar | ✅ |
+| Nested Lists | \`Tab\` | ✅ |
+| Mixed Callouts | \`/tip\` | ✅ |
 
 ---
 

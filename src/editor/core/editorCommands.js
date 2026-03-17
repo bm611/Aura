@@ -71,11 +71,43 @@ export function runAuraEditorCommand(editor, commandId, options = {}) {
       return chain.toggleOrderedList().run()
     case 'quote':
       return chain.toggleBlockquote().run()
-    case 'callout':
+    case 'callout-note':
       return chain
         .insertContent({
           type: 'callout',
-          attrs: getDefaultCalloutAttrs(),
+          attrs: { ...getDefaultCalloutAttrs(), calloutKind: 'note', title: 'Note' },
+          content: [{ type: 'paragraph' }],
+        })
+        .run()
+    case 'callout-tip':
+      return chain
+        .insertContent({
+          type: 'callout',
+          attrs: { ...getDefaultCalloutAttrs(), calloutKind: 'tip', title: 'Tip' },
+          content: [{ type: 'paragraph' }],
+        })
+        .run()
+    case 'callout-warning':
+      return chain
+        .insertContent({
+          type: 'callout',
+          attrs: { ...getDefaultCalloutAttrs(), calloutKind: 'warning', title: 'Warning' },
+          content: [{ type: 'paragraph' }],
+        })
+        .run()
+    case 'callout-caution':
+      return chain
+        .insertContent({
+          type: 'callout',
+          attrs: { ...getDefaultCalloutAttrs(), calloutKind: 'caution', title: 'Caution' },
+          content: [{ type: 'paragraph' }],
+        })
+        .run()
+    case 'callout-important':
+      return chain
+        .insertContent({
+          type: 'callout',
+          attrs: { ...getDefaultCalloutAttrs(), calloutKind: 'important', title: 'Important' },
           content: [{ type: 'paragraph' }],
         })
         .run()

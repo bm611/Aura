@@ -17,9 +17,11 @@ import {
   IconList,
   IconMessageCircle,
   IconPencil,
+  IconTrash,
 } from '@tabler/icons-react'
 
 const CALLOUT_INPUT_PATTERN = /^> \[!([A-Za-z-]+)\]([+-])?\s*(.*)$/
+const CALLOUT_KINDS = ['note', 'tip', 'warning', 'caution', 'important']
 
 const CALLOUT_ICONS = {
   abstract: IconFileText,
@@ -43,10 +45,22 @@ function getDefaultTitle(calloutKind = 'note') {
   return `${calloutKind.charAt(0).toUpperCase()}${calloutKind.slice(1)}`
 }
 
-function CalloutView({ node, updateAttributes, selected }) {
+function CalloutView({ node, updateAttributes, deleteNode, selected }) {
   const [collapsed, setCollapsed] = useState(Boolean(node.attrs.defaultCollapsed))
   const calloutKind = node.attrs.calloutKind || 'note'
   const Icon = CALLOUT_ICONS[calloutKind] || CALLOUT_ICONS.note
+
+  const handleToggleKind = (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    const currentIndex = CALLOUT_KINDS.indexOf(calloutKind)
+    const nextIndex = (currentIndex + 1) % CALLOUT_KINDS.length
+    const nextKind = CALLOUT_KINDS[nextIndex]
+    updateAttributes({
+      calloutKind: nextKind,
+      title: node.attrs.title === getDefaultTitle(calloutKind) ? getDefaultTitle(nextKind) : node.attrs.title,
+    })
+  }
 
   return (
     <NodeViewWrapper
@@ -54,9 +68,14 @@ function CalloutView({ node, updateAttributes, selected }) {
       data-callout-kind={calloutKind}
     >
       <div className="aura-callout-header" contentEditable={false}>
-        <span className="aura-callout-icon">
+        <button
+          type="button"
+          className="aura-callout-icon-btn"
+          onClick={handleToggleKind}
+          title="Change type"
+        >
           <Icon size={16} stroke={1.8} />
-        </span>
+        </button>
         <input
           className="aura-callout-title"
           value={node.attrs.title || getDefaultTitle(calloutKind)}
@@ -64,20 +83,34 @@ function CalloutView({ node, updateAttributes, selected }) {
           onMouseDown={(event) => event.stopPropagation()}
           aria-label="Callout title"
         />
-        {node.attrs.foldable ? (
+        <div className="aura-callout-actions">
+          {node.attrs.foldable ? (
+            <button
+              type="button"
+              className={`aura-callout-toggle ${collapsed ? 'is-collapsed' : ''}`}
+              onClick={() => setCollapsed((current) => !current)}
+              onMouseDown={(event) => {
+                event.preventDefault()
+                event.stopPropagation()
+              }}
+              aria-label={collapsed ? 'Expand callout' : 'Collapse callout'}
+            >
+              <IconChevronDown size={14} stroke={1.7} />
+            </button>
+          ) : null}
           <button
             type="button"
-            className={`aura-callout-toggle ${collapsed ? 'is-collapsed' : ''}`}
-            onClick={() => setCollapsed((current) => !current)}
+            className="aura-callout-delete"
+            onClick={deleteNode}
             onMouseDown={(event) => {
               event.preventDefault()
               event.stopPropagation()
             }}
-            aria-label={collapsed ? 'Expand callout' : 'Collapse callout'}
+            title="Delete callout"
           >
-            <IconChevronDown size={14} stroke={1.7} />
+            <IconTrash size={14} stroke={1.7} />
           </button>
-        ) : null}
+        </div>
       </div>
       <NodeViewContent className={`aura-callout-body ${collapsed ? 'is-collapsed' : ''}`} />
     </NodeViewWrapper>

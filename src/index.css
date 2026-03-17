@@ -636,12 +636,28 @@ body {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  padding: 0.65rem 0.8rem;
+  padding: 0.4rem 0.6rem;
   background: color-mix(in srgb, var(--callout-color) 8%, transparent);
   color: var(--callout-color);
 }
 
-.aura-callout-icon { display: inline-flex; align-items: center; }
+.aura-callout-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background var(--duration-fast);
+}
+
+.aura-callout-icon-btn:hover {
+  background: color-mix(in srgb, var(--callout-color) 12%, transparent);
+}
 
 .aura-callout-title {
   flex: 1;
@@ -653,14 +669,46 @@ body {
   font-size: 0.84rem;
   font-weight: 600;
   outline: none;
+  padding: 0.3rem 0;
 }
 
-.aura-callout-toggle {
+.aura-callout-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity var(--duration-fast);
+}
+
+.aura-callout:hover .aura-callout-actions {
+  opacity: 1;
+}
+
+.aura-callout-toggle,
+.aura-callout-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
   border: none;
   background: transparent;
+  border-radius: var(--radius-sm);
   color: inherit;
-  opacity: 0.7;
-  transition: transform var(--duration-fast) var(--ease-out-quart);
+  opacity: 0.6;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out-quart);
+}
+
+.aura-callout-toggle:hover,
+.aura-callout-delete:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--callout-color) 12%, transparent);
+}
+
+.aura-callout-delete:hover {
+  color: var(--danger);
+  background: var(--danger-muted);
 }
 
 .aura-callout-toggle.is-collapsed { transform: rotate(-90deg); }

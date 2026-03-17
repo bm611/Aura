@@ -44,7 +44,7 @@ export const SlashCommand = Extension.create({
       suggestion: {
         char: '/',
         startOfLine: true,
-        items: ({ query }) => getEditorCommands(query).slice(0, 8),
+        items: ({ query }) => getEditorCommands(query).slice(0, 12),
         command: ({ editor, range, props }) => runAuraEditorCommand(editor, props.id, { range }),
         allow: ({ state }) => state.selection.$from.parent.type.name === 'paragraph',
         render: () => {
