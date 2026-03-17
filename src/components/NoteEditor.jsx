@@ -322,7 +322,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title="Open sidebar (Cmd+B)"
             >
               <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
@@ -334,7 +334,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleTheme}
-              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
@@ -426,7 +426,7 @@ export default function NoteEditor({
                       key={n.id}
                       type="button"
                       onClick={() => onSelectNote(n.id)}
-                      className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-all duration-200 hover:bg-[var(--bg-hover)] md:gap-6 md:py-4"
+                      className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)] md:gap-6 md:py-4"
                     >
                       <div className="flex w-20 shrink-0 items-center gap-3 md:w-24">
                         <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80" />
@@ -506,7 +506,7 @@ export default function NoteEditor({
         <button
           type="button"
           onClick={onToggleFocusMode}
-          className="absolute top-3 right-3 z-50 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 opacity-20 transition-all hover:opacity-80 hover:bg-[var(--bg-hover)] select-none"
+          className="absolute top-3 right-3 z-50 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 opacity-20 transition-[opacity,background-color] duration-150 ease-out hover:opacity-80 hover:bg-[var(--bg-hover)] select-none"
           style={{ color: 'var(--text-muted)', fontSize: '11px' }}
           title="Exit focus mode (⌘⇧F)"
         >
@@ -523,7 +523,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={() => onSelectNote(null)}
-              className="md:hidden relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] after:absolute after:-inset-2 active:scale-[0.97]"
+              className="md:hidden relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] after:absolute after:-inset-2 active:scale-[0.97]"
               title="Back to Home"
             >
               <IconChevronLeft size={22} stroke={2} />
@@ -533,7 +533,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={onToggleSidebar}
-                className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+                className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
                 title="Open sidebar (Cmd+B)"
               >
                 <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
@@ -547,7 +547,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={() => exportNoteAsMarkdown(note)}
-                className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+                className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
                 title="Export as Markdown"
               >
                 <IconDownload size={18} stroke={1.5} />
@@ -556,7 +556,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleFocusMode}
-              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title="Focus mode (⌘⇧F)"
             >
               <IconArrowsMinimize size={18} stroke={1.5} />
@@ -564,7 +564,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleTheme}
-              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}

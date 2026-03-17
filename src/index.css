@@ -1827,3 +1827,12 @@ input[type='number'] {
   .md-table-input--header { font-size: 0.78rem; }
   .md-table--readonly th, .md-table--readonly td { padding: 0.35rem 0.55rem; font-size: 0.82rem; }
 }
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
