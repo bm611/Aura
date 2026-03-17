@@ -14,7 +14,6 @@ import { CalloutNode } from '../extensions/CalloutNode'
 import { SlashCommand } from '../extensions/SlashCommand'
 import { MarkdownPaste } from '../extensions/MarkdownPaste'
 import TableView from '../extensions/TableView'
-import CodeBlockView from '../extensions/CodeBlockNode'
 
 const lowlight = createLowlight(all)
 
@@ -47,10 +46,6 @@ const AuraCodeBlockLowlight = CodeBlockLowlight.extend({
         getAttributes: (match) => ({ language: match?.[1] || null }),
       }),
     ]
-  },
-
-  addNodeView() {
-    return ReactNodeViewRenderer(CodeBlockView)
   },
 })
 
