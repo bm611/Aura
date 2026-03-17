@@ -1459,6 +1459,218 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
+   Auth State Pill (Desktop top bar)
+   ═══════════════════════════════════════════════ */
+
+.auth-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  cursor: default;
+  font-family: "Outfit", var(--body-font);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: 9999px;
+  transition: all 0.2s var(--ease-out-quart);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  position: relative;
+}
+
+.auth-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: color-mix(in srgb, var(--success) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 15%, transparent);
+  padding: 2px;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.auth-group:hover {
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  border-color: color-mix(in srgb, var(--success) 25%, transparent);
+}
+
+.auth-signout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-signout-btn:hover {
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
+  color: var(--danger);
+}
+
+.auth-pill--signed-in {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 4px !important;
+}
+
+.auth-pill--signed-in:hover {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 25%, transparent);
+  color: var(--danger);
+}
+
+.auth-pill--signed-in:active {
+  transform: none;
+}
+
+.auth-pill__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--color-h2));
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.auth-pill__avatar--sm {
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+}
+
+.auth-pill__dot {
+  position: absolute;
+  bottom: 2px;
+  right: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  border: 2px solid var(--bg-primary);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--success) 60%, transparent);
+  animation: auth-dot-pulse 2.5s ease-in-out infinite;
+}
+
+.auth-pill--signed-in:hover .auth-pill__dot {
+  background: var(--danger);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--danger) 60%, transparent);
+  animation: none;
+}
+
+.auth-pill__dot--mobile {
+  bottom: 0;
+  right: 1px;
+  width: 7px;
+  height: 7px;
+  border-width: 1.5px;
+  border-color: var(--bg-elevated);
+}
+
+@keyframes auth-dot-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px color-mix(in srgb, var(--success) 40%, transparent); }
+  50% { opacity: 0.7; box-shadow: 0 0 10px color-mix(in srgb, var(--success) 70%, transparent); }
+}
+
+.auth-pill--signed-out {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  padding: 6px 14px 6px 10px;
+  color: var(--accent);
+}
+
+.auth-pill--signed-out:hover {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.auth-pill--signed-out:active {
+  transform: scale(0.97);
+}
+
+/* Auth pill in mobile action bar */
+.auth-pill-mobile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  padding: 0;
+}
+
+.auth-pill-mobile--signed-in {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.auth-pill-mobile--signed-in:active {
+  transform: scale(0.9);
+}
+
+.auth-pill-mobile--signed-out {
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  min-width: 40px;
+  border-radius: 50%;
+  color: var(--accent);
+  transition: all 0.2s var(--ease-out-quart);
+}
+
+.auth-pill-mobile--signed-out:active {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  transform: scale(0.9);
+}
+
+.auth-group-mobile {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--success) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 15%, transparent);
+}
+
+.auth-signout-btn-mobile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.auth-signout-btn-mobile:active {
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
+  color: var(--danger);
+  transform: scale(0.9);
+}
+
+/* ═══════════════════════════════════════════════
    Mobile Floating Action Bar
    ═══════════════════════════════════════════════ */
 

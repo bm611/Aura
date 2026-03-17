@@ -12,7 +12,7 @@ import {
   IconPlus,
   IconDownload,
   IconLogout,
-  IconUser,
+  IconCloudUp,
   IconChevronLeft,
 } from '@tabler/icons-react'
 import { countBodyWords, estimateReadTime, formatCreatedAt, getNoteDisplayTitle } from '../utils/noteMeta'
@@ -340,22 +340,29 @@ export default function NoteEditor({
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
             </button>
             {user ? (
-              <button
-                type="button"
-                onClick={signOut}
-                className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-red-400 hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
-                title={`Signed in as ${user.email} — click to sign out`}
-              >
-                <IconLogout size={18} stroke={1.5} />
-              </button>
+              <div className="auth-group">
+                <div className="auth-pill auth-pill--signed-in" title={`Signed in as ${user.email}`}>
+                  <span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
+                  <span className="auth-pill__dot" />
+                </div>
+                <button
+                  type="button"
+                  onClick={signOut}
+                  className="auth-signout-btn"
+                  title="Sign out"
+                >
+                  <IconLogout size={16} stroke={2} />
+                </button>
+              </div>
             ) : (
               <button
                 type="button"
                 onClick={onOpenAuthModal}
-                className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--accent)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
-                title="Sign in to sync"
+                className="auth-pill auth-pill--signed-out"
+                title="Sign in to sync your notes"
               >
-                <IconUser size={18} stroke={1.5} />
+                <IconCloudUp size={14} stroke={2} />
+                <span>Sign in</span>
               </button>
             )}
           </div>
@@ -457,12 +464,18 @@ export default function NoteEditor({
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
             </button>
             {user ? (
-              <button type="button" onClick={signOut} title="Sign out">
-                <IconLogout size={18} stroke={1.5} />
-              </button>
+              <div className="auth-group-mobile">
+                <div title={`Signed in as ${user.email}`} className="auth-pill-mobile auth-pill-mobile--signed-in">
+                  <span className="auth-pill__avatar auth-pill__avatar--sm">{user.email?.[0]?.toUpperCase() || '?'}</span>
+                  <span className="auth-pill__dot auth-pill__dot--mobile" />
+                </div>
+                <button type="button" onClick={signOut} title="Sign out" className="auth-signout-btn-mobile">
+                  <IconLogout size={16} stroke={2} />
+                </button>
+              </div>
             ) : (
-              <button type="button" onClick={onOpenAuthModal} title="Sign in to sync">
-                <IconUser size={18} stroke={1.5} />
+              <button type="button" onClick={onOpenAuthModal} title="Sign in to sync" className="auth-pill-mobile auth-pill-mobile--signed-out">
+                <IconCloudUp size={16} stroke={2} />
               </button>
             )}
           </div>
@@ -573,22 +586,29 @@ export default function NoteEditor({
             </button>
             {/* Auth: show sign-in or user avatar+signout */}
             {user ? (
-              <button
-                type="button"
-                onClick={signOut}
-                className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-red-400 hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
-                title={`Signed in as ${user.email} — click to sign out`}
-              >
-                <IconLogout size={18} stroke={1.5} />
-              </button>
+              <div className="hidden md:flex auth-group">
+                <div className="auth-pill auth-pill--signed-in" title={`Signed in as ${user.email}`}>
+                  <span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
+                  <span className="auth-pill__dot" />
+                </div>
+                <button
+                  type="button"
+                  onClick={signOut}
+                  className="auth-signout-btn"
+                  title="Sign out"
+                >
+                  <IconLogout size={16} stroke={2} />
+                </button>
+              </div>
             ) : (
               <button
                 type="button"
                 onClick={onOpenAuthModal}
-                className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--accent)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
-                title="Sign in to sync"
+                className="hidden md:relative md:flex auth-pill auth-pill--signed-out"
+                title="Sign in to sync your notes"
               >
-                <IconUser size={18} stroke={1.5} />
+                <IconCloudUp size={14} stroke={2} />
+                <span>Sign in</span>
               </button>
             )}
           </div>
@@ -707,12 +727,18 @@ export default function NoteEditor({
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
             </button>
             {user ? (
-              <button type="button" onClick={signOut} title="Sign out" className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
-                <IconLogout size={18} stroke={1.5} />
-              </button>
+              <div className="auth-group-mobile">
+                <div title={`Signed in as ${user.email}`} className="auth-pill-mobile auth-pill-mobile--signed-in">
+                  <span className="auth-pill__avatar auth-pill__avatar--sm">{user.email?.[0]?.toUpperCase() || '?'}</span>
+                  <span className="auth-pill__dot auth-pill__dot--mobile" />
+                </div>
+                <button type="button" onClick={signOut} title="Sign out" className="auth-signout-btn-mobile">
+                  <IconLogout size={16} stroke={2} />
+                </button>
+              </div>
             ) : (
-              <button type="button" onClick={onOpenAuthModal} title="Sign in to sync" className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
-                <IconUser size={18} stroke={1.5} />
+              <button type="button" onClick={onOpenAuthModal} title="Sign in to sync" className="auth-pill-mobile auth-pill-mobile--signed-out">
+                <IconCloudUp size={16} stroke={2} />
               </button>
             )}
           </div>
