@@ -252,7 +252,7 @@ function renderListItemContent(node, depth, listType, index = 1) {
   }
 
   const prefix = listType === 'ordered' ? `${index}. ` : '- '
-  const base = `${'  '.repeat(depth)}${prefix}${lead}`.trimEnd()
+  const base = `${prefix}${lead}`.trimEnd()
 
   if (!rest.length) {
     return base
@@ -270,7 +270,7 @@ function renderTaskItemContent(node, depth) {
   const children = node.content || []
   const firstChild = children[0]
   const rest = children.slice(1)
-  const prefix = `${'  '.repeat(depth)}- [${node.attrs?.checked ? 'x' : ' '}] `
+  const prefix = `- [${node.attrs?.checked ? 'x' : ' '}] `
   const lead = firstChild?.type === 'paragraph' ? renderInline(firstChild.content || []) : renderNode(firstChild, depth + 1)
   const base = `${prefix}${lead || ''}`.trimEnd()
 
