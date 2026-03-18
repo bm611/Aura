@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { IconArrowRight, IconCloud } from '@tabler/icons-react';
+import { ArrowRight01Icon, CloudIcon } from '@hugeicons/core-free-icons';
+import Icon from './Icon';
 
 export default function LandingPage({ onStart, onCreateNew, onSignIn }) {
   const [mounted, setMounted] = useState(false);
@@ -68,7 +69,7 @@ export default function LandingPage({ onStart, onCreateNew, onSignIn }) {
                 >
                   <span className="text-base font-semibold tracking-wide">Get Started</span>
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 transition-transform duration-300 shadow-sm group-hover:translate-x-1 group-hover:bg-white/30">
-                    <IconArrowRight size={16} stroke={2} />
+                    <Icon icon={ArrowRight01Icon} size={16} stroke={2} />
                   </div>
                 </button>
 
@@ -76,7 +77,7 @@ export default function LandingPage({ onStart, onCreateNew, onSignIn }) {
                   onClick={onSignIn}
                   className="group inline-flex items-center gap-2.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-6 py-3.5 text-[14px] font-medium text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)] hover:border-[var(--border-default)] active:scale-[0.97]"
                 >
-                  <IconCloud size={16} stroke={1.5} className="transition-colors duration-300 group-hover:text-[var(--accent)]" />
+                  <Icon icon={CloudIcon} size={16} stroke={1.5} className="transition-colors duration-300 group-hover:text-[var(--accent)]" />
                   <span>Sign in to sync</span>
                 </button>
               </div>

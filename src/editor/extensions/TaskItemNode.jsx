@@ -1,6 +1,7 @@
 import { NodeViewContent, NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react'
 import TaskItem from '@tiptap/extension-task-item'
-import { IconSquare, IconSquareCheckFilled } from '@tabler/icons-react'
+import { SquareIcon, CheckmarkSquare01Icon } from '@hugeicons/core-free-icons'
+import Icon from '../../components/Icon'
 
 function TaskItemView({ node, updateAttributes }) {
   const { checked } = node.attrs
@@ -37,7 +38,7 @@ function TaskItemView({ node, updateAttributes }) {
           onChange={(e) => updateAttributes({ checked: e.target.checked })}
           style={{ display: 'none' }}
         />
-        {checked ? <IconSquareCheckFilled size={18} stroke={1.5} /> : <IconSquare size={18} stroke={1.5} />}
+        {checked ? <Icon icon={CheckmarkSquare01Icon} size={18} stroke={1.5} /> : <Icon icon={SquareIcon} size={18} stroke={1.5} />}
       </label>
 
       <NodeViewContent

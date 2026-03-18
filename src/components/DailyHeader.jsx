@@ -1,55 +1,56 @@
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { IconSun, IconCoffee, IconTarget, IconFlame, IconRocket, IconComet, IconMoonStars } from '@tabler/icons-react'
+import { Sun01Icon, Coffee01Icon, Target01Icon, FireIcon, RocketIcon, CometIcon, Moon02Icon } from '@hugeicons/core-free-icons'
+import Icon from './Icon'
 
 const DAY_THEMES = [
   {
     day: 'Sunday',
     greeting: 'Restful Sunday',
     message: 'Take a breath and reflect on the week.',
-    icon: IconMoonStars,
+    icon: Moon02Icon,
     color: 'var(--color-h2)',
   },
   {
     day: 'Monday',
     greeting: 'Fresh Monday',
     message: "A new week stands before you. Let's get to work.",
-    icon: IconCoffee,
+    icon: Coffee01Icon,
     color: 'var(--success)',
   },
   {
     day: 'Tuesday',
     greeting: 'Focused Tuesday',
     message: 'Keep the momentum going.',
-    icon: IconTarget,
+    icon: Target01Icon,
     color: 'var(--color-h3)',
   },
   {
     day: 'Wednesday',
     greeting: 'Hump Day Wednesday',
     message: 'Halfway there. Keep pushing forward.',
-    icon: IconFlame,
+    icon: FireIcon,
     color: 'var(--warning)',
   },
   {
     day: 'Thursday',
     greeting: 'Pre-Friday Thursday',
     message: 'The weekend is almost in sight.',
-    icon: IconRocket,
+    icon: RocketIcon,
     color: 'var(--color-h2)',
   },
   {
     day: 'Friday',
     greeting: 'Fabulous Friday',
     message: 'Finish out the week strong.',
-    icon: IconComet,
+    icon: CometIcon,
     color: 'var(--accent)',
   },
   {
     day: 'Saturday',
     greeting: 'Joyful Saturday',
     message: 'Time to enjoy and recharge.',
-    icon: IconSun,
+    icon: Sun01Icon,
     color: 'var(--warning)',
   },
 ]
@@ -61,7 +62,6 @@ export default function DailyHeader({ note }) {
   }, [note])
 
   const theme = DAY_THEMES[dayIndex]
-  const Icon = theme.icon
 
   return (
     <motion.div
@@ -76,7 +76,7 @@ export default function DailyHeader({ note }) {
         className="absolute top-0 right-0 p-8 pointer-events-none transform translate-x-4 -translate-y-4"
         style={{ color: theme.color, opacity: 0.08 }}
       >
-        <Icon size={120} stroke={1} />
+        <Icon icon={theme.icon} size={120} stroke={1} />
       </div>
 
       <div className="relative z-10 flex items-center gap-4">
@@ -88,7 +88,7 @@ export default function DailyHeader({ note }) {
             color: theme.color,
           }}
         >
-          <Icon size={24} stroke={1.5} />
+          <Icon icon={theme.icon} size={24} stroke={1.5} />
         </div>
         <div>
           <h2

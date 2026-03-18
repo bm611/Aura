@@ -1,23 +1,24 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
-  IconSearch,
-  IconLayoutSidebarFilled,
-  IconFolder,
-  IconFile,
-  IconTrash,
-  IconEdit,
-  IconChevronRight,
-  IconChevronDown,
-  IconFilePlus,
-  IconFolderPlus,
-  IconMinus,
-  IconHome,
-  IconX,
-  IconCloud,
-  IconCloudCheck,
-  IconDeviceFloppy,
-  IconLoader2,
-} from '@tabler/icons-react';
+  Search01Icon,
+  SidebarLeftIcon,
+  Folder01Icon,
+  File01Icon,
+  Delete01Icon,
+  Edit01Icon,
+  ArrowRight01Icon,
+  ArrowDown01Icon,
+  FileAddIcon,
+  FolderAddIcon,
+  MinusSignIcon,
+  Home01Icon,
+  Cancel01Icon,
+  CloudIcon,
+  CloudSavingDone01Icon,
+  FloppyDiskIcon,
+  Loading01Icon,
+} from '@hugeicons/core-free-icons';
+import Icon from './Icon';
 import { useAuth } from '../contexts/AuthContext';
 
 // ─── File Tree Helpers ─────────────────────────────────────────────────────────
@@ -76,20 +77,24 @@ export function flattenTree(nodes) {
   return result;
 }
 
-// ─── Icons ────────────────────────────────────────────────────────────────────
-const Icon = ({ n, s = 14 }) => {
-  const props = { size: s, stroke: 1.5, style: { display: "block" } };
-  if (n === 'folder') return <IconFolder {...props} />;
-  if (n === 'file') return <IconFile {...props} />;
-  if (n === 'trash') return <IconTrash {...props} />;
-  if (n === 'edit') return <IconEdit {...props} />;
-  if (n === 'chevR') return <IconChevronRight {...props} />;
-  if (n === 'chevD') return <IconChevronDown {...props} />;
-  if (n === 'newFile') return <IconFilePlus {...props} />;
-  if (n === 'newFolder') return <IconFolderPlus {...props} />;
-  if (n === 'minus') return <IconMinus {...props} />;
-  return null;
-};
+// ─── Icon key → Hugeicons data object map ────────────────────────────────────
+const ICON_MAP = {
+  folder: Folder01Icon,
+  file: File01Icon,
+  trash: Delete01Icon,
+  edit: Edit01Icon,
+  chevR: ArrowRight01Icon,
+  chevD: ArrowDown01Icon,
+  newFile: FileAddIcon,
+  newFolder: FolderAddIcon,
+  minus: MinusSignIcon,
+}
+
+function SidebarIcon({ n, s = 14 }) {
+  const iconData = ICON_MAP[n]
+  if (!iconData) return null
+  return <Icon icon={iconData} size={s} strokeWidth={1.5} style={{ display: 'block' }} />
+}
 
 // ─── Sync Status Badge ────────────────────────────────────────────────────────
 function SyncBadge({ syncing, syncStatus }) {
@@ -101,7 +106,7 @@ function SyncBadge({ syncing, syncStatus }) {
   if (!user) {
     return (
       <div className="sync-badge sync-badge--local" title="Notes saved locally in your browser">
-        <IconDeviceFloppy size={13} stroke={1.5} />
+        <Icon icon={FloppyDiskIcon} size={13} stroke={1.5} />
         <span>Local</span>
       </div>
     )
@@ -110,7 +115,7 @@ function SyncBadge({ syncing, syncStatus }) {
   if (state === 'offline') {
     return (
       <div className="sync-badge sync-badge--offline" title="Offline — changes are safe locally">
-        <IconCloud size={13} stroke={1.5} />
+        <Icon icon={CloudIcon} size={13} stroke={1.5} />
         <span>{message || 'Offline'}</span>
       </div>
     )
@@ -119,7 +124,7 @@ function SyncBadge({ syncing, syncStatus }) {
   if (state === 'error') {
     return (
       <div className="sync-badge sync-badge--error" title={error || 'Cloud sync failed'}>
-        <IconCloud size={13} stroke={1.5} />
+        <Icon icon={CloudIcon} size={13} stroke={1.5} />
         <span>{message || 'Sync failed'}</span>
       </div>
     )
@@ -128,7 +133,7 @@ function SyncBadge({ syncing, syncStatus }) {
   if (syncing || state === 'syncing') {
     return (
       <div className="sync-badge sync-badge--syncing" title="Saving to cloud…">
-        <IconLoader2 size={13} stroke={2} className="sync-spin" />
+        <Icon icon={Loading01Icon} size={13} stroke={2} className="sync-spin" />
         <span>Syncing…</span>
       </div>
     )
@@ -136,7 +141,7 @@ function SyncBadge({ syncing, syncStatus }) {
 
   return (
     <div className="sync-badge sync-badge--synced" title={`Synced to cloud as ${user.email}`}>
-      <IconCloudCheck size={13} stroke={1.5} />
+      <Icon icon={CloudSavingDone01Icon} size={13} stroke={1.5} />
       <span>{message || 'Synced'}</span>
     </div>
   )
@@ -223,10 +228,10 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
         }}
       >
         <span className={`tn-arrow relative after:absolute after:-inset-2 ${isOpen ? "open" : ""}`} style={{ opacity: isFolder ? 1 : 0 }}>
-          <Icon n="chevR" s={12} />
+          <SidebarIcon n="chevR" s={12} />
         </span>
         <span className="tn-icon">
-          <Icon n={isFolder ? (isOpen ? "folder" : "folder") : "file"} s={14} />
+          <SidebarIcon n={isFolder ? (isOpen ? "folder" : "folder") : "file"} s={14} />
         </span>
         {renaming ? (
           <input ref={renameRef} className="ren-input" value={renameVal}
@@ -240,11 +245,11 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
         {hover && !renaming && (
           <span className="tn-actions" onClick={e => e.stopPropagation()}>
             {isFolder && <>
-              <button title="New File" onClick={() => { setCreatingIn({ parentId: node.id, type: "file" }); toggleExpand(node.id, true); }}><Icon n="newFile" s={12} /></button>
-              <button title="New Folder" onClick={() => { setCreatingIn({ parentId: node.id, type: "folder" }); toggleExpand(node.id, true); }}><Icon n="newFolder" s={12} /></button>
+              <button title="New File" onClick={() => { setCreatingIn({ parentId: node.id, type: "file" }); toggleExpand(node.id, true); }}><SidebarIcon n="newFile" s={12} /></button>
+              <button title="New Folder" onClick={() => { setCreatingIn({ parentId: node.id, type: "folder" }); toggleExpand(node.id, true); }}><SidebarIcon n="newFolder" s={12} /></button>
             </>}
-            <button title="Rename" onClick={() => setRenaming(true)} className="relative transition-transform active:scale-[0.9] after:absolute after:-inset-2"><Icon n="edit" s={12} /></button>
-            <button title="Delete" onClick={() => onDelete(node.id)} className="hover-danger relative transition-transform active:scale-[0.9] after:absolute after:-inset-2"><Icon n="trash" s={12} /></button>
+            <button title="Rename" onClick={() => setRenaming(true)} className="relative transition-transform active:scale-[0.9] after:absolute after:-inset-2"><SidebarIcon n="edit" s={12} /></button>
+            <button title="Delete" onClick={() => onDelete(node.id)} className="hover-danger relative transition-transform active:scale-[0.9] after:absolute after:-inset-2"><SidebarIcon n="trash" s={12} /></button>
           </span>
         )}
       </div>
@@ -260,22 +265,22 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
             {isFolder ? (
               <>
                 <button onClick={(e) => { e.stopPropagation(); setCreatingIn({ parentId: node.id, type: "file" }); toggleExpand(node.id, true); setContextMenu(null); }}>
-                  <Icon n="newFile" s={14} />
+                  <SidebarIcon n="newFile" s={14} />
                   <span>New File</span>
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); setCreatingIn({ parentId: node.id, type: "folder" }); toggleExpand(node.id, true); setContextMenu(null); }}>
-                  <Icon n="newFolder" s={14} />
+                  <SidebarIcon n="newFolder" s={14} />
                   <span>New Folder</span>
                 </button>
                 <div className="ctx-divider" />
               </>
             ) : null}
             <button onClick={(e) => { e.stopPropagation(); setRenaming(true); setRenameVal(node.name); setContextMenu(null); }}>
-              <Icon n="edit" s={14} />
+              <SidebarIcon n="edit" s={14} />
               <span>Rename</span>
             </button>
             <button className="ctx-danger" onClick={(e) => { e.stopPropagation(); onDelete(node.id); setContextMenu(null); }}>
-              <Icon n="trash" s={14} />
+              <SidebarIcon n="trash" s={14} />
               <span>Delete</span>
             </button>
           </div>
@@ -309,7 +314,7 @@ function InlineCreator({ depth, type, onConfirm, onCancel }) {
   return (
     <div className="inline-creator" style={{ paddingLeft: depth * 14 + 10 }}>
       <span className="tn-icon">
-        <Icon n={type === "folder" ? "folder" : "file"} s={13} />
+        <SidebarIcon n={type === "folder" ? "folder" : "file"} s={13} />
       </span>
       <input ref={ref} className="ren-input focus:border-[var(--accent)]" value={val} placeholder={type === "folder" ? "folder name" : "file name"}
         onChange={e => setVal(e.target.value)}
@@ -484,11 +489,11 @@ export default function Sidebar({
               className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3 flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
               title="Toggle sidebar (Cmd+B)"
             >
-              <IconLayoutSidebarFilled size={18} stroke={1.5} />
+              <Icon icon={SidebarLeftIcon} size={18} stroke={1.5} />
             </button>
 
             <div className="sb-actions">
-              <button title="Home" onClick={() => { onSelectNote(null); if (window.innerWidth < 768) onToggleCollapse(); }} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3"><IconHome size={16} stroke={1.5} /></button>
+              <button title="Home" onClick={() => { onSelectNote(null); if (window.innerWidth < 768) onToggleCollapse(); }} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3"><Icon icon={Home01Icon} size={16} stroke={1.5} /></button>
             </div>
           </div>
 
@@ -499,7 +504,7 @@ export default function Sidebar({
               className="sb-create-btn flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2 py-1.5 text-[12px] font-medium text-[var(--text-secondary)] active:scale-[0.97]"
               style={{ fontFamily: '"Outfit", sans-serif' }}
             >
-              <IconFilePlus size={14} stroke={1.5} />
+              <Icon icon={FileAddIcon} size={14} stroke={1.5} />
               New File
             </button>
             <button
@@ -507,14 +512,14 @@ export default function Sidebar({
               className="sb-create-btn flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2 py-1.5 text-[12px] font-medium text-[var(--text-secondary)] active:scale-[0.97]"
               style={{ fontFamily: '"Outfit", sans-serif' }}
             >
-              <IconFolderPlus size={14} stroke={1.5} />
+              <Icon icon={FolderAddIcon} size={14} stroke={1.5} />
               New Folder
             </button>
           </div>
 
           <div className="sb-search-container">
             <label className="sb-search">
-              <IconSearch size={16} stroke={1.5} className="shrink-0 text-[var(--text-muted)] transition-colors" />
+              <Icon icon={Search01Icon} size={16} stroke={1.5} className="shrink-0 text-[var(--text-muted)] transition-colors" />
               <input
                 type="text"
                 value={searchQuery}
@@ -528,7 +533,7 @@ export default function Sidebar({
                   className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3 shrink-0 flex items-center justify-center w-5 h-5 rounded-full text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
                   aria-label="Clear search"
                 >
-                  <IconX size={12} stroke={2} />
+                  <Icon icon={Cancel01Icon} size={12} stroke={2} />
                 </button>
               )}
             </label>
@@ -575,7 +580,7 @@ export default function Sidebar({
             className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3 md:hidden absolute bottom-[calc(2.5rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] shadow-2xl backdrop-blur-xl transition-all active:scale-95"
             aria-label="Close sidebar"
           >
-            <IconX size={24} stroke={2} />
+            <Icon icon={Cancel01Icon} size={24} stroke={2} />
           </button>
         )}
 

@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
-import { IconX } from '@tabler/icons-react'
+import { Cancel01Icon } from '@hugeicons/core-free-icons'
+import Icon from './Icon'
 
 // Deterministic color assignment from the app's brand palette.
 // Each color has a dark-mode and light-mode variant defined via CSS classes.
@@ -92,7 +93,7 @@ export default function TagInput({ tags = [], onChange }) {
               tabIndex={-1}
               aria-label={`Remove tag ${tag}`}
             >
-              <IconX size={10} stroke={2.5} />
+              <Icon icon={Cancel01Icon} size={10} stroke={2.5} />
             </button>
           </span>
         )

@@ -2,24 +2,25 @@ import { lazy, Suspense, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
 import {
-  IconArrowsMinimize,
-  IconArrowsMaximize,
-  IconAlertCircle,
-  IconCalendar,
-  IconCloudCheck,
-  IconCloudOff,
-  IconDeviceFloppy,
-  IconLoader2,
-  IconMoon,
-  IconSun,
-  IconLayoutSidebarFilled,
-  IconCommand,
-  IconPlus,
-  IconDownload,
-  IconLogout,
-  IconCloudUp,
-  IconChevronLeft,
-} from '@tabler/icons-react'
+  ArrowShrinkIcon,
+  ArrowExpandIcon,
+  AlertCircleIcon,
+  Calendar01Icon,
+  CloudSavingDone01Icon,
+  CloudOffIcon,
+  FloppyDiskIcon,
+  Loading01Icon,
+  Moon01Icon,
+  Sun01Icon,
+  SidebarLeftIcon,
+  CommandIcon,
+  Add01Icon,
+  Download01Icon,
+  Logout01Icon,
+  CloudUploadIcon,
+  ArrowLeft01Icon,
+} from '@hugeicons/core-free-icons'
+import Icon from './Icon'
 import { countBodyWords, estimateReadTime, formatCreatedAt, getNoteDisplayTitle } from '../utils/noteMeta'
 import { docToMarkdown } from '../editor/markdown/markdownConversion'
 import TagInput from './TagInput'
@@ -299,31 +300,31 @@ function getSaveBadgeMeta(saveStatus) {
   switch (saveStatus?.state) {
     case 'syncing':
       return {
-        Icon: IconLoader2,
+        icon: Loading01Icon,
         toneClassName: 'text-[var(--success)] border-[color-mix(in_srgb,var(--success)_26%,transparent)] bg-[color-mix(in_srgb,var(--success)_14%,transparent)]',
         spin: true,
       }
     case 'saved':
       return {
-        Icon: IconCloudCheck,
+        icon: CloudSavingDone01Icon,
         toneClassName: 'text-[var(--success)] border-[color-mix(in_srgb,var(--success)_26%,transparent)] bg-[color-mix(in_srgb,var(--success)_14%,transparent)]',
         spin: false,
       }
     case 'offline':
       return {
-        Icon: IconCloudOff,
+        icon: CloudOffIcon,
         toneClassName: 'text-[var(--warning)] border-[color-mix(in_srgb,var(--warning)_28%,transparent)] bg-[color-mix(in_srgb,var(--warning)_12%,transparent)]',
         spin: false,
       }
     case 'error':
       return {
-        Icon: IconAlertCircle,
+        icon: AlertCircleIcon,
         toneClassName: 'text-[var(--danger)] border-[color-mix(in_srgb,var(--danger)_28%,transparent)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)]',
         spin: false,
       }
     default:
       return {
-        Icon: IconDeviceFloppy,
+        icon: FloppyDiskIcon,
         toneClassName: 'text-[var(--text-muted)] border-[color-mix(in_srgb,var(--text-muted)_24%,transparent)] bg-[color-mix(in_srgb,var(--text-muted)_10%,transparent)]',
         spin: false,
       }
@@ -405,7 +406,7 @@ export default function NoteEditor({
               className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title="Open sidebar (Cmd+B)"
             >
-              <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
+              <Icon icon={SidebarLeftIcon} size={18} strokeWidth={1.5} style={{ transform: "scaleX(-1)" }} />
             </button>
           ) : (
             <div className="hidden md:block w-10" />
@@ -418,7 +419,7 @@ export default function NoteEditor({
               className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
-              {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
+              {theme === 'dark' ? <Icon icon={Sun01Icon} size={18} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={18} strokeWidth={1.5} />}
             </button>
             {user ? (
               <div className="auth-group">
@@ -432,7 +433,7 @@ export default function NoteEditor({
                   className="auth-signout-btn"
                   title="Sign out"
                 >
-                  <IconLogout size={16} stroke={2} />
+                  <Icon icon={Logout01Icon} size={16} strokeWidth={2} />
                 </button>
               </div>
             ) : (
@@ -442,7 +443,7 @@ export default function NoteEditor({
                 className="auth-pill auth-pill--signed-out"
                 title="Sign in to sync your notes"
               >
-                <IconCloudUp size={14} stroke={2} />
+                <Icon icon={CloudUploadIcon} size={14} strokeWidth={2} />
                 <span>Sign in</span>
               </button>
             )}
@@ -471,7 +472,7 @@ export default function NoteEditor({
                 onClick={() => onNewNote?.()}
                 className="neu-btn-primary group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] border border-transparent px-3 py-3 text-[13px] font-semibold text-white shadow-lg shadow-[var(--accent)]/15 transition-all duration-200 hover:brightness-110 active:scale-[0.98] sm:px-6 sm:text-[14px]"
               >
-                <IconPlus size={16} stroke={2.5} className="shrink-0 transition-transform duration-300 group-hover:rotate-90" />
+                <Icon icon={Add01Icon} size={16} strokeWidth={2.5} className="shrink-0 transition-transform duration-300 group-hover:rotate-90" />
                 <span className="truncate">New Note</span>
               </button>
               <button
@@ -479,7 +480,7 @@ export default function NoteEditor({
                 className="group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--bg-surface)]/40 backdrop-blur-md border border-[var(--border-subtle)] px-3 py-3 text-[13px] font-semibold text-[var(--text-primary)] transition-all duration-200 hover:border-[var(--accent)]/50 hover:bg-[var(--bg-surface)]/60 hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] active:scale-[0.98] sm:px-6 sm:text-[14px]"
               >
                 <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-[var(--accent)]/10 text-[var(--accent)] transition-transform duration-300 group-hover:-translate-y-0.5">
-                  <IconCalendar size={14} stroke={2} />
+                  <Icon icon={Calendar01Icon} size={14} strokeWidth={2} />
                 </div>
                 <span className="truncate">Daily Note</span>
               </button>
@@ -531,19 +532,19 @@ export default function NoteEditor({
         <div className="mobile-action-bar" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <div className="mobile-action-bar-inner">
             <button type="button" onClick={onToggleSidebar}>
-              <IconLayoutSidebarFilled size={18} stroke={1.5} />
+              <Icon icon={SidebarLeftIcon} size={18} strokeWidth={1.5} />
             </button>
             <button type="button" onClick={() => onNewNote?.()}>
-              <IconPlus size={18} stroke={1.5} />
+              <Icon icon={Add01Icon} size={18} strokeWidth={1.5} />
             </button>
             {onOpenCommandPalette && (
               <button type="button" onClick={onOpenCommandPalette}>
-                <IconCommand size={18} stroke={1.5} />
+                <Icon icon={CommandIcon} size={18} strokeWidth={1.5} />
               </button>
             )}
             <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} mobile />
             <button type="button" onClick={onToggleTheme}>
-              {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
+              {theme === 'dark' ? <Icon icon={Sun01Icon} size={18} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={18} strokeWidth={1.5} />}
             </button>
           </div>
         </div>
@@ -597,7 +598,7 @@ export default function NoteEditor({
           style={{ color: 'var(--text-muted)', fontSize: '11px' }}
           title="Exit focus mode (⌘⇧F)"
         >
-          <IconArrowsMaximize size={12} stroke={1.5} />
+          <Icon icon={ArrowExpandIcon} size={12} strokeWidth={1.5} />
           <span>Exit</span>
         </button>
       )}
@@ -613,7 +614,7 @@ export default function NoteEditor({
               className="md:hidden relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] after:absolute after:-inset-2 active:scale-[0.97]"
               title="Back to Home"
             >
-              <IconChevronLeft size={22} stroke={2} />
+              <Icon icon={ArrowLeft01Icon} size={22} strokeWidth={2} />
             </button>
 
             {sidebarCollapsed ? (
@@ -623,7 +624,7 @@ export default function NoteEditor({
                 className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
                 title="Open sidebar (Cmd+B)"
               >
-                <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
+                <Icon icon={SidebarLeftIcon} size={18} strokeWidth={1.5} style={{ transform: "scaleX(-1)" }} />
               </button>
             ) : (
               <div className="hidden md:block w-10" />
@@ -637,7 +638,7 @@ export default function NoteEditor({
                 className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
                 title="Export as Markdown"
               >
-                <IconDownload size={18} stroke={1.5} />
+                <Icon icon={Download01Icon} size={18} strokeWidth={1.5} />
               </button>
             )}
             <button
@@ -646,7 +647,7 @@ export default function NoteEditor({
               className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title="Focus mode (⌘⇧F)"
             >
-              <IconArrowsMinimize size={18} stroke={1.5} />
+              <Icon icon={ArrowShrinkIcon} size={18} strokeWidth={1.5} />
             </button>
             <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} />
             <button
@@ -655,7 +656,7 @@ export default function NoteEditor({
               className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
-              {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
+              {theme === 'dark' ? <Icon icon={Sun01Icon} size={18} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={18} strokeWidth={1.5} />}
             </button>
             {/* Auth: show sign-in or user avatar+signout */}
             {user ? (
@@ -670,7 +671,7 @@ export default function NoteEditor({
                   className="auth-signout-btn"
                   title="Sign out"
                 >
-                  <IconLogout size={16} stroke={2} />
+                  <Icon icon={Logout01Icon} size={16} strokeWidth={2} />
                 </button>
               </div>
             ) : (
@@ -680,7 +681,7 @@ export default function NoteEditor({
                 className="relative flex auth-pill auth-pill--signed-out"
                 title="Sign in to sync your notes"
               >
-                <IconCloudUp size={14} stroke={2} />
+                <Icon icon={CloudUploadIcon} size={14} strokeWidth={2} />
                 <span>Sign in</span>
               </button>
             )}
@@ -714,7 +715,7 @@ export default function NoteEditor({
               className="mt-3 text-[12px] text-[var(--text-muted)]"
             >
               <span className="inline-flex items-center gap-1.5">
-                <IconCalendar size={14} stroke={1.5} className="opacity-70" />
+                <Icon icon={Calendar01Icon} size={14} strokeWidth={1.5} className="opacity-70" />
                 {createdAtLabel}
               </span>
 
@@ -762,7 +763,7 @@ export default function NoteEditor({
             className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium ${saveBadgeMeta.toneClassName}`}
             title={saveError || saveDetail}
           >
-            <saveBadgeMeta.Icon size={12} stroke={1.8} className={saveBadgeMeta.spin ? 'sync-spin' : undefined} />
+            <Icon icon={saveBadgeMeta.icon} size={12} strokeWidth={1.8} className={saveBadgeMeta.spin ? 'sync-spin' : undefined} />
             {saveLabel}
           </span>
           {(lastSavedLabel || saveStatus?.state === 'offline') && (
@@ -810,19 +811,19 @@ export default function NoteEditor({
         <div className="mobile-action-bar" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <div className="mobile-action-bar-inner">
             <button type="button" onClick={onToggleSidebar} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
-              <IconLayoutSidebarFilled size={18} stroke={1.5} />
+              <Icon icon={SidebarLeftIcon} size={18} strokeWidth={1.5} />
             </button>
             <button type="button" onClick={() => onNewNote?.()} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
-              <IconPlus size={18} stroke={1.5} />
+              <Icon icon={Add01Icon} size={18} strokeWidth={1.5} />
             </button>
             {onOpenCommandPalette && (
               <button type="button" onClick={onOpenCommandPalette} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
-                <IconCommand size={18} stroke={1.5} />
+                <Icon icon={CommandIcon} size={18} strokeWidth={1.5} />
               </button>
             )}
             <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} mobile />
             <button type="button" onClick={onToggleTheme} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
-              {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
+              {theme === 'dark' ? <Icon icon={Sun01Icon} size={18} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={18} strokeWidth={1.5} />}
             </button>
           </div>
         </div>

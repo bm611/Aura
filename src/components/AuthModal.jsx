@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { IconX, IconLoader2, IconMail, IconLock } from '@tabler/icons-react'
+import { Cancel01Icon, Loading01Icon, Mail01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons'
+import Icon from './Icon'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function AuthModal({ open, onClose }) {
@@ -84,7 +85,7 @@ export default function AuthModal({ open, onClose }) {
             className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
             aria-label="Close"
           >
-            <IconX size={16} stroke={1.5} />
+            <Icon icon={Cancel01Icon} size={16} stroke={1.5} />
           </button>
         </div>
 
@@ -118,7 +119,8 @@ export default function AuthModal({ open, onClose }) {
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           {/* Email */}
           <div className="relative">
-            <IconMail
+            <Icon
+              icon={Mail01Icon}
               size={15}
               stroke={1.5}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none"
@@ -138,7 +140,8 @@ export default function AuthModal({ open, onClose }) {
 
           {/* Password */}
           <div className="relative">
-            <IconLock
+            <Icon
+              icon={LockPasswordIcon}
               size={15}
               stroke={1.5}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none"
@@ -175,7 +178,7 @@ export default function AuthModal({ open, onClose }) {
             className="mt-1 flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] py-3 text-[14px] font-semibold text-white transition-all duration-200 hover:brightness-110 active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed"
             style={{ boxShadow: 'var(--neu-shadow)' }}
           >
-            {loading && <IconLoader2 size={15} stroke={2} className="animate-spin" />}
+            {loading && <Icon icon={Loading01Icon} size={15} stroke={2} className="animate-spin" />}
             {tab === 'signin' ? 'Sign In' : 'Create Account'}
           </button>
         </form>

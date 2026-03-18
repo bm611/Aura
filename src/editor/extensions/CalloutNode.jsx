@@ -2,43 +2,44 @@ import { useState } from 'react'
 import { InputRule, mergeAttributes, Node } from '@tiptap/core'
 import { NodeViewContent, NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react'
 import {
-  IconAlertCircle,
-  IconAlertOctagon,
-  IconAlertTriangle,
-  IconBug,
-  IconChevronDown,
-  IconCircleCheck,
-  IconCircleX,
-  IconClipboardList,
-  IconFileText,
-  IconFlame,
-  IconHelpCircle,
-  IconInfoCircle,
-  IconList,
-  IconMessageCircle,
-  IconPencil,
-  IconTrash,
-} from '@tabler/icons-react'
+  AlertCircleIcon,
+  AlertDiamondIcon,
+  Alert02Icon,
+  BugIcon,
+  ArrowDown01Icon,
+  CheckmarkCircle01Icon,
+  CancelCircleIcon,
+  ClipboardIcon,
+  File01Icon,
+  FireIcon,
+  HelpCircleIcon,
+  InformationCircleIcon,
+  LeftToRightListBulletIcon,
+  MessageCircleReplyIcon,
+  PencilEdit01Icon,
+  Delete01Icon,
+} from '@hugeicons/core-free-icons'
+import Icon from '../../components/Icon'
 
 const CALLOUT_INPUT_PATTERN = /^> \[!([A-Za-z-]+)\]([+-])?\s*(.*)$/
 const CALLOUT_KINDS = ['note', 'tip', 'warning', 'caution', 'important']
 
 const CALLOUT_ICONS = {
-  abstract: IconFileText,
-  bug: IconBug,
-  caution: IconAlertTriangle,
-  danger: IconAlertOctagon,
-  example: IconList,
-  failure: IconCircleX,
-  important: IconAlertCircle,
-  info: IconInfoCircle,
-  note: IconPencil,
-  question: IconHelpCircle,
-  quote: IconMessageCircle,
-  success: IconCircleCheck,
-  tip: IconFlame,
-  todo: IconClipboardList,
-  warning: IconAlertTriangle,
+  abstract: File01Icon,
+  bug: BugIcon,
+  caution: Alert02Icon,
+  danger: AlertDiamondIcon,
+  example: LeftToRightListBulletIcon,
+  failure: CancelCircleIcon,
+  important: AlertCircleIcon,
+  info: InformationCircleIcon,
+  note: PencilEdit01Icon,
+  question: HelpCircleIcon,
+  quote: MessageCircleReplyIcon,
+  success: CheckmarkCircle01Icon,
+  tip: FireIcon,
+  todo: ClipboardIcon,
+  warning: Alert02Icon,
 }
 
 function getDefaultTitle(calloutKind = 'note') {
@@ -48,7 +49,7 @@ function getDefaultTitle(calloutKind = 'note') {
 function CalloutView({ node, updateAttributes, deleteNode, selected }) {
   const [collapsed, setCollapsed] = useState(Boolean(node.attrs.defaultCollapsed))
   const calloutKind = node.attrs.calloutKind || 'note'
-  const Icon = CALLOUT_ICONS[calloutKind] || CALLOUT_ICONS.note
+  const iconData = CALLOUT_ICONS[calloutKind] || CALLOUT_ICONS.note
 
   const handleToggleKind = (event) => {
     event.preventDefault()
@@ -74,7 +75,7 @@ function CalloutView({ node, updateAttributes, deleteNode, selected }) {
           onClick={handleToggleKind}
           title="Change type"
         >
-          <Icon size={16} stroke={1.8} />
+          <Icon icon={iconData} size={16} stroke={1.8} />
         </button>
         <input
           className="aura-callout-title"
@@ -95,7 +96,7 @@ function CalloutView({ node, updateAttributes, deleteNode, selected }) {
               }}
               aria-label={collapsed ? 'Expand callout' : 'Collapse callout'}
             >
-              <IconChevronDown size={14} stroke={1.7} />
+              <Icon icon={ArrowDown01Icon} size={14} stroke={1.7} />
             </button>
           ) : null}
           <button
@@ -108,7 +109,7 @@ function CalloutView({ node, updateAttributes, deleteNode, selected }) {
             }}
             title="Delete callout"
           >
-            <IconTrash size={14} stroke={1.7} />
+            <Icon icon={Delete01Icon} size={14} stroke={1.7} />
           </button>
         </div>
       </div>

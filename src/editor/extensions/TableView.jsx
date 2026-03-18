@@ -1,6 +1,7 @@
 import { NodeViewContent, NodeViewWrapper } from '@tiptap/react'
 import { useCallback, useRef } from 'react'
-import { IconPlus } from '@tabler/icons-react'
+import { Add01Icon } from '@hugeicons/core-free-icons'
+import Icon from '../../components/Icon'
 
 function TableView({ editor, node, getPos }) {
   const gridRef = useRef(null)
@@ -81,7 +82,7 @@ function TableView({ editor, node, getPos }) {
             transition: 'opacity 0.15s ease',
           }}
         >
-          <IconPlus size={16} stroke={1.5} />
+          <Icon icon={Add01Icon} size={16} stroke={1.5} />
         </button>
 
         {/* (row 2, col 1) — add row, exactly as wide as the table */}
@@ -106,7 +107,7 @@ function TableView({ editor, node, getPos }) {
             transition: 'opacity 0.15s ease',
           }}
         >
-          <IconPlus size={16} stroke={1.5} />
+          <Icon icon={Add01Icon} size={16} stroke={1.5} />
         </button>
       </div>
 

@@ -1,14 +1,15 @@
 import { useEffect, useCallback, useRef, useState } from 'react'
 import {
-  IconArrowsMinimize,
-  IconArrowsMaximize,
-  IconTerminal2,
-  IconSearch,
-  IconMoon,
-  IconFileText,
-  IconSun,
-  IconPlus,
-} from '@tabler/icons-react'
+  ArrowShrinkIcon,
+  ArrowExpandIcon,
+  ComputerTerminalIcon,
+  Search01Icon,
+  Moon01Icon,
+  File01Icon,
+  Sun01Icon,
+  Add01Icon,
+} from '@hugeicons/core-free-icons'
+import Icon from './components/Icon'
 
 import Sidebar, { flattenTree, insertNode, deleteNode, updateFileNode, findNode } from './components/Sidebar'
 import NoteEditor from './components/NoteEditor'
@@ -988,7 +989,7 @@ function AppInner() {
       section: 'Actions',
       title: 'New note',
       subtitle: 'Create a blank note',
-      icon: <IconPlus size={16} stroke={1.5} />,
+      icon: <Icon icon={Add01Icon} size={16} strokeWidth={1.5} />,
       keywords: ['create', 'note', 'new'],
       run: () => handleNewNote(),
     },
@@ -997,7 +998,7 @@ function AppInner() {
       section: 'Actions',
       title: theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
       subtitle: 'Toggle the editorial theme',
-      icon: theme === 'dark' ? <IconSun size={16} stroke={1.5} /> : <IconMoon size={16} stroke={1.5} />,
+      icon: theme === 'dark' ? <Icon icon={Sun01Icon} size={16} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={16} strokeWidth={1.5} />,
       keywords: ['theme', 'color', 'dark', 'light'],
       run: () => toggleTheme(),
     },
@@ -1006,7 +1007,7 @@ function AppInner() {
       section: 'Actions',
       title: 'Reveal sidebar search',
       subtitle: 'Open the note index and search surface',
-      icon: <IconSearch size={16} stroke={1.5} />,
+      icon: <Icon icon={Search01Icon} size={16} strokeWidth={1.5} />,
       keywords: ['search', 'find', 'sidebar'],
       run: () => setSidebarCollapsed(false),
     },
@@ -1015,7 +1016,7 @@ function AppInner() {
       section: 'Actions',
       title: focusMode ? 'Exit focus mode' : 'Focus mode',
       subtitle: focusMode ? 'Restore the full editor UI' : 'Hide all chrome for distraction-free writing',
-      icon: focusMode ? <IconArrowsMaximize size={16} stroke={1.5} /> : <IconArrowsMinimize size={16} stroke={1.5} />,
+      icon: focusMode ? <Icon icon={ArrowExpandIcon} size={16} strokeWidth={1.5} /> : <Icon icon={ArrowShrinkIcon} size={16} strokeWidth={1.5} />,
       keywords: ['focus', 'zen', 'distraction', 'write', 'story', 'fullscreen'],
       run: () => toggleFocusMode(),
     },
@@ -1040,7 +1041,7 @@ function AppInner() {
     section: 'Notes',
     title: getNoteDisplayTitle(result.note),
     subtitle: result.excerpt,
-    icon: <IconFileText size={16} stroke={1.5} />,
+      icon: <Icon icon={File01Icon} size={16} strokeWidth={1.5} />,
     hint: '',
     keywords: ['note'],
     run: () => setActiveNoteId(result.note.id),
@@ -1051,7 +1052,7 @@ function AppInner() {
     section: 'Insert',
     title: command.title,
     subtitle: `Insert /${command.trigger} into the editor`,
-    icon: <IconTerminal2 size={16} stroke={1.5} />,
+      icon: <Icon icon={ComputerTerminalIcon} size={16} strokeWidth={1.5} />,
     keywords: command.keywords || [],
     run: () => {
       editorApiRef.current?.focus()
