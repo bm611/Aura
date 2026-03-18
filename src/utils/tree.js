@@ -167,3 +167,56 @@ export function getVisibleFiles(nodes, expanded) {
 
   return result
 }
+
+export function getParentId(tree, nodeId) {
+  for (const node of tree) {
+    if (node.children) {
+      for (const child of node.children) {
+        if (child.id === nodeId) {
+          return node.id
+        }
+      }
+
+      const deeper = getParentId(node.children, nodeId)
+      if (deeper !== null) {
+        return deeper
+      }
+    }
+  }
+
+  return null
+}
+
+export function rebuildTreeFromFlat(flatItems) {
+  const folderMap = {}
+
+  for (const item of flatItems) {
+    if (item.type === 'folder') {
+      const { parentId, ...rest } = item
+      folderMap[item.id] = { ...rest, children: [] }
+    }
+  }
+
+  const root = []
+
+  for (const item of flatItems) {
+    const { parentId, ...rest } = item
+
+    if (item.type === 'folder') {
+      const folderNode = folderMap[item.id]
+      if (parentId !== null && folderMap[parentId]) {
+        folderMap[parentId].children.push(folderNode)
+      } else {
+        root.push(folderNode)
+      }
+    } else {
+      if (parentId !== null && folderMap[parentId]) {
+        folderMap[parentId].children.push(rest)
+      } else {
+        root.push(rest)
+      }
+    }
+  }
+
+  return root
+}

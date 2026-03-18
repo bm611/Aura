@@ -28,6 +28,10 @@
  * create trigger notes_updated_at
  *   before update on notes
  *   for each row execute function update_updated_at();
+ *
+ * -- Run this migration to add folder support:
+ * -- alter table notes add column if not exists parent_id uuid references notes(id) on delete set null;
+ * -- alter table notes add column if not exists type text not null default 'file';
  * ─────────────────────────────────────────────
  */
 
@@ -37,15 +41,17 @@ import { supabase } from './supabase'
 function rowToNote(row) {
   return {
     id: row.id,
-    type: 'file',
+    type: row.type || 'file',
     name: row.title || 'Untitled',
     title: row.title || '',
     content: row.content || '',
     contentDoc: row.content_doc || undefined,
     editorVersion: row.content_doc ? 2 : undefined,
     tags: row.tags || [],
+    parentId: row.parent_id || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    ...(row.type === 'folder' ? { children: [] } : {}),
   }
 }
 
@@ -54,10 +60,12 @@ function noteToRow(note, userId) {
   return {
     id: note.id,
     user_id: userId,
-    title: note.title || '',
+    title: note.title || note.name || '',
     content: note.content || '',
     content_doc: note.contentDoc || null,
     tags: note.tags || [],
+    parent_id: note.parentId || null,
+    type: note.type || 'file',
   }
 }
 

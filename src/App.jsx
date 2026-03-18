@@ -12,7 +12,7 @@ import {
 import Icon from './components/Icon'
 
 import Sidebar from './components/Sidebar'
-import { flattenTree, insertNode, deleteNode, updateFileNode, findNode } from './utils/tree'
+import { flattenTree, insertNode, deleteNode, updateFileNode, findNode, getParentId, rebuildTreeFromFlat } from './utils/tree'
 import NoteEditor from './components/NoteEditor'
 import CommandPalette from './components/CommandPalette'
 import LandingPage from './components/LandingPage'
@@ -262,7 +262,18 @@ function mergeLocalChangesIntoCloud(localTree, cloudNotes) {
     }
   }
 
-  // Include cloud-only notes (not present in local tree at all)
+  const hasLocalTree = (localTree || []).length > 0
+
+  // Collect all local node IDs (files + folders) for duplicate detection
+  const collectIds = (nodes) => {
+    for (const n of nodes) {
+      localById.set(n.id, n)
+      if (n.children) collectIds(n.children)
+    }
+  }
+  if (hasLocalTree) collectIds(localTree)
+
+  // Include cloud-only items (not present in local tree at all)
   const cloudOnlyNotes = []
   for (const cloudNote of cloudById.values()) {
     if (!localById.has(cloudNote.id)) {
@@ -271,23 +282,35 @@ function mergeLocalChangesIntoCloud(localTree, cloudNotes) {
     }
   }
 
-  // Walk localTree preserving folder structure, substituting resolved note content
-  const applyResolved = (nodes) => {
-    return nodes.map((node) => {
-      if (node.type === 'folder') {
-        return { ...node, children: applyResolved(node.children || []) }
-      }
-      // file node — replace with resolved version if available
-      return resolvedById.get(node.id) ?? node
-    })
+  if (hasLocalTree) {
+    // Walk localTree preserving folder structure, substituting resolved note content
+    const applyResolved = (nodes) => {
+      return nodes.map((node) => {
+        if (node.type === 'folder') {
+          return { ...node, children: applyResolved(node.children || []) }
+        }
+        // file node — replace with resolved version if available
+        return resolvedById.get(node.id) ?? node
+      })
+    }
+
+    const structuredTree = applyResolved(localTree)
+
+    // Append cloud-only files at root level; skip folders (local tree has the structure)
+    const cloudOnlyFiles = cloudOnlyNotes.filter(n => n.type !== 'folder')
+    const mergedTree = cloudOnlyFiles.length > 0
+      ? [...structuredTree, ...cloudOnlyFiles]
+      : structuredTree
+
+    return {
+      mergedTree: ensureDailyFolder(mergedTree),
+      notesToUpload: Array.from(notesToUploadById.values()),
+    }
   }
 
-  const structuredTree = applyResolved(localTree || [])
-
-  // Append cloud-only notes at root level (they have no local folder placement)
-  const mergedTree = cloudOnlyNotes.length > 0
-    ? [...structuredTree, ...cloudOnlyNotes]
-    : structuredTree
+  // No local tree (new device) — rebuild folder structure from cloud parentId
+  const allResolved = Array.from(resolvedById.values())
+  const mergedTree = rebuildTreeFromFlat(allResolved)
 
   return {
     mergedTree: ensureDailyFolder(mergedTree),
@@ -418,7 +441,8 @@ function AppInner() {
     }
 
     try {
-      await upsertNote(note, user.id)
+      const parentId = getParentId(treeRef.current, note.id)
+      await upsertNote({ ...note, parentId }, user.id)
       const syncedAt = new Date().toISOString()
       setSyncError(null)
       setFailedSyncNoteIds((currentIds) => currentIds.filter((id) => id !== noteId))
@@ -638,9 +662,29 @@ function AppInner() {
     setCommandPaletteQuery('')
   }, [])
 
+  const syncFolderToCloud = useCallback(async (folder, parentId = null) => {
+    if (!user) return
+    try {
+      const now = new Date().toISOString()
+      await upsertNote({
+        id: folder.id,
+        type: 'folder',
+        title: folder.name || '',
+        name: folder.name || '',
+        content: '',
+        parentId,
+        createdAt: folder.createdAt || now,
+        updatedAt: folder.updatedAt || now,
+      }, user.id)
+    } catch (err) {
+      console.error('Failed to sync folder:', err)
+    }
+  }, [user])
+
   const createNote = useCallback(
     (overrides = {}, options = {}) => {
       const now = new Date().toISOString()
+      const parentId = options.parentId ?? null
       const note = normalizeNote({
         id: generateId(),
         type: 'file',
@@ -652,12 +696,12 @@ function AppInner() {
         ...overrides,
       })
 
-      setTree((previousTree) => insertNode(previousTree, null, note))
+      setTree((previousTree) => insertNode(previousTree, parentId, note))
 
       // Immediately persist to cloud if signed in
       if (user) {
         setSyncing(true)
-        syncNoteToCloud(note).finally(() => {
+        syncNoteToCloud({ ...note, parentId }).finally(() => {
           finishSyncingIfIdle()
         })
       }
@@ -1142,6 +1186,7 @@ function AppInner() {
           onSearchChange={setSidebarSearch}
           width={sbWidth}
           onResizeStart={onResizeStart}
+          syncFolderToCloud={syncFolderToCloud}
         />
 
         <div className={`flex flex-1 min-w-0 transition-[padding] duration-300 ${focusMode ? 'p-0' : 'p-0 md:p-2 md:pl-0'}`}>

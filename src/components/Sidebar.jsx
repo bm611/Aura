@@ -20,7 +20,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import Icon from './Icon';
 import { useAuth } from '../contexts/AuthContext';
-import { insertNode, renameNode, getVisibleFiles } from '../utils/tree';
+import { insertNode, renameNode, findNode, getParentId, getVisibleFiles } from '../utils/tree';
 
 // ─── Icon key → Hugeicons data object map ────────────────────────────────────
 const ICON_MAP = {
@@ -261,6 +261,7 @@ export default function Sidebar({
   setTree,
   activeNoteId,
   onSelectNote,
+  onNewNote,
   onDeleteNote,
   collapsed,
   onToggleCollapse,
@@ -270,6 +271,7 @@ export default function Sidebar({
   onResizeStart,
   syncing = false,
   syncStatus = null,
+  syncFolderToCloud,
 }) {
   const [expanded, setExpanded] = useState(new Set([1])); // default expand could be empty or root folder if needed
   const [creatingIn, setCreatingIn] = useState(null);
@@ -288,23 +290,24 @@ export default function Sidebar({
     if (type === "folder") {
       const newNode = { id: crypto.randomUUID(), name, type: "folder", children: [] };
       setTree(prev => insertNode(prev, parentId, newNode));
+      syncFolderToCloud?.(newNode, parentId)
     } else {
-      const now = new Date().toISOString()
-      const newNode = {
-        id: crypto.randomUUID(),
-        type: 'file',
-        name,
-        title: name,
-        content: '',
-        createdAt: now,
-        updatedAt: now,
-      };
-      setTree(prev => insertNode(prev, parentId, newNode));
-      onSelectNote(newNode.id);
-      if (window.innerWidth < 768) onToggleCollapse();
+      const newNote = onNewNote({ title: name }, { parentId, activate: true })
+      if (newNote && window.innerWidth < 768) onToggleCollapse();
     }
     setCreatingIn(null);
   };
+
+  const handleRename = (id, name) => {
+    setTree(prev => {
+      const node = findNode(prev, id)
+      const updated = renameNode(prev, id, name)
+      if (node?.type === 'folder') {
+        syncFolderToCloud?.({ ...node, name, title: name }, getParentId(prev, id))
+      }
+      return updated
+    })
+  }
 
   const handleRootCreate = (type) => setCreatingIn({ parentId: null, type });
 
@@ -500,7 +503,7 @@ export default function Sidebar({
                   <TreeNode key={node.id} node={node} depth={0} activeId={activeNoteId}
                     onSelect={(id) => { onSelectNote(id); if (window.innerWidth < 768) onToggleCollapse(); }}
                     onDelete={(id) => onDeleteNote(id)}
-                    onRename={(id, name) => setTree(prev => renameNode(prev, id, name))}
+                    onRename={handleRename}
                     expanded={expanded} toggleExpand={toggleExpand}
                     creatingIn={creatingIn} setCreatingIn={setCreatingIn}
                     onCreateConfirm={handleCreateConfirm} />
@@ -538,7 +541,7 @@ export default function Sidebar({
                         <TreeNode key={node.id} node={node} depth={0} activeId={activeNoteId}
                           onSelect={(id) => { onSelectNote(id); if (window.innerWidth < 768) onToggleCollapse(); }}
                           onDelete={(id) => onDeleteNote(id)}
-                          onRename={(id, name) => setTree(prev => renameNode(prev, id, name))}
+                          onRename={handleRename}
                           expanded={expanded} toggleExpand={toggleExpand}
                           creatingIn={creatingIn} setCreatingIn={setCreatingIn}
                           onCreateConfirm={handleCreateConfirm} />
@@ -571,7 +574,7 @@ export default function Sidebar({
                         <TreeNode key={node.id} node={node} depth={0} activeId={activeNoteId}
                           onSelect={(id) => { onSelectNote(id); if (window.innerWidth < 768) onToggleCollapse(); }}
                           onDelete={(id) => onDeleteNote(id)}
-                          onRename={(id, name) => setTree(prev => renameNode(prev, id, name))}
+                          onRename={handleRename}
                           expanded={expanded} toggleExpand={toggleExpand}
                           creatingIn={creatingIn} setCreatingIn={setCreatingIn}
                           onCreateConfirm={handleCreateConfirm} />
