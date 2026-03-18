@@ -13,7 +13,7 @@ function TaskItemView({ node, updateAttributes }) {
       className={`task-item ${checked ? 'is-checked' : ''}`}
       style={{
         display: 'flex',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         margin: '0.2rem 0',
         listStyle: 'none',
       }}
@@ -25,7 +25,6 @@ function TaskItemView({ node, updateAttributes }) {
           alignItems: 'center',
           justifyContent: 'center',
           marginRight: '0.5rem',
-          marginTop: '0.15rem',
           cursor: 'pointer',
           userSelect: 'none',
           color: checked ? 'var(--accent)' : 'var(--text-muted)',
