@@ -547,31 +547,6 @@ function AppInner() {
     }
   }, [clearPendingUpsert, queuePendingUpsert, user])
 
-  const retryFailedSyncs = useCallback(async () => {
-    if (!user || (failedSyncNoteIds.length === 0 && Object.keys(pendingUpsertsRef.current).length === 0 && pendingDeleteIdsRef.current.length === 0)) {
-      return
-    }
-
-    if (!navigator.onLine) {
-      setSyncError('Offline — changes are saved and will retry when online.')
-      return
-    }
-
-    setSyncing(true)
-
-    for (const noteId of failedSyncNoteIds) {
-      window.clearTimeout(cloudSaveTimers.current[noteId])
-      cloudSaveTimers.current[noteId] = null
-    }
-
-    const didFlushDeletes = await flushPendingDeletes()
-    const { attempted, succeeded } = await flushPendingUpserts()
-
-    if (didFlushDeletes || (attempted > 0 && attempted === succeeded)) {
-      showSyncToast('All changes synced')
-    }
-  }, [failedSyncNoteIds, flushPendingDeletes, flushPendingUpserts, showSyncToast, user])
-
   useEffect(() => {
     treeRef.current = tree
   }, [tree])
@@ -670,6 +645,31 @@ function AppInner() {
 
     flushPendingUpserts().catch(console.error)
   }, [flushPendingUpserts, isOnline, pendingUpserts, user])
+
+  const retryFailedSyncs = useCallback(async () => {
+    if (!user || (failedSyncNoteIds.length === 0 && Object.keys(pendingUpsertsRef.current).length === 0 && pendingDeleteIdsRef.current.length === 0)) {
+      return
+    }
+
+    if (!navigator.onLine) {
+      setSyncError('Offline — changes are saved and will retry when online.')
+      return
+    }
+
+    setSyncing(true)
+
+    for (const noteId of failedSyncNoteIds) {
+      window.clearTimeout(cloudSaveTimers.current[noteId])
+      cloudSaveTimers.current[noteId] = null
+    }
+
+    const didFlushDeletes = await flushPendingDeletes()
+    const { attempted, succeeded } = await flushPendingUpserts()
+
+    if (didFlushDeletes || (attempted > 0 && attempted === succeeded)) {
+      showSyncToast('All changes synced')
+    }
+  }, [failedSyncNoteIds, flushPendingDeletes, flushPendingUpserts, showSyncToast, user])
 
   useEffect(() => {
     const timers = cloudSaveTimers.current
