@@ -508,7 +508,7 @@ export default function Sidebar({
           <div className="sb-nav-items">
             {/* Home */}
             <button
-              className="sb-nav-item"
+              className={`sb-nav-item${activeNoteId === null ? ' is-active' : ''}`}
               onClick={() => { onSelectNote(null); if (window.innerWidth < 768) onToggleCollapse(); }}
             >
               <span className="sb-nav-icon">

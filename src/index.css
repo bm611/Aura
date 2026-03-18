@@ -1213,6 +1213,11 @@ body {
   transform: scale(0.98);
 }
 
+.sb-nav-item.is-active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
 .sb-nav-icon {
   display: flex;
   align-items: center;
@@ -1322,7 +1327,7 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -1335,7 +1340,7 @@ body {
 }
 
 .sb-section-toggle:hover {
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .sb-section-chevron {

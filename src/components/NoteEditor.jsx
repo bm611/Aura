@@ -470,7 +470,7 @@ export default function NoteEditor({
             <div className="flex items-center gap-2 w-full justify-center px-2 sm:px-0">
               <button
                 onClick={() => onNewNote?.()}
-                className="neu-btn-primary group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] border border-transparent px-3 py-3 text-[13px] font-semibold text-white shadow-[0_0_30px_var(--accent)]/35 transition-all duration-300 hover:brightness-125 hover:shadow-[0_0_50px_var(--accent)]/60 active:scale-[0.98] sm:px-6 sm:text-[14px]"
+                className="neu-btn-primary group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] border border-transparent px-3 py-3 text-[13px] font-semibold text-white shadow-[0_2px_14px_var(--accent)]/40 transition-all duration-300 hover:brightness-125 hover:shadow-[0_2px_20px_var(--accent)]/55 active:scale-[0.98] sm:px-6 sm:text-[14px]"
               >
                 <Icon
                   icon={Add01Icon}
@@ -497,7 +497,6 @@ export default function NoteEditor({
             <div className="animate-fade-in-up-delay-2 mt-10 w-full max-w-2xl md:mt-16" style={{ fontFamily: '"Outfit", sans-serif' }}>
               <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-4">
                 <h2 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] md:text-5xl">Recent</h2>
-                <span className="text-2xl font-light text-[var(--text-muted)] md:text-4xl">{recentNotes.length}</span>
               </div>
               <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60 md:mb-4 md:gap-12">
                  <div className="w-20 md:w-24">/ Date</div>
@@ -507,7 +506,7 @@ export default function NoteEditor({
                 {recentNotes.map((n) => {
                   const title = getNoteDisplayTitle(n)
                   const date = new Date(n.updatedAt || n.createdAt)
-                  const formattedDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`
+                  const formattedDate = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 
                   return (
                     <button
