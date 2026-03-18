@@ -1153,6 +1153,17 @@ body {
   font-family: "Outfit", var(--body-font);
 }
 
+@media (max-width: 767px) {
+  .sidebar-vs {
+    background: var(--bg-surface);
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.45), 1px 0 0 var(--border-default);
+  }
+
+  :root[data-theme="light"] .sidebar-vs {
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12), 1px 0 0 var(--border-default);
+  }
+}
+
 .sb-header-wrapper {
   display: flex;
   align-items: center;

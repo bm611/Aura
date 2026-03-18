@@ -499,8 +499,8 @@ export default function NoteEditor({
                 <h2 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] md:text-5xl">Recent</h2>
               </div>
               <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60 md:mb-4 md:gap-12">
-                 <div className="w-20 md:w-24">/ Date</div>
-                 <div>/ Name</div>
+                 <div className="w-28 md:w-24">Date</div>
+                 <div>Name</div>
               </div>
               <div className="flex flex-col">
                 {recentNotes.map((n) => {
@@ -515,7 +515,7 @@ export default function NoteEditor({
                       onClick={() => onSelectNote(n.id)}
                       className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)] md:gap-6 md:py-4"
                     >
-                      <div className="flex w-20 shrink-0 items-center gap-3 md:w-24">
+                      <div className="flex w-28 shrink-0 items-center gap-3 md:w-24">
                         <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80" />
                         <span className="text-[12px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] md:text-[13px] active:scale-[0.97] transition-transform">
                           {formattedDate}
