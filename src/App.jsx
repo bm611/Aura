@@ -242,36 +242,61 @@ function shouldPreferLocalNote(localNote, cloudNote) {
 
 function mergeLocalChangesIntoCloud(localTree, cloudNotes) {
   const localNotes = flattenTree(localTree || []).map(normalizeNote)
-  const mergedNotes = cloudNotes.map(normalizeNote)
-  const mergedById = new Map(mergedNotes.map((note) => [note.id, note]))
+  const cloudById = new Map(cloudNotes.map(normalizeNote).map((n) => [n.id, n]))
+  const localById = new Map(localNotes.map((n) => [n.id, n]))
   const notesToUploadById = new Map()
 
+  // Determine the winning version of each note and track what needs uploading
+  const resolvedById = new Map()
+
   for (const localNote of localNotes) {
-    const cloudNote = mergedById.get(localNote.id)
+    const cloudNote = cloudById.get(localNote.id)
 
     if (!cloudNote) {
+      // Local-only note — needs to be uploaded
       const mergedNote = { ...localNote, syncError: null }
-      mergedById.set(localNote.id, mergedNote)
-      mergedNotes.push(mergedNote)
+      resolvedById.set(localNote.id, mergedNote)
       notesToUploadById.set(localNote.id, mergedNote)
-      continue
+    } else if (shouldPreferLocalNote(localNote, cloudNote)) {
+      // Local is newer — use local content, mark for upload
+      const mergedNote = { ...cloudNote, ...localNote, syncError: null }
+      resolvedById.set(localNote.id, mergedNote)
+      notesToUploadById.set(localNote.id, mergedNote)
+    } else {
+      // Cloud is newer or equal — use cloud content
+      resolvedById.set(localNote.id, { ...cloudNote, syncError: null })
     }
-
-    if (!shouldPreferLocalNote(localNote, cloudNote)) {
-      continue
-    }
-
-    const mergedNote = { ...cloudNote, ...localNote, syncError: null }
-    mergedById.set(localNote.id, mergedNote)
-    const noteIndex = mergedNotes.findIndex((note) => note.id === localNote.id)
-    if (noteIndex !== -1) {
-      mergedNotes[noteIndex] = mergedNote
-    }
-    notesToUploadById.set(localNote.id, mergedNote)
   }
 
+  // Include cloud-only notes (not present in local tree at all)
+  const cloudOnlyNotes = []
+  for (const cloudNote of cloudById.values()) {
+    if (!localById.has(cloudNote.id)) {
+      resolvedById.set(cloudNote.id, { ...cloudNote, syncError: null })
+      cloudOnlyNotes.push(resolvedById.get(cloudNote.id))
+    }
+  }
+
+  // Walk localTree preserving folder structure, substituting resolved note content
+  const applyResolved = (nodes) => {
+    return nodes.map((node) => {
+      if (node.type === 'folder') {
+        return { ...node, children: applyResolved(node.children || []) }
+      }
+      // file node — replace with resolved version if available
+      return resolvedById.get(node.id) ?? node
+    })
+  }
+
+  const structuredTree = applyResolved(localTree || [])
+
+  // Append cloud-only notes at root level (they have no local folder placement)
+  const mergedTree = cloudOnlyNotes.length > 0
+    ? [...structuredTree, ...cloudOnlyNotes]
+    : structuredTree
+
   return {
-    mergedTree: ensureDailyFolder(mergedNotes),
+    mergedTree: ensureDailyFolder(mergedTree),
     notesToUpload: Array.from(notesToUploadById.values()),
   }
 }
