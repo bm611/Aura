@@ -19,6 +19,9 @@ import {
   Logout01Icon,
   CloudUploadIcon,
   ArrowLeft01Icon,
+  StarIcon,
+  File01Icon,
+  Clock01Icon,
 } from '@hugeicons/core-free-icons'
 import Icon from './Icon'
 import { countBodyWords, estimateReadTime, formatCreatedAt, getNoteDisplayTitle } from '../utils/noteMeta'
@@ -95,6 +98,140 @@ function EditorFallback() {
   )
 }
 
+// ── Favorites empty state ────────────────────────────────────────────────────
+function FavoritesEmptyPrompt() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
+      className="flex flex-col items-center justify-center py-12 px-4 gap-6 select-none h-full"
+    >
+      {/* Animated illustration */}
+      <div className="relative w-48 h-44">
+        <svg
+          viewBox="0 0 192 176"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full h-full"
+          aria-hidden="true"
+        >
+          {/* Glow backdrop */}
+          <motion.ellipse
+            cx="96" cy="110" rx="64" ry="18"
+            fill="var(--accent)"
+            initial={{ opacity: 0, scaleX: 0.4 }}
+            animate={{ opacity: [0.06, 0.12, 0.06], scaleX: [0.8, 1, 0.8] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          />
+
+          {/* Back star — tilted left */}
+          <motion.g
+            initial={{ opacity: 0, y: 14, rotate: -10 }}
+            animate={{ opacity: 1, y: 0, rotate: -6 }}
+            transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 1, 0.5, 1] }}
+            style={{ transformOrigin: '96px 95px' }}
+          >
+            <motion.path
+              d="M 96 34 L 108.9 63.8 L 140 66.2 L 116.3 87 L 123.6 117.4 L 96 100.8 L 68.4 117.4 L 75.6 87 L 52 66.2 L 83 63.8 Z"
+              fill="var(--bg-elevated)"
+              stroke="var(--border-subtle)"
+              strokeWidth="1.2"
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
+            />
+          </motion.g>
+
+          {/* Front star — slight right tilt */}
+          <motion.g
+            initial={{ opacity: 0, y: 20, rotate: 8 }}
+            animate={{ opacity: 1, y: 0, rotate: 4 }}
+            transition={{ duration: 0.65, delay: 0.55, ease: [0.25, 1, 0.5, 1] }}
+            style={{ transformOrigin: '96px 95px' }}
+          >
+            <motion.path
+              d="M 96 34 L 108.9 63.8 L 140 66.2 L 116.3 87 L 123.6 117.4 L 96 100.8 L 68.4 117.4 L 75.6 87 L 52 66.2 L 83 63.8 Z"
+              fill="var(--bg-surface)"
+              stroke="var(--border-default)"
+              strokeWidth="1.2"
+              strokeLinejoin="round"
+              animate={{ y: [0, -5, 0], rotate: [4, 5.5, 4] }}
+              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ transformOrigin: '96px 78px' }}
+            />
+            {/* Accent inner shape */}
+            <motion.path
+              d="M 96 34 L 108.9 63.8 L 140 66.2 L 116.3 87 L 123.6 117.4 L 96 100.8 L 68.4 117.4 L 75.6 87 L 52 66.2 L 83 63.8 Z"
+              fill="var(--accent)"
+              opacity="0.18"
+              animate={{ opacity: [0.18, 0.28, 0.18], scale: [0.95, 1, 0.95] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+              style={{ transformOrigin: '96px 78px' }}
+            />
+          </motion.g>
+
+          {/* Orbiting sparkle ring */}
+          <motion.g
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+            style={{ transformOrigin: '96px 78px' }}
+          >
+            {[0, 72, 144, 216, 288].map((deg, i) => {
+              const rad = (deg * Math.PI) / 180
+              const r = 66
+              const cx = 96 + r * Math.cos(rad)
+              const cy = 78 + r * Math.sin(rad)
+              return (
+                <motion.circle
+                  key={deg} cx={cx} cy={cy} r={i % 2 === 0 ? 2.5 : 1.5}
+                  fill={i % 2 === 0 ? 'var(--accent)' : 'var(--color-h2)'}
+                  animate={{ opacity: [0.2, 0.7, 0.2], scale: [0.8, 1.2, 0.8] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }}
+                  style={{ transformOrigin: `${cx}px ${cy}px` }}
+                />
+              )
+            })}
+          </motion.g>
+
+          {/* Floating ink drops */}
+          {[
+            { x: 32, y: 44, delay: 0.8, color: 'var(--accent)' },
+            { x: 158, y: 58, delay: 1.4, color: 'var(--color-h2)' },
+            { x: 148, y: 128, delay: 2.1, color: 'var(--success)' },
+          ].map(({ x, y, delay, color }, i) => (
+            <motion.circle
+              key={i} cx={x} cy={y} r="3.5" fill={color}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: [0, 0.6, 0], scale: [0, 1, 0], y: [0, -12, -20] }}
+              transition={{ duration: 2.8, delay, repeat: Infinity, repeatDelay: 2, ease: 'easeOut' }}
+            />
+          ))}
+        </svg>
+      </div>
+
+      {/* Text */}
+      <motion.div
+        className="flex flex-col items-center gap-2 text-center"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.8 }}
+      >
+        <p
+          className="text-[22px] font-semibold text-[var(--text-primary)] tracking-tight"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          No favorites yet.
+        </p>
+        <p
+          className="text-[14px] text-[var(--text-muted)] max-w-[240px] leading-relaxed"
+        >
+          Star your most important notes to keep them handy here.
+        </p>
+      </motion.div>
+    </motion.div>
+  )
+}
+
 // ── First-note empty state ───────────────────────────────────────────────────
 function FirstNotePrompt() {
   return (
@@ -102,7 +239,7 @@ function FirstNotePrompt() {
       initial={{ opacity: 0, y: 24, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
-      className="mt-10 flex flex-col items-center gap-6 select-none"
+      className="flex flex-col items-center justify-center py-12 px-4 gap-6 select-none h-full"
     >
       {/* Animated illustration */}
       <div className="relative w-48 h-44">
@@ -500,6 +637,11 @@ export default function NoteEditor({
     const recentNotes = [...(notes || [])]
       .sort(compareRecentNotes)
       .slice(0, 6)
+      
+    const favoriteNotes = [...(notes || [])]
+      .filter(n => n.tags?.includes('favorite') || n.isFavorite)
+      .sort(compareRecentNotes)
+      .slice(0, 6)
 
     return (
       <div className="flex flex-1 min-w-0 flex-col max-md:rounded-none rounded-2xl bg-[var(--bg-primary)]">
@@ -600,61 +742,133 @@ export default function NoteEditor({
             </div>
           </div>
 
-          {recentNotes.length > 0 ? (
-            <div className="animate-fade-in-up-delay-2 mt-10 w-full max-w-2xl md:mt-16" style={{ fontFamily: '"Outfit", sans-serif' }}>
+          <div className="animate-fade-in-up-delay-2 mt-10 w-full max-w-[1200px] md:mt-16 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 lg:gap-24 px-4 md:px-8" style={{ fontFamily: '"Outfit", sans-serif' }}>
+            {/* Recent Column */}
+            <div className="flex flex-col">
               <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-4">
-                <h2 className="text-xl font-medium tracking-wide text-[var(--text-muted)] md:text-2xl">Recent</h2>
+                <h2 className="text-xl font-medium tracking-wide text-[var(--text-muted)] md:text-2xl flex items-center gap-2">
+                  <Icon icon={Clock01Icon} size={20} strokeWidth={2} className="text-[var(--accent)]" />
+                  Recent
+                </h2>
               </div>
-              <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[12px] font-bold text-[var(--text-muted)] opacity-60 md:mb-4 md:gap-12 md:text-[15px]">
-                 <div className="w-32 md:w-32">Last Edited</div>
-                 <div>Name</div>
-              </div>
-              <div className="flex flex-col">
-                {recentNotes.map((n) => {
-                  const isDaily = n.tags?.includes('daily')
-                  const rawTitle = getNoteDisplayTitle(n)
-                  const date = new Date(n.updatedAt || n.createdAt)
-                  const formattedDate = formatRelativeTime(date)
+              {recentNotes.length > 0 ? (
+                <>
+                  <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[12px] font-bold text-[var(--text-muted)] opacity-60 md:mb-4 md:gap-12 md:text-[15px]">
+                    <div className="w-24 md:w-32">Last Edited</div>
+                    <div>Name</div>
+                  </div>
+                  <div className="flex flex-col">
+                    {recentNotes.map((n) => {
+                    const isDaily = n.tags?.includes('daily')
+                    const rawTitle = getNoteDisplayTitle(n)
+                    const date = new Date(n.updatedAt || n.createdAt)
+                    const formattedDate = formatRelativeTime(date)
 
-                  // For daily notes, parse the DD-MM-YYYY title into a readable format
-                  let displayTitle = rawTitle
-                  if (isDaily) {
-                    const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/)
-                    if (parts) {
-                      const [, dd, mm, yyyy] = parts
-                      const d = new Date(`${yyyy}-${mm}-${dd}`)
-                      const readable = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-                      displayTitle = `Daily \u2014 ${readable}`
-                    } else {
-                      displayTitle = `Daily \u2014 ${rawTitle}`
+                    let displayTitle = rawTitle
+                    if (isDaily) {
+                      const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/)
+                      if (parts) {
+                        const [, dd, mm, yyyy] = parts
+                        const d = new Date(`${yyyy}-${mm}-${dd}`)
+                        const readable = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                        displayTitle = `Daily \u2014 ${readable}`
+                      } else {
+                        displayTitle = `Daily \u2014 ${rawTitle}`
+                      }
                     }
-                  }
 
-                  return (
-                    <button
-                      key={n.id}
-                      type="button"
-                      onClick={() => onSelectNote(n.id)}
-                      className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)] md:gap-6 md:py-4"
-                    >
-                      <div className="flex w-32 shrink-0 items-center gap-3 md:w-32">
-                        <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80" />
-                        <span className="text-[14px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] md:text-[15px] active:scale-[0.97] transition-transform">
-                          {formattedDate}
+                    return (
+                      <button
+                        key={n.id}
+                        type="button"
+                        onClick={() => onSelectNote(n.id)}
+                        className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)] md:gap-6 md:py-4"
+                      >
+                        <div className="flex w-24 shrink-0 items-center gap-3 md:w-32">
+                          <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80 shrink-0" />
+                          <span className="text-[13px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] md:text-[15px] active:scale-[0.97] transition-transform truncate">
+                            {formattedDate}
+                          </span>
+                        </div>
+                        <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[22px] flex items-center gap-2">
+                          <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={16} strokeWidth={1.5} className="shrink-0 opacity-50" />
+                          {displayTitle}
                         </span>
-                      </div>
-                      <span className="truncate text-[18px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[26px] flex items-center gap-2">
-                        {isDaily && <Icon icon={Calendar01Icon} size={16} strokeWidth={1.5} className="shrink-0 opacity-50" />}
-                        {displayTitle}
-                      </span>
-                    </button>
-                  )
-                })}
+                      </button>
+                    )
+                  })}
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex flex-col justify-center min-h-[300px]">
+                  <FirstNotePrompt />
+                </div>
+              )}
+            </div>
+
+            {/* Favorites Column */}
+              <div className="flex flex-col">
+                <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-4">
+                  <h2 className="text-xl font-medium tracking-wide text-[var(--text-muted)] md:text-2xl flex items-center gap-2">
+                    <Icon icon={StarIcon} size={20} strokeWidth={2} className="text-[var(--warning)]" />
+                    Favorites
+                  </h2>
+                </div>
+                {favoriteNotes.length > 0 ? (
+                  <>
+                    <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[12px] font-bold text-[var(--text-muted)] opacity-60 md:mb-4 md:gap-12 md:text-[15px]">
+                      <div className="w-24 md:w-32">Last Edited</div>
+                      <div>Name</div>
+                    </div>
+                    <div className="flex flex-col">
+                      {favoriteNotes.map((n) => {
+                        const isDaily = n.tags?.includes('daily')
+                        const rawTitle = getNoteDisplayTitle(n)
+                        const date = new Date(n.updatedAt || n.createdAt)
+                        const formattedDate = formatRelativeTime(date)
+
+                        let displayTitle = rawTitle
+                        if (isDaily) {
+                          const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/)
+                          if (parts) {
+                            const [, dd, mm, yyyy] = parts
+                            const d = new Date(`${yyyy}-${mm}-${dd}`)
+                            const readable = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                            displayTitle = `Daily \u2014 ${readable}`
+                          } else {
+                            displayTitle = `Daily \u2014 ${rawTitle}`
+                          }
+                        }
+
+                        return (
+                          <button
+                            key={n.id}
+                            type="button"
+                            onClick={() => onSelectNote(n.id)}
+                            className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)] md:gap-6 md:py-4"
+                          >
+                            <div className="flex w-24 shrink-0 items-center gap-3 md:w-32">
+                              <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80 shrink-0" />
+                              <span className="text-[13px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] md:text-[15px] active:scale-[0.97] transition-transform truncate">
+                                {formattedDate}
+                              </span>
+                            </div>
+                            <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[22px] flex items-center gap-2">
+                              <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={16} strokeWidth={1.5} className="shrink-0 opacity-50" />
+                              {displayTitle}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-1 flex flex-col justify-center min-h-[300px]">
+                    <FavoritesEmptyPrompt />
+                  </div>
+                )}
               </div>
             </div>
-          ) : (
-            <FirstNotePrompt />
-          )}
         </div>
         {/* Mobile action bar */}
         <div className="mobile-action-bar" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
@@ -755,14 +969,30 @@ export default function NoteEditor({
           </div>
           <div className="flex items-center gap-1">
             {note && (
-              <button
-                type="button"
-                onClick={() => exportNoteAsMarkdown(note)}
-                className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
-                title="Export as Markdown"
-              >
-                <Icon icon={Download01Icon} size={18} strokeWidth={1.5} />
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentTags = note.tags || []
+                    const isFav = currentTags.includes('favorite')
+                    const newTags = isFav ? currentTags.filter(t => t !== 'favorite') : [...currentTags, 'favorite']
+                    onUpdateNote(note.id, { tags: newTags }, { skipTimestamp: true })
+                  }}
+                  className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+                  style={{ color: (note.tags || []).includes('favorite') ? 'var(--warning)' : 'var(--text-muted)' }}
+                  title={(note.tags || []).includes('favorite') ? "Remove from Favorites" : "Add to Favorites"}
+                >
+                  <Icon icon={StarIcon} size={18} strokeWidth={1.5} className={(note.tags || []).includes('favorite') ? "fill-current drop-shadow-sm" : ""} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => exportNoteAsMarkdown(note)}
+                  className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+                  title="Export as Markdown"
+                >
+                  <Icon icon={Download01Icon} size={18} strokeWidth={1.5} />
+                </button>
+              </>
             )}
             <button
               type="button"

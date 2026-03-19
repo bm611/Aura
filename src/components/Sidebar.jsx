@@ -270,8 +270,6 @@ export default function Sidebar({
   onSearchChange,
   width = 240,
   onResizeStart,
-  syncing = false,
-  syncStatus = null,
 }) {
   const [expanded, setExpanded] = useState(new Set([1])); // default expand could be empty or root folder if needed
   const [creatingIn, setCreatingIn] = useState(null);
