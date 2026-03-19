@@ -362,6 +362,50 @@ function getSaveBadgeMeta(saveStatus) {
   }
 }
 
+function SyncButton({ syncing, syncStatus, onSync }) {
+  const state = syncStatus?.state
+  const isSpinning = syncing || state === 'syncing'
+
+  let tooltip = 'Sync with cloud'
+  let iconColor = 'var(--text-muted)'
+  let icon = CloudSavingDone01Icon
+  if (state === 'offline') {
+    tooltip = 'Offline — changes are saved locally'
+    iconColor = 'var(--warning)'
+    icon = CloudSavingDone01Icon
+  } else if (state === 'error') {
+    tooltip = syncStatus?.error || 'Sync failed — click to retry'
+    iconColor = 'var(--danger)'
+    icon = AlertCircleIcon
+  } else if (isSpinning) {
+    tooltip = 'Syncing…'
+    iconColor = 'var(--success)'
+    icon = Loading01Icon
+  } else if (state === 'saved') {
+    tooltip = 'Synced — click to sync now'
+    iconColor = 'var(--success)'
+    icon = CloudSavingDone01Icon
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onSync}
+      disabled={isSpinning || state === 'offline'}
+      className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
+      title={tooltip}
+    >
+      <Icon
+        icon={icon}
+        size={18}
+        strokeWidth={1.5}
+        style={{ color: iconColor }}
+        className={isSpinning ? 'sync-spin' : ''}
+      />
+    </button>
+  )
+}
+
 export default function NoteEditor({
   note,
   notes,
@@ -383,6 +427,9 @@ export default function NoteEditor({
   saveStatus,
   lastSavedAt,
   onRetrySync,
+  syncing,
+  syncStatus,
+  onSync,
 }) {
   const { user, signOut } = useAuth()
 
@@ -462,6 +509,9 @@ export default function NoteEditor({
             >
               {theme === 'dark' ? <Icon icon={Sun01Icon} size={18} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={18} strokeWidth={1.5} />}
             </button>
+            {user && (
+              <SyncButton syncing={syncing} syncStatus={syncStatus} onSync={onSync} />
+            )}
             {user ? (
               <div className="auth-group">
                 <div className="auth-pill auth-pill--signed-in" title={`Signed in as ${user.email}`}>
@@ -714,6 +764,9 @@ export default function NoteEditor({
               {theme === 'dark' ? <Icon icon={Sun01Icon} size={18} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={18} strokeWidth={1.5} />}
             </button>
             {/* Auth: show sign-in or user avatar+signout */}
+            {user && (
+              <SyncButton syncing={syncing} syncStatus={syncStatus} onSync={onSync} />
+            )}
             {user ? (
               <div className="flex auth-group">
                 <div className="auth-pill auth-pill--signed-in" title={`Signed in as ${user.email}`}>

@@ -1531,6 +1531,9 @@ function AppInner() {
             saveStatus={saveStatus}
             lastSavedAt={activeNoteLastSavedAt}
             onRetrySync={retryFailedSyncs}
+            syncing={syncing}
+            syncStatus={sidebarSyncStatus}
+            onSync={reconcileWithCloud}
           />
         </div>
       </div>

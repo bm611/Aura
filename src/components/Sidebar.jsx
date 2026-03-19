@@ -412,11 +412,10 @@ export default function Sidebar({
       >
         <div className="flex flex-col h-full w-full min-w-[200px]">
 
-          {/* Header — app name + sync indicator + collapse icon */}
+          {/* Header — app name + collapse icon */}
           <div className="sb-header-wrapper">
             <span className="flex items-center gap-1.5">
               <span className="sb-app-name">Aura</span>
-              <SyncIndicator syncing={syncing} syncStatus={syncStatus} />
             </span>
             <button
               type="button"
