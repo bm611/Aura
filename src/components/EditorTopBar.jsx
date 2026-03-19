@@ -23,10 +23,10 @@ export default function EditorTopBar({
         <button
           type="button"
           onClick={onToggleSidebar}
-          className={`neu-icon-btn h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)] ${sidebarButtonClassName}`}
+          className={`neu-icon-btn h-10 w-10 flex items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)] ${sidebarButtonClassName}`}
           title="Open sidebar (Cmd+B)"
         >
-          <Icon icon={SidebarLeftIcon} size={18} stroke={1.5} style={{ transform: 'scaleX(-1)' }} />
+          <Icon icon={SidebarLeftIcon} size={21} stroke={1.5} style={{ transform: 'scaleX(-1)' }} />
         </button>
       ) : (
         <div className="w-10" />
@@ -40,7 +40,7 @@ export default function EditorTopBar({
             className="neu-icon-btn hidden h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)] md:flex"
             title="Focus mode (⌘⇧F)"
           >
-            <Icon icon={ArrowShrinkIcon} size={18} stroke={1.5} />
+            <Icon icon={ArrowShrinkIcon} size={21} stroke={1.5} />
           </button>
         ) : null}
 
@@ -50,7 +50,7 @@ export default function EditorTopBar({
           className={`neu-icon-btn h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)] ${themeButtonClassName}`}
           title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
         >
-          {theme === 'dark' ? <Icon icon={Sun01Icon} size={18} stroke={1.5} /> : <Icon icon={Moon01Icon} size={18} stroke={1.5} />}
+          {theme === 'dark' ? <Icon icon={Sun01Icon} size={21} stroke={1.5} /> : <Icon icon={Moon01Icon} size={21} stroke={1.5} />}
         </button>
       </div>
     </div>

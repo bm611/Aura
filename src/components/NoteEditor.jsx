@@ -651,10 +651,10 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+              className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title="Open sidebar (Cmd+B)"
             >
-              <Icon icon={SidebarLeftIcon} size={18} strokeWidth={1.5} style={{ transform: "scaleX(-1)" }} />
+              <Icon icon={SidebarLeftIcon} size={22} strokeWidth={1.5} style={{ transform: "scaleX(-1)" }} />
             </button>
           ) : (
             <div className="hidden md:block w-10" />
@@ -664,10 +664,10 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleTheme}
-              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+              className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
-              {theme === 'dark' ? <Icon icon={Sun01Icon} size={18} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={18} strokeWidth={1.5} />}
+              {theme === 'dark' ? <Icon icon={Sun01Icon} size={22} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={22} strokeWidth={1.5} />}
             </button>
             {user && (
               <SyncButton syncing={syncing} syncStatus={syncStatus} onSync={onSync} />
@@ -684,17 +684,17 @@ export default function NoteEditor({
                   className="auth-signout-btn"
                   title="Sign out"
                 >
-                  <Icon icon={Logout01Icon} size={16} strokeWidth={2} />
+                  <Icon icon={Logout01Icon} size={19} strokeWidth={2} />
                 </button>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={onOpenAuthModal}
-                className="auth-pill auth-pill--signed-out"
+                className="auth-pill auth-pill--signed-out h-10 px-4"
                 title="Sign in to sync your notes"
               >
-                <Icon icon={CloudUploadIcon} size={14} strokeWidth={2} />
+                <Icon icon={CloudUploadIcon} size={18} strokeWidth={2} />
                 <span>Sign in</span>
               </button>
             )}
@@ -721,11 +721,11 @@ export default function NoteEditor({
             <div className="flex items-center gap-2 w-full justify-center px-2 sm:px-0">
               <button
                 onClick={() => onNewNote?.()}
-                className="neu-btn-primary group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] border border-transparent px-3 py-3 text-[13px] font-semibold text-white shadow-[0_2px_14px_var(--accent)]/40 transition-all duration-300 hover:brightness-125 hover:shadow-[0_2px_20px_var(--accent)]/55 active:scale-[0.98] sm:px-6 sm:text-[14px]"
+                className="neu-btn-primary group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] border border-transparent px-3 py-4 text-[13px] font-semibold text-white shadow-[0_2px_14px_var(--accent)]/40 transition-all duration-300 hover:brightness-125 hover:shadow-[0_2px_20px_var(--accent)]/55 active:scale-[0.98] sm:px-6 sm:text-[15px]"
               >
                 <Icon
                   icon={Add01Icon}
-                  size={16}
+                  size={19}
                   strokeWidth={2.5}
                   className="shrink-0 transition-transform duration-300 group-hover:rotate-90"
                   style={{ filter: 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.6))' }}
@@ -734,9 +734,9 @@ export default function NoteEditor({
               </button>
               <button
                 onClick={() => onCreateDailyNote?.()}
-                className="group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-transparent border border-[var(--accent)]/50 px-3 py-3 text-[13px] font-semibold text-[var(--accent)] transition-all duration-200 hover:bg-[var(--accent)]/8 hover:border-[var(--accent)] hover:shadow-[0_2px_14px_var(--accent)]/20 active:scale-[0.98] sm:px-6 sm:text-[14px]"
+                className="group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-transparent border border-[var(--accent)]/50 px-3 py-4 text-[13px] font-semibold text-[var(--accent)] transition-all duration-200 hover:bg-[var(--accent)]/8 hover:border-[var(--accent)] hover:shadow-[0_2px_14px_var(--accent)]/20 active:scale-[0.98] sm:px-6 sm:text-[15px]"
               >
-                <Icon icon={Calendar01Icon} size={16} strokeWidth={2} className="shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5" />
+                <Icon icon={Calendar01Icon} size={19} strokeWidth={2} className="shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5" />
                 <span className="truncate">Daily Note</span>
               </button>
             </div>
@@ -746,8 +746,8 @@ export default function NoteEditor({
             {/* Recent Column */}
             <div className="flex flex-col">
               <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-4">
-                <h2 className="text-xl font-medium tracking-wide text-[var(--text-muted)] md:text-2xl flex items-center gap-2">
-                  <Icon icon={Clock01Icon} size={20} strokeWidth={2} className="text-[var(--accent)]" />
+                <h2 className="text-xl font-medium tracking-wide text-[var(--text-muted)] md:text-2xl flex items-center gap-3">
+                  <Icon icon={Clock01Icon} size={24} strokeWidth={2} className="text-[var(--accent)]" />
                   Recent
                 </h2>
               </div>
@@ -790,8 +790,8 @@ export default function NoteEditor({
                             {formattedDate}
                           </span>
                         </div>
-                        <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[22px] flex items-center gap-2">
-                          <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={16} strokeWidth={1.5} className="shrink-0 opacity-50" />
+                        <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[22px] flex items-center gap-3">
+                          <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-50" />
                           {displayTitle}
                         </span>
                       </button>
@@ -809,8 +809,8 @@ export default function NoteEditor({
             {/* Favorites Column */}
               <div className="flex flex-col">
                 <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-4">
-                  <h2 className="text-xl font-medium tracking-wide text-[var(--text-muted)] md:text-2xl flex items-center gap-2">
-                    <Icon icon={StarIcon} size={20} strokeWidth={2} className="text-[var(--warning)]" />
+                  <h2 className="text-xl font-medium tracking-wide text-[var(--text-muted)] md:text-2xl flex items-center gap-3">
+                    <Icon icon={StarIcon} size={24} strokeWidth={2} className="text-[var(--warning)]" />
                     Favorites
                   </h2>
                 </div>
@@ -853,8 +853,8 @@ export default function NoteEditor({
                                 {formattedDate}
                               </span>
                             </div>
-                            <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[22px] flex items-center gap-2">
-                              <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={16} strokeWidth={1.5} className="shrink-0 opacity-50" />
+                            <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[22px] flex items-center gap-3">
+                              <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-50" />
                               {displayTitle}
                             </span>
                           </button>
@@ -958,10 +958,10 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={onToggleSidebar}
-                className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+                className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
                 title="Open sidebar (Cmd+B)"
               >
-                <Icon icon={SidebarLeftIcon} size={18} strokeWidth={1.5} style={{ transform: "scaleX(-1)" }} />
+                <Icon icon={SidebarLeftIcon} size={22} strokeWidth={1.5} style={{ transform: "scaleX(-1)" }} />
               </button>
             ) : (
               <div className="hidden md:block w-10" />
@@ -978,38 +978,38 @@ export default function NoteEditor({
                     const newTags = isFav ? currentTags.filter(t => t !== 'favorite') : [...currentTags, 'favorite']
                     onUpdateNote(note.id, { tags: newTags }, { skipTimestamp: true })
                   }}
-                  className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+                  className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
                   style={{ color: (note.tags || []).includes('favorite') ? 'var(--warning)' : 'var(--text-muted)' }}
                   title={(note.tags || []).includes('favorite') ? "Remove from Favorites" : "Add to Favorites"}
                 >
-                  <Icon icon={StarIcon} size={18} strokeWidth={1.5} className={(note.tags || []).includes('favorite') ? "fill-current drop-shadow-sm" : ""} />
+                  <Icon icon={StarIcon} size={21} strokeWidth={1.5} className={(note.tags || []).includes('favorite') ? "fill-current drop-shadow-sm" : ""} />
                 </button>
                 <button
                   type="button"
                   onClick={() => exportNoteAsMarkdown(note)}
-                  className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+                  className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
                   title="Export as Markdown"
                 >
-                  <Icon icon={Download01Icon} size={18} strokeWidth={1.5} />
+                  <Icon icon={Download01Icon} size={21} strokeWidth={1.5} />
                 </button>
               </>
             )}
             <button
               type="button"
               onClick={onToggleFocusMode}
-              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+              className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title="Focus mode (⌘⇧F)"
             >
-              <Icon icon={ArrowShrinkIcon} size={18} strokeWidth={1.5} />
+              <Icon icon={ArrowShrinkIcon} size={21} strokeWidth={1.5} />
             </button>
             <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} />
             <button
               type="button"
               onClick={onToggleTheme}
-              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+              className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
-              {theme === 'dark' ? <Icon icon={Sun01Icon} size={18} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={18} strokeWidth={1.5} />}
+              {theme === 'dark' ? <Icon icon={Sun01Icon} size={22} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={22} strokeWidth={1.5} />}
             </button>
             {/* Auth: show sign-in or user avatar+signout */}
             {user && (
@@ -1027,17 +1027,17 @@ export default function NoteEditor({
                   className="auth-signout-btn"
                   title="Sign out"
                 >
-                  <Icon icon={Logout01Icon} size={16} strokeWidth={2} />
+                  <Icon icon={Logout01Icon} size={19} strokeWidth={2} />
                 </button>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={onOpenAuthModal}
-                className="relative flex auth-pill auth-pill--signed-out"
+                className="relative flex auth-pill auth-pill--signed-out h-10 px-4"
                 title="Sign in to sync your notes"
               >
-                <Icon icon={CloudUploadIcon} size={14} strokeWidth={2} />
+                <Icon icon={CloudUploadIcon} size={18} strokeWidth={2} />
                 <span>Sign in</span>
               </button>
             )}

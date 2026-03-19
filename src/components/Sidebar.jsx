@@ -35,7 +35,7 @@ const ICON_MAP = {
   minus: MinusSignIcon,
 }
 
-function SidebarIcon({ n, s = 14 }) {
+function SidebarIcon({ n, s = 16 }) {
   const iconData = ICON_MAP[n]
   if (!iconData) return null
   return <Icon icon={iconData} size={s} strokeWidth={1.5} style={{ display: 'block' }} />
@@ -72,7 +72,7 @@ function SyncIndicator({ syncing, syncStatus }) {
 
   return (
     <span className="sb-sync-indicator" title={tooltip}>
-      <Icon icon={icon} size={14} strokeWidth={1.5} style={{ color: iconColor }} className={spin ? 'sync-spin' : ''} />
+      <Icon icon={icon} size={16} strokeWidth={1.5} style={{ color: iconColor }} className={spin ? 'sync-spin' : ''} />
     </span>
   )
 }
@@ -142,7 +142,7 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
       <div
         ref={nodeRef}
         className={`tree-node ${isFolder ? "is-folder" : "is-file"}${isActive ? " active" : ""}`}
-        style={{ paddingLeft: depth * 14 + 10 }}
+        style={{ paddingLeft: depth * 18 + 12 }}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
         onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
@@ -158,10 +158,10 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
         }}
       >
         <span className={`tn-arrow relative after:absolute after:-inset-2 ${isOpen ? "open" : ""}`} style={{ opacity: isFolder ? 1 : 0 }}>
-          <SidebarIcon n="chevR" s={12} />
+          <SidebarIcon n="chevR" s={14} />
         </span>
         <span className="tn-icon">
-          <SidebarIcon n={isFolder ? (isOpen ? "folder" : "folder") : "file"} s={14} />
+          <SidebarIcon n={isFolder ? (isOpen ? "folder" : "folder") : "file"} s={16} />
         </span>
         {renaming ? (
           <input ref={renameRef} className="ren-input" value={renameVal}
@@ -175,11 +175,11 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
         {hover && !renaming && (
           <span className="tn-actions" onClick={e => e.stopPropagation()}>
             {isFolder && <>
-              <button title="New File" onClick={() => { setCreatingIn({ parentId: node.id, type: "file" }); toggleExpand(node.id, true); }}><SidebarIcon n="newFile" s={12} /></button>
-              <button title="New Folder" onClick={() => { setCreatingIn({ parentId: node.id, type: "folder" }); toggleExpand(node.id, true); }}><SidebarIcon n="newFolder" s={12} /></button>
+              <button title="New File" onClick={() => { setCreatingIn({ parentId: node.id, type: "file" }); toggleExpand(node.id, true); }}><SidebarIcon n="newFile" s={14} /></button>
+              <button title="New Folder" onClick={() => { setCreatingIn({ parentId: node.id, type: "folder" }); toggleExpand(node.id, true); }}><SidebarIcon n="newFolder" s={14} /></button>
             </>}
-            <button title="Rename" onClick={() => setRenaming(true)}><SidebarIcon n="edit" s={12} /></button>
-            <button title="Delete" onClick={() => onDelete(node.id)} className="hover-danger"><SidebarIcon n="trash" s={12} /></button>
+            <button title="Rename" onClick={() => setRenaming(true)}><SidebarIcon n="edit" s={14} /></button>
+            <button title="Delete" onClick={() => onDelete(node.id)} className="hover-danger"><SidebarIcon n="trash" s={14} /></button>
           </span>
         )}
       </div>
@@ -195,22 +195,22 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
             {isFolder ? (
               <>
                 <button onClick={(e) => { e.stopPropagation(); setCreatingIn({ parentId: node.id, type: "file" }); toggleExpand(node.id, true); setContextMenu(null); }}>
-                  <SidebarIcon n="newFile" s={14} />
+                  <SidebarIcon n="newFile" s={16} />
                   <span>New File</span>
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); setCreatingIn({ parentId: node.id, type: "folder" }); toggleExpand(node.id, true); setContextMenu(null); }}>
-                  <SidebarIcon n="newFolder" s={14} />
+                  <SidebarIcon n="newFolder" s={16} />
                   <span>New Folder</span>
                 </button>
                 <div className="ctx-divider" />
               </>
             ) : null}
             <button onClick={(e) => { e.stopPropagation(); setRenaming(true); setRenameVal(node.name); setContextMenu(null); }}>
-              <SidebarIcon n="edit" s={14} />
+              <SidebarIcon n="edit" s={16} />
               <span>Rename</span>
             </button>
             <button className="ctx-danger" onClick={(e) => { e.stopPropagation(); onDelete(node.id); setContextMenu(null); }}>
-              <SidebarIcon n="trash" s={14} />
+              <SidebarIcon n="trash" s={16} />
               <span>Delete</span>
             </button>
           </div>
@@ -219,7 +219,7 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
 
       {isFolder && isOpen && (
         <div className="tn-children">
-          <div className="tn-children-line" style={{ left: depth * 14 + 16 }} />
+          <div className="tn-children-line" style={{ left: depth * 18 + 20 }} />
           {node.children?.map(child => (
             <TreeNode key={child.id} node={child} depth={depth + 1} activeId={activeId}
               onSelect={onSelect} onDelete={onDelete} onRename={onRename}
@@ -242,9 +242,9 @@ function InlineCreator({ depth, type, onConfirm, onCancel }) {
   const ref = useRef(null);
   useEffect(() => { ref.current?.focus(); }, []);
   return (
-    <div className="inline-creator" style={{ paddingLeft: depth * 14 + 10 }}>
+    <div className="inline-creator" style={{ paddingLeft: depth * 18 + 12 }}>
       <span className="tn-icon">
-        <SidebarIcon n={type === "folder" ? "folder" : "file"} s={13} />
+        <SidebarIcon n={type === "folder" ? "folder" : "file"} s={15} />
       </span>
       <input ref={ref} className="ren-input focus:border-[var(--accent)]" value={val} placeholder={type === "folder" ? "folder name" : "file name"}
         onChange={e => setVal(e.target.value)}
@@ -268,7 +268,7 @@ export default function Sidebar({
   onToggleCollapse,
   searchQuery,
   onSearchChange,
-  width = 240,
+  width = 280,
   onResizeStart,
 }) {
   const [expanded, setExpanded] = useState(new Set([1])); // default expand could be empty or root folder if needed
@@ -418,10 +418,10 @@ export default function Sidebar({
             <button
               type="button"
               onClick={onToggleCollapse}
-              className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3 flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
+              className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3 flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
               title="Toggle sidebar (Cmd+B)"
             >
-              <Icon icon={SidebarLeftIcon} size={18} stroke={1.5} />
+              <Icon icon={SidebarLeftIcon} size={22} stroke={1.5} />
             </button>
           </div>
 
@@ -433,7 +433,7 @@ export default function Sidebar({
               onClick={() => { onSelectNote(null); if (window.innerWidth < 768) onToggleCollapse(); }}
             >
               <span className="sb-nav-icon">
-                <Icon icon={Home01Icon} size={16} stroke={1.5} />
+                <Icon icon={Home01Icon} size={19} stroke={1.5} />
               </span>
               <span className="sb-nav-label">Home</span>
             </button>
@@ -449,7 +449,7 @@ export default function Sidebar({
               }}
             >
               <span className="sb-nav-icon">
-                <Icon icon={Search01Icon} size={16} stroke={1.5} />
+                <Icon icon={Search01Icon} size={19} stroke={1.5} />
               </span>
               {searchExpanded ? (
                 <>
@@ -470,7 +470,7 @@ export default function Sidebar({
                       onClick={(e) => { e.stopPropagation(); onSearchChange(''); setSearchFocused(false); }}
                       aria-label="Clear search"
                     >
-                      <Icon icon={Cancel01Icon} size={12} stroke={2} />
+                      <Icon icon={Cancel01Icon} size={14} stroke={2} />
                     </button>
                   )}
                 </>
@@ -515,12 +515,12 @@ export default function Sidebar({
                   <div className="sb-section-header">
                     <button className="sb-section-toggle" onClick={() => setFoldersOpen(p => !p)}>
                       <span className={`sb-section-chevron${foldersOpen ? ' open' : ''}`}>
-                        <SidebarIcon n="chevR" s={10} />
+                        <SidebarIcon n="chevR" s={12} />
                       </span>
                       <span>Folders</span>
                     </button>
                     <button className="sb-section-add" title="New Folder" onClick={() => handleRootCreate('folder')}>
-                      <SidebarIcon n="newFolder" s={13} />
+                      <SidebarIcon n="newFolder" s={15} />
                     </button>
                   </div>
                   {foldersOpen && (
@@ -548,12 +548,12 @@ export default function Sidebar({
                   <div className="sb-section-header">
                     <button className="sb-section-toggle" onClick={() => setFilesOpen(p => !p)}>
                       <span className={`sb-section-chevron${filesOpen ? ' open' : ''}`}>
-                        <SidebarIcon n="chevR" s={10} />
+                        <SidebarIcon n="chevR" s={12} />
                       </span>
                       <span>Files</span>
                     </button>
                     <button className="sb-section-add" title="New File" onClick={() => handleRootCreate('file')}>
-                      <SidebarIcon n="newFile" s={13} />
+                      <SidebarIcon n="newFile" s={15} />
                     </button>
                   </div>
                   {filesOpen && (

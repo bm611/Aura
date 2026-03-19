@@ -421,7 +421,7 @@ function AppInner() {
   const deleteTimerRef = useRef(null)
   const cloudSaveTimers = useRef({})
   const syncToastTimerRef = useRef(null)
-  const [sbWidth, setSbWidth] = useState(240)
+  const [sbWidth, setSbWidth] = useState(280)
   const editorApiRef = useRef(null)
   const treeRef = useRef(tree)
   const lastUserIdRef = useRef(null)
