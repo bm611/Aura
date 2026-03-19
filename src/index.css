@@ -2027,6 +2027,7 @@ input[type='number'] {
   .sb-search input { font-size: 16px; }
   .ren-input { font-size: 16px; }
   .tree-node { min-height: 38px; padding: 6px 10px; }
+  .tn-actions { display: none; }
 
   button:not(.tag-chip__remove) {
     min-height: 36px;
