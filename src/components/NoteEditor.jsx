@@ -29,6 +29,24 @@ import AccentPicker from './AccentPicker'
 
 const LiveMarkdownEditor = lazy(() => import('./LiveMarkdownEditor'))
 
+function formatRelativeTime(date) {
+  const now = Date.now()
+  const diff = now - date.getTime()
+  const seconds = Math.floor(diff / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+  const weeks = Math.floor(days / 7)
+  const months = Math.floor(days / 30)
+
+  if (minutes < 1) return 'Just now'
+  if (minutes < 60) return `${minutes} min ago`
+  if (hours < 24) return `${hours}h ago`
+  if (days < 7) return `${days}d ago`
+  if (weeks < 5) return `${weeks}w ago`
+  return `${months}mo ago`
+}
+
 function getComparableTimestamp(value) {
   const parsed = Date.parse(value || '')
   return Number.isNaN(parsed) ? 0 : parsed
@@ -587,8 +605,8 @@ export default function NoteEditor({
               <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-4">
                 <h2 className="text-xl font-medium tracking-wide text-[var(--text-muted)] md:text-2xl">Recent</h2>
               </div>
-              <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60 md:mb-4 md:gap-12">
-                 <div className="w-28 md:w-24">Date</div>
+              <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[12px] font-bold text-[var(--text-muted)] opacity-60 md:mb-4 md:gap-12 md:text-[15px]">
+                 <div className="w-32 md:w-32">Last Edited</div>
                  <div>Name</div>
               </div>
               <div className="flex flex-col">
@@ -596,7 +614,7 @@ export default function NoteEditor({
                   const isDaily = n.tags?.includes('daily')
                   const rawTitle = getNoteDisplayTitle(n)
                   const date = new Date(n.updatedAt || n.createdAt)
-                  const formattedDate = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                  const formattedDate = formatRelativeTime(date)
 
                   // For daily notes, parse the DD-MM-YYYY title into a readable format
                   let displayTitle = rawTitle
@@ -619,9 +637,9 @@ export default function NoteEditor({
                       onClick={() => onSelectNote(n.id)}
                       className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)] md:gap-6 md:py-4"
                     >
-                      <div className="flex w-28 shrink-0 items-center gap-3 md:w-24">
+                      <div className="flex w-32 shrink-0 items-center gap-3 md:w-32">
                         <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80" />
-                        <span className="text-[12px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] md:text-[13px] active:scale-[0.97] transition-transform">
+                        <span className="text-[14px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] md:text-[15px] active:scale-[0.97] transition-transform">
                           {formattedDate}
                         </span>
                       </div>

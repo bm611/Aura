@@ -7,7 +7,20 @@
     <title>Aura</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Inline loading indicator — replaced by React on mount -->
+      <div id="app-loader" style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0c0b0e;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style="animation:aura-spin .8s linear infinite">
+          <circle cx="12" cy="12" r="10" stroke="#2e2d38" stroke-width="2.5"/>
+          <path d="M12 2a10 10 0 0 1 10 10" stroke="#e07a8a" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <style>@keyframes aura-spin{to{transform:rotate(360deg)}} [data-theme=light] #app-loader{background:#f8f6f3}</style>
+      </div>
+    </div>
+    <script>
+      // Apply saved theme before first paint to avoid flash
+      (function(){var t=localStorage.getItem('canvas-theme');if(t)document.documentElement.setAttribute('data-theme',t)})()
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -377,7 +377,22 @@ function AppInner() {
   const [demoMode, setDemoMode] = useState(false)
   const demoModeRef = useRef(false)
 
-  const [tree, setTree] = useState([])
+  const [tree, setTree] = useState(() => {
+    // Synchronously preload cached tree from localStorage so the first render
+    // already has notes, avoiding a blank-then-populated flash.
+    try {
+      const storedKey = Object.keys(localStorage).find((k) => k.startsWith('sb-') && k.endsWith('-auth-token'))
+      if (storedKey) {
+        const stored = JSON.parse(localStorage.getItem(storedKey))
+        const userId = stored?.user?.id
+        if (userId) {
+          const cached = loadTree(userId)
+          if (cached && cached.length > 0) return cached
+        }
+      }
+    } catch { /* ignore — will hydrate from effect */ }
+    return []
+  })
 
   const notes = flattenTree(tree)
 
@@ -791,7 +806,15 @@ function AppInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, authLoading])
 
+  // Re-reconcile when the browser comes back online.
+  // Skip the initial mount — the main sync effect (above) already handles that.
+  const isOnlineInitialRef = useRef(true)
   useEffect(() => {
+    if (isOnlineInitialRef.current) {
+      isOnlineInitialRef.current = false
+      return
+    }
+
     if (!user || !isOnline || hydrationInFlightRef.current) {
       return
     }
@@ -799,7 +822,15 @@ function AppInner() {
     reconcileWithCloud({ preserveSelection: true }).catch(() => {})
   }, [isOnline, reconcileWithCloud, user])
 
+  // Persist tree to localStorage on changes. Skip the very first render if the
+  // tree was synchronously preloaded — it's already what's in storage.
+  const treeSaveSkipRef = useRef(tree.length > 0)
   useEffect(() => {
+    if (treeSaveSkipRef.current) {
+      treeSaveSkipRef.current = false
+      return
+    }
+
     if (user) {
       saveTree(user.id, rebuildTreeFromFlat(getSyncableTreeItems(tree)))
     }
@@ -964,13 +995,13 @@ function AppInner() {
 
     const template = `
 ## Journal
-- 
+- tbd
 
 ## To-Dos
 [ ] 
 
 ## Ideas & Notes
-- 
+- tbd
 `.trim()
 
     const now = new Date().toISOString()
@@ -1471,6 +1502,10 @@ function AppInner() {
     setDemoMode(true)
     demoModeRef.current = true
   }, [])
+
+  // While auth is resolving, render nothing so the HTML loading indicator stays
+  // visible and we avoid flashing the LandingPage for signed-in users.
+  if (authLoading) return null
 
   // Show landing page for unauthenticated users who haven't entered demo mode
   if (!user && !demoMode) {
