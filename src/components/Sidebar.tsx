@@ -20,6 +20,7 @@ import {
   Loading01Icon,
 } from '@hugeicons/core-free-icons'
 
+import type { IconSvgElement } from '@hugeicons/react'
 import Icon from './Icon'
 import { useAuth } from '../contexts/AuthContext'
 import { getVisibleFiles } from '../utils/tree'
@@ -83,7 +84,7 @@ interface InlineCreatorProps {
 }
 
 // ─── Icon key → Hugeicons data object map ────────────────────────────────────
-const ICON_MAP: Record<string, unknown> = {
+const ICON_MAP: Record<string, IconSvgElement> = {
   folder: Folder01Icon,
   file: File01Icon,
   trash: Delete01Icon,
@@ -106,7 +107,7 @@ export function SyncIndicator({ syncing, syncStatus }: SyncIndicatorProps) {
   const { user } = useAuth()
   const state = syncStatus?.state
 
-  let icon: unknown
+  let icon: IconSvgElement
   let iconColor: string
   let tooltip: string
   let spin = false

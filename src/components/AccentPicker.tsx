@@ -24,7 +24,7 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
   const buttonRef = useRef<HTMLButtonElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const current = ACCENT_COLORS.find((a) => a.id === accentId) || ACCENT_COLORS[0]
+  const current = ACCENT_COLORS.find((a) => a.id === accentId) ?? ACCENT_COLORS[0]!
   const currentSwatch = (theme === 'light' ? current.light : current.dark).accent
 
   // Close on outside click — check both the trigger container and the portaled dropdown

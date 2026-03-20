@@ -28,7 +28,7 @@ function getTagColor(label: string): string {
   h = Math.imul(h ^ (h >>> 16), 2246822507)
   h = Math.imul(h ^ (h >>> 13), 3266489909)
   h = (h ^ (h >>> 16)) >>> 0
-  return TAG_COLOR_VARIANTS[h % TAG_COLOR_VARIANTS.length]
+  return TAG_COLOR_VARIANTS[h % TAG_COLOR_VARIANTS.length]!
 }
 
 function normalizeTag(raw: string): string {
@@ -70,7 +70,7 @@ export default function TagInput({ tags = [], onChange }: TagInputProps) {
       e.preventDefault()
       addTag(inputValue)
     } else if (e.key === 'Backspace' && !inputValue && tags.length > 0) {
-      removeTag(tags[tags.length - 1])
+      removeTag(tags[tags.length - 1]!)
     } else if (e.key === 'Escape') {
       setInputValue('')
       inputRef.current?.blur()

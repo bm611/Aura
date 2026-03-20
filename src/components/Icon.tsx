@@ -1,7 +1,8 @@
 import { HugeiconsIcon } from '@hugeicons/react'
+import type { IconSvgElement } from '@hugeicons/react'
 
 interface IconProps {
-  icon: unknown
+  icon: IconSvgElement
   size?: number
   strokeWidth?: number
   stroke?: number

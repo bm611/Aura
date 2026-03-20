@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import type { TreeNode } from '../types'
 import {
   collectSubtreeIds,
   deleteNode,
@@ -35,7 +36,7 @@ const baseTree = [
     title: 'Inbox',
     content: 'two',
   },
-]
+] as unknown as TreeNode[]
 
 describe('tree utilities', () => {
   it('inserts nodes at the requested location', () => {
@@ -45,9 +46,9 @@ describe('tree utilities', () => {
       name: 'Beta',
       title: 'Beta',
       content: 'three',
-    })
+    } as unknown as TreeNode)
 
-    expect(nextTree[0].children).toHaveLength(2)
+    expect((nextTree[0] as any).children).toHaveLength(2)
     expect(flattenTree(nextTree).map((node) => node.id)).toEqual(['file-a', 'file-c', 'file-b'])
   })
 
@@ -56,7 +57,7 @@ describe('tree utilities', () => {
     const updatedTree = updateFileNode(renamedTree, 'file-a', { content: 'updated' })
 
     expect(updatedTree[1]).toMatchObject({ name: 'Updated Inbox', title: 'Updated Inbox' })
-    expect(updatedTree[0].children[0].content).toBe('updated')
+    expect((updatedTree[0] as any).children[0].content).toBe('updated')
   })
 
   it('deletes nested nodes and only returns visible files from expanded folders', () => {
@@ -78,12 +79,12 @@ describe('tree utilities', () => {
         name: 'Archive',
         children: [{ id: 'file-c', type: 'file', name: 'Receipt', title: 'Receipt', content: '' }],
       },
-    ]
+    ] as unknown as TreeNode[]
 
     const filteredTree = filterTreeNodes(mixedTree, 'rece')
 
     expect(filteredTree[0]).toMatchObject({ id: 'folder-b' })
-    expect(filteredTree[0].children[0]).toMatchObject({ id: 'file-c' })
+    expect((filteredTree[0] as any).children[0]).toMatchObject({ id: 'file-c' })
   })
 
   it('flattens full node trees with parent ids and rebuilds the same structure', () => {

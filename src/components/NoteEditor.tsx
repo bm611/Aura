@@ -1,6 +1,7 @@
 import { lazy, Suspense, useRef, useCallback, useEffect, useState } from 'react'
 
 import { motion } from 'framer-motion'
+import type { IconSvgElement } from '@hugeicons/react'
 import { useAuth } from '../contexts/AuthContext'
 import {
   ArrowShrinkIcon,
@@ -84,7 +85,7 @@ interface SyncButtonProps {
 }
 
 interface SaveBadgeMeta {
-  icon: unknown
+  icon: IconSvgElement
   toneClassName: string
   spin: boolean
 }
@@ -573,7 +574,7 @@ function SyncButton({ syncing, syncStatus, onSync }: SyncButtonProps) {
 
   let tooltip = 'Sync with cloud'
   let iconColor = 'var(--text-muted)'
-  let icon: unknown = CloudSavingDone01Icon
+  let icon: IconSvgElement = CloudSavingDone01Icon
   if (state === 'offline') {
     tooltip = 'Offline — changes are saved locally'
     iconColor = 'var(--warning)'

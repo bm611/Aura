@@ -20,12 +20,13 @@ import {
   PencilEdit01Icon,
   Delete01Icon,
 } from '@hugeicons/core-free-icons'
+import type { IconSvgElement } from '@hugeicons/react'
 import Icon from '../../components/Icon'
 
 const CALLOUT_INPUT_PATTERN = /^> \[!([A-Za-z-]+)\]([+-])?\s*(.*)$/
 const CALLOUT_KINDS = ['note', 'tip', 'warning', 'caution', 'important']
 
-const CALLOUT_ICONS: Record<string, unknown> = {
+const CALLOUT_ICONS: Record<string, IconSvgElement> = {
   abstract: File01Icon,
   bug: BugIcon,
   caution: Alert02Icon,
@@ -50,7 +51,7 @@ function getDefaultTitle(calloutKind: string = 'note'): string {
 function CalloutView({ node, updateAttributes, deleteNode, selected }: NodeViewProps) {
   const [collapsed, setCollapsed] = useState(Boolean(node.attrs.defaultCollapsed))
   const calloutKind = (node.attrs.calloutKind as string) || 'note'
-  const iconData = CALLOUT_ICONS[calloutKind] || CALLOUT_ICONS.note
+  const iconData = CALLOUT_ICONS[calloutKind] ?? CALLOUT_ICONS.note!
 
   const handleToggleKind = (event: React.MouseEvent) => {
     event.preventDefault()
@@ -179,13 +180,16 @@ export const CalloutNode = Node.create({
     return ReactNodeViewRenderer(CalloutView)
   },
 
+  // @ts-expect-error — custom command not in RawCommands
   addCommands() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const extension = this
     return {
       insertCallout:
         (attrs: Record<string, unknown> = {}) =>
-        ({ commands }) =>
+        ({ commands }: { commands: any }) =>
           commands.insertContent({
-            type: this.name,
+            type: extension.name,
             attrs: {
               calloutKind: attrs.calloutKind || 'note',
               title: attrs.title || getDefaultTitle((attrs.calloutKind as string) || 'note'),

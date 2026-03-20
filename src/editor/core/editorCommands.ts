@@ -1,4 +1,5 @@
 import type { Editor } from '@tiptap/react'
+import { TextSelection } from '@tiptap/pm/state'
 import { getEditorCommandById } from '../../utils/editorCommands'
 
 interface CommandOptions {
@@ -61,7 +62,7 @@ export function runAuraEditorCommand(editor: Editor, commandId: string, options:
           for (let i = resolvedPos.pos - 1; i >= 0; i--) {
             const node = doc.nodeAt(i)
             if (node && node.type.name === 'taskItem') {
-              tr.setSelection(editor.state.selection.constructor.near(doc.resolve(i + 2)))
+              tr.setSelection(TextSelection.near(doc.resolve(i + 2)))
               return true
             }
           }

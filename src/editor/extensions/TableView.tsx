@@ -56,7 +56,7 @@ function TableView({ editor, node, getPos }: NodeViewProps) {
           style={{ gridColumn: 1, gridRow: 1, overflowX: 'auto', position: 'relative' }}
         >
           <NodeViewContent
-            as="table"
+            as={"table" as any}
             style={{ borderCollapse: 'collapse', tableLayout: 'auto' }}
           />
         </div>

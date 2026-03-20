@@ -3,6 +3,8 @@ import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Sun01Icon, Coffee01Icon, Target01Icon, FireIcon, RocketIcon, CometIcon, Moon02Icon } from '@hugeicons/core-free-icons'
 
+import type { IconSvgElement } from '@hugeicons/react'
+
 import type { TreeNode } from '../types'
 import Icon from './Icon'
 
@@ -10,7 +12,7 @@ interface DayTheme {
   day: string
   greeting: string
   message: string
-  icon: unknown
+  icon: IconSvgElement
   color: string
 }
 
@@ -76,7 +78,7 @@ export default function DailyHeader({ note }: DailyHeaderProps) {
     return new Date(note.createdAt).getDay()
   }, [note])
 
-  const theme = DAY_THEMES[dayIndex]
+  const theme = DAY_THEMES[dayIndex]!
 
   return (
     <motion.div
