@@ -871,18 +871,60 @@ body {
   font-weight: 600;
 }
 
+/* ── Task list ── */
+
 .aura-editor .ProseMirror ul[data-type="taskList"] {
   list-style: none;
   padding-left: 0;
   margin: 0.5rem 0;
 }
 
+/* Nested task lists get left indent */
+.aura-editor .ProseMirror ul[data-type="taskList"] ul[data-type="taskList"] {
+  padding-left: 1rem;
+  margin: 0.15rem 0;
+}
+
+/* ── Task item (li) ── */
+
 .aura-editor .ProseMirror li[data-type="taskItem"] {
+  display: flex;
+  align-items: baseline;
+  margin: 0.2rem 0;
   list-style: none;
 }
 
-.aura-editor .ProseMirror li[data-type="taskItem"] .task-item-content {
+/* ── Checkbox label ── */
+
+.aura-editor .ProseMirror li[data-type="taskItem"] .task-item-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  /* Shift icon up so its visual center aligns with the text baseline */
   position: relative;
+  top: 0.21em;
+}
+
+/* ── Content area ── */
+
+.aura-editor .ProseMirror li[data-type="taskItem"] .task-item-content {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.aura-editor .ProseMirror li[data-type="taskItem"] .task-item-content p {
+  margin: 0 !important;
+  position: relative;
+}
+
+.aura-editor .ProseMirror li[data-type="taskItem"].is-checked .task-item-content {
+  text-decoration: line-through;
+  color: var(--text-muted);
 }
 
 .aura-editor .ProseMirror li[data-type="taskItem"] .task-item-content p.is-empty::before {
@@ -892,11 +934,6 @@ body {
   color: var(--text-muted);
   opacity: 0.55;
   pointer-events: none;
-}
-
-.aura-editor .ProseMirror li[data-type="taskItem"] .task-item-content>p {
-  margin: 0;
-  position: relative;
 }
 
 /* ── Tables (ProseMirror) ── */

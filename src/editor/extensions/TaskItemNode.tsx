@@ -13,45 +13,23 @@ function TaskItemView({ node, updateAttributes }: NodeViewProps) {
       data-type="taskItem"
       data-checked={checked}
       className={`task-item ${checked ? 'is-checked' : ''}`}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        margin: '0.2rem 0',
-        listStyle: 'none',
-      }}
     >
-      <label
-        contentEditable={false}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginRight: '0.5rem',
-          cursor: 'pointer',
-          userSelect: 'none',
-          color: checked ? 'var(--accent)' : 'var(--text-muted)',
-          flexShrink: 0,
-        }}
-      >
+      <label contentEditable={false} className="task-item-checkbox">
         <input
           type="checkbox"
           checked={checked}
           onChange={(e) => updateAttributes({ checked: e.target.checked })}
           style={{ display: 'none' }}
         />
-        {checked ? <Icon icon={CheckmarkSquare01Icon} size={18} stroke={1.5} /> : <Icon icon={SquareIcon} size={18} stroke={1.5} />}
+        <Icon
+          icon={checked ? CheckmarkSquare01Icon : SquareIcon}
+          size={18}
+          stroke={1.5}
+          style={{ color: checked ? 'var(--accent)' : 'var(--text-muted)' }}
+        />
       </label>
 
-      <NodeViewContent
-        className="task-item-content"
-        style={{
-          flex: 1,
-          minWidth: 0,
-          textDecoration: checked ? 'line-through' : 'none',
-          color: checked ? 'var(--text-muted)' : 'inherit',
-          transition: 'all 0.2s ease',
-        }}
-      />
+      <NodeViewContent className="task-item-content" />
     </NodeViewWrapper>
   )
 }
