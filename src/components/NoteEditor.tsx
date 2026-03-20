@@ -1,6 +1,6 @@
 import { lazy, Suspense, useRef, useCallback, useEffect, useState } from 'react'
 
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { IconSvgElement } from '@hugeicons/react'
 import { useAuth } from '../contexts/AuthContext'
 import {
@@ -640,6 +640,9 @@ export default function NoteEditor({
 }: NoteEditorProps) {
   const { user, signOut } = useAuth()
 
+  // Mobile home tab state (Recent / Favorites)
+  const [homeTab, setHomeTab] = useState<'recent' | 'favorites'>('recent')
+
   // Session word count: capture baseline when a note is first opened
   const prevNoteIdRef = useRef<string | null>(null)
   const [sessionBase, setSessionBase] = useState<number | null>(null)
@@ -796,7 +799,180 @@ export default function NoteEditor({
             </div>
           </div>
 
-          <div className="animate-fade-in-up-delay-2 mt-10 w-full max-w-[1200px] md:mt-16 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 lg:gap-24 px-4 md:px-8" style={{ fontFamily: '"Outfit", sans-serif' }}>
+          {/* ── Mobile Tab View ─────────────────────────────────── */}
+          <div className="animate-fade-in-up-delay-2 mt-8 w-full px-4 md:hidden" style={{ fontFamily: '"Outfit", sans-serif' }}>
+            {/* Tab bar */}
+            <div className="relative mb-6 flex border-b border-[var(--border-subtle)]">
+              <button
+                type="button"
+                onClick={() => setHomeTab('recent')}
+                className="relative flex flex-1 items-center justify-center gap-2 pb-3 pt-1 text-[14px] font-semibold tracking-wide transition-colors duration-150"
+                style={{ color: homeTab === 'recent' ? 'var(--text-primary)' : 'var(--text-muted)' }}
+              >
+                <Icon icon={Clock01Icon} size={17} strokeWidth={2} style={{ color: homeTab === 'recent' ? 'var(--accent)' : 'var(--text-muted)', transition: 'color 150ms' }} />
+                Recent
+                {homeTab === 'recent' && (
+                  <motion.div
+                    layoutId="home-tab-underline"
+                    className="absolute bottom-0 left-1/2 h-[2px] w-16 -translate-x-1/2 rounded-full bg-[var(--accent)]"
+                    transition={{ type: 'spring', duration: 0.4, bounce: 0.15 }}
+                  />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setHomeTab('favorites')}
+                className="relative flex flex-1 items-center justify-center gap-2 pb-3 pt-1 text-[14px] font-semibold tracking-wide transition-colors duration-150"
+                style={{ color: homeTab === 'favorites' ? 'var(--text-primary)' : 'var(--text-muted)' }}
+              >
+                <Icon icon={StarIcon} size={17} strokeWidth={2} style={{ color: homeTab === 'favorites' ? 'var(--warning)' : 'var(--text-muted)', transition: 'color 150ms' }} />
+                Favorites
+                {homeTab === 'favorites' && (
+                  <motion.div
+                    layoutId="home-tab-underline"
+                    className="absolute bottom-0 left-1/2 h-[2px] w-20 -translate-x-1/2 rounded-full bg-[var(--accent)]"
+                    transition={{ type: 'spring', duration: 0.4, bounce: 0.15 }}
+                  />
+                )}
+              </button>
+            </div>
+
+            {/* Tab content with AnimatePresence crossfade */}
+            <div className="relative overflow-hidden">
+              <AnimatePresence mode="wait" initial={false}>
+                {homeTab === 'recent' ? (
+                  <motion.div
+                    key="recent"
+                    initial={{ opacity: 0, x: -16, filter: 'blur(4px)' }}
+                    animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                    exit={{ opacity: 0, x: 16, filter: 'blur(4px)' }}
+                    transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+                  >
+                    {recentNotes.length > 0 ? (
+                      <div className="flex flex-col">
+                        <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[12px] font-bold text-[var(--text-muted)] opacity-60">
+                          <div className="w-24">Last Edited</div>
+                          <div>Name</div>
+                        </div>
+                        <div className="flex flex-col">
+                          {recentNotes.map((n, i) => {
+                            const isDaily = n.tags?.includes('daily')
+                            const rawTitle = getNoteDisplayTitle(n)
+                            const date = new Date(n.updatedAt || n.createdAt)
+                            const formattedDate = formatRelativeTime(date)
+                            let displayTitle = rawTitle
+                            if (isDaily) {
+                              const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/)
+                              if (parts) {
+                                const [, dd, mm, yyyy] = parts
+                                const d = new Date(`${yyyy}-${mm}-${dd}`)
+                                const readable = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                                displayTitle = `Daily \u2014 ${readable}`
+                              } else {
+                                displayTitle = `Daily \u2014 ${rawTitle}`
+                              }
+                            }
+                            return (
+                              <motion.button
+                                key={n.id}
+                                type="button"
+                                onClick={() => onSelectNote(n.id)}
+                                className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.98]"
+                                initial={{ opacity: 0, y: 6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.25, delay: i * 0.04, ease: [0.23, 1, 0.32, 1] }}
+                              >
+                                <div className="flex w-24 shrink-0 items-center gap-3">
+                                  <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80 shrink-0" />
+                                  <span className="text-[13px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] transition-transform truncate">
+                                    {formattedDate}
+                                  </span>
+                                </div>
+                                <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] flex items-center gap-3">
+                                  <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-50" />
+                                  {displayTitle}
+                                </span>
+                              </motion.button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col justify-center min-h-[260px]">
+                        <FirstNotePrompt />
+                      </div>
+                    )}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="favorites"
+                    initial={{ opacity: 0, x: 16, filter: 'blur(4px)' }}
+                    animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                    exit={{ opacity: 0, x: -16, filter: 'blur(4px)' }}
+                    transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+                  >
+                    {favoriteNotes.length > 0 ? (
+                      <div className="flex flex-col">
+                        <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[12px] font-bold text-[var(--text-muted)] opacity-60">
+                          <div className="w-24">Last Edited</div>
+                          <div>Name</div>
+                        </div>
+                        <div className="flex flex-col">
+                          {favoriteNotes.map((n, i) => {
+                            const isDaily = n.tags?.includes('daily')
+                            const rawTitle = getNoteDisplayTitle(n)
+                            const date = new Date(n.updatedAt || n.createdAt)
+                            const formattedDate = formatRelativeTime(date)
+                            let displayTitle = rawTitle
+                            if (isDaily) {
+                              const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/)
+                              if (parts) {
+                                const [, dd, mm, yyyy] = parts
+                                const d = new Date(`${yyyy}-${mm}-${dd}`)
+                                const readable = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                                displayTitle = `Daily \u2014 ${readable}`
+                              } else {
+                                displayTitle = `Daily \u2014 ${rawTitle}`
+                              }
+                            }
+                            return (
+                              <motion.button
+                                key={n.id}
+                                type="button"
+                                onClick={() => onSelectNote(n.id)}
+                                className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.98]"
+                                initial={{ opacity: 0, y: 6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.25, delay: i * 0.04, ease: [0.23, 1, 0.32, 1] }}
+                              >
+                                <div className="flex w-24 shrink-0 items-center gap-3">
+                                  <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80 shrink-0" />
+                                  <span className="text-[13px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] transition-transform truncate">
+                                    {formattedDate}
+                                  </span>
+                                </div>
+                                <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] flex items-center gap-3">
+                                  <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-50" />
+                                  {displayTitle}
+                                </span>
+                              </motion.button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col justify-center min-h-[260px]">
+                        <FavoritesEmptyPrompt />
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* ── Desktop Two-Column View ──────────────────────────── */}
+          <div className="animate-fade-in-up-delay-2 mt-10 w-full max-w-[1200px] md:mt-16 hidden md:grid md:grid-cols-2 gap-16 lg:gap-24 px-8" style={{ fontFamily: '"Outfit", sans-serif' }}>
             {/* Recent Column */}
             <div className="flex flex-col">
               <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-4">
@@ -807,8 +983,8 @@ export default function NoteEditor({
               </div>
               {recentNotes.length > 0 ? (
                 <>
-                  <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[12px] font-bold text-[var(--text-muted)] opacity-60 md:mb-4 md:gap-12 md:text-[15px]">
-                    <div className="w-24 md:w-32">Last Edited</div>
+                  <div className="mb-4 flex items-center gap-12 border-b border-[var(--border-subtle)] px-2 pb-2 text-[15px] font-bold text-[var(--text-muted)] opacity-60">
+                    <div className="w-32">Last Edited</div>
                     <div>Name</div>
                   </div>
                   <div className="flex flex-col">
@@ -836,15 +1012,15 @@ export default function NoteEditor({
                           key={n.id}
                           type="button"
                           onClick={() => onSelectNote(n.id)}
-                          className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)] md:gap-6 md:py-4"
+                          className="group flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 py-4 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)]"
                         >
-                          <div className="flex w-24 shrink-0 items-center gap-3 md:w-32">
+                          <div className="flex w-32 shrink-0 items-center gap-3">
                             <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80 shrink-0" />
-                            <span className="text-[13px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] md:text-[15px] active:scale-[0.97] transition-transform truncate">
+                            <span className="text-[15px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] active:scale-[0.97] transition-transform truncate">
                               {formattedDate}
                             </span>
                           </div>
-                          <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[22px] flex items-center gap-3">
+                          <span className="truncate text-[22px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] flex items-center gap-3">
                             <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-50" />
                             {displayTitle}
                           </span>
@@ -870,8 +1046,8 @@ export default function NoteEditor({
               </div>
               {favoriteNotes.length > 0 ? (
                 <>
-                  <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[12px] font-bold text-[var(--text-muted)] opacity-60 md:mb-4 md:gap-12 md:text-[15px]">
-                    <div className="w-24 md:w-32">Last Edited</div>
+                  <div className="mb-4 flex items-center gap-12 border-b border-[var(--border-subtle)] px-2 pb-2 text-[15px] font-bold text-[var(--text-muted)] opacity-60">
+                    <div className="w-32">Last Edited</div>
                     <div>Name</div>
                   </div>
                   <div className="flex flex-col">
@@ -899,15 +1075,15 @@ export default function NoteEditor({
                           key={n.id}
                           type="button"
                           onClick={() => onSelectNote(n.id)}
-                          className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)] md:gap-6 md:py-4"
+                          className="group flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 py-4 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)]"
                         >
-                          <div className="flex w-24 shrink-0 items-center gap-3 md:w-32">
+                          <div className="flex w-32 shrink-0 items-center gap-3">
                             <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80 shrink-0" />
-                            <span className="text-[13px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] md:text-[15px] active:scale-[0.97] transition-transform truncate">
+                            <span className="text-[15px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] active:scale-[0.97] transition-transform truncate">
                               {formattedDate}
                             </span>
                           </div>
-                          <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[22px] flex items-center gap-3">
+                          <span className="truncate text-[22px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] flex items-center gap-3">
                             <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-50" />
                             {displayTitle}
                           </span>
