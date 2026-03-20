@@ -74,10 +74,12 @@ Existing test files:
 
 ## Language & Modules
 
-- **Plain JavaScript** — no TypeScript. Do not introduce `.ts`/`.tsx` files.
+- **TypeScript** — the project is being progressively migrated from JS to TS.
+- New files should be `.ts` / `.tsx`. Remaining `.jsx` files are allowed during migration.
 - ES modules throughout (`"type": "module"` in package.json).
 - Use `import`/`export`; never `require()`.
 - No path aliases — use relative imports (`../utils/tree`, not `@/utils/tree`).
+- `tsconfig.json` has `strict: true`, `allowJs: true`, and `checkJs: false`.
 
 ---
 
@@ -225,7 +227,7 @@ describe('buildTree', () => {
 
 ## What to Avoid
 
-- Do not introduce TypeScript, Zustand, Redux, or other state managers.
+- Do not introduce Zustand, Redux, or other state managers.
 - Do not add a Prettier config — formatting is not enforced.
 - Do not create `tailwind.config.js` — use CSS variables for customisation.
 - Do not use `require()` or CommonJS syntax.
