@@ -32,6 +32,7 @@ import TagInput from './TagInput'
 import DailyHeader from './DailyHeader'
 import AccentPicker from './AccentPicker'
 import type { EditorApi } from './LiveMarkdownEditor'
+import MobileEditorToolbar from './MobileEditorToolbar'
 import type { NoteFile, TreeNode } from '../types'
 
 const LiveMarkdownEditor = lazy(() => import('./LiveMarkdownEditor'))
@@ -689,12 +690,12 @@ export default function NoteEditor({
 
     const recentNotes = [...fileNotes]
       .sort(compareRecentNotes)
-      .slice(0, 6)
+      .slice(0, 5)
 
     const favoriteNotes = [...fileNotes]
       .filter((n) => n.tags?.includes('favorite') || (n as NoteFile & { isFavorite?: boolean }).isFavorite)
       .sort(compareRecentNotes)
-      .slice(0, 6)
+      .slice(0, 5)
 
     return (
       <div className="flex flex-1 min-w-0 flex-col max-md:rounded-none rounded-2xl bg-[var(--bg-primary)]">
@@ -1212,27 +1213,9 @@ export default function NoteEditor({
         </div>
       </div>
 
-      {/* Mobile action bar — floating liquid glass */}
+      {/* Mobile editor toolbar — floating formatting pill */}
       {!focusMode && (
-        <div className="mobile-action-bar" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-          <div className="mobile-action-bar-inner">
-            <button type="button" onClick={onToggleSidebar} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
-              <Icon icon={SidebarLeftIcon} size={18} strokeWidth={1.5} />
-            </button>
-            <button type="button" onClick={() => onNewNote?.()} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
-              <Icon icon={Add01Icon} size={18} strokeWidth={1.5} />
-            </button>
-            {onOpenCommandPalette && (
-              <button type="button" onClick={onOpenCommandPalette} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
-                <Icon icon={CommandIcon} size={18} strokeWidth={1.5} />
-              </button>
-            )}
-            <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} mobile />
-            <button type="button" onClick={onToggleTheme} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
-              {theme === 'dark' ? <Icon icon={Sun01Icon} size={18} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={18} strokeWidth={1.5} />}
-            </button>
-          </div>
-        </div>
+        <MobileEditorToolbar editor={editorApiRef.current?.getEditor() ?? null} />
       )}
     </div>
   )

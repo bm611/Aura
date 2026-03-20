@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 
 import { EditorContent, useEditor } from '@tiptap/react'
-import type { JSONContent } from '@tiptap/react'
+import type { JSONContent, Editor } from '@tiptap/react'
 
 import { createAuraEditorExtensions } from '../editor/core/extensions'
 import { runAuraEditorCommand } from '../editor/core/editorCommands'
@@ -17,6 +17,7 @@ export interface EditorPayload {
 export interface EditorApi {
   focus: () => void
   runCommand: (commandId: string) => void
+  getEditor: () => Editor | null
 }
 
 interface LiveMarkdownEditorProps {
@@ -121,6 +122,9 @@ export default function LiveMarkdownEditor({
       },
       runCommand(commandId: string) {
         runAuraEditorCommand(editor, commandId)
+      },
+      getEditor() {
+        return editor
       },
     }
 
