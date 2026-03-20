@@ -1,7 +1,7 @@
 import OpenAI from 'openai'
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY ?? ''
-const MODEL = 'google/gemini-2.5-flash-lite'
+const MODEL = "x-ai/grok-4.1-fast"
 
 export default async function handler(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') {
