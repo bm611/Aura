@@ -942,15 +942,14 @@ body {
   margin: 0.6rem 0;
 }
 
-.aura-editor .ProseMirror .table-container {
-  position: relative;
-}
-
 .aura-editor .ProseMirror table {
   width: 100%;
+  min-width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
   border-radius: var(--radius-md);
   overflow: hidden;
+  table-layout: fixed;
 }
 
 .aura-editor .ProseMirror th,
@@ -959,10 +958,19 @@ body {
   padding: 0.6rem 0.75rem;
   text-align: left;
   vertical-align: top;
+  min-width: 96px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .aura-editor .ProseMirror th {
   background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+}
+
+.aura-editor .ProseMirror th > *,
+.aura-editor .ProseMirror td > * {
+  max-width: 100%;
 }
 
 .aura-editor .ProseMirror .selectedCell::after {
@@ -980,29 +988,84 @@ body {
 
 /* ── Table NodeView ── */
 
-.table-wrapper {
-  position: relative;
+.aura-editor .ProseMirror .table-node-view {
+  margin: 0.75rem 0;
+  max-width: 100%;
+}
+
+.aura-editor .ProseMirror .table-node-view__frame {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  gap: 0.35rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: min(100%, 18rem);
+  vertical-align: top;
+}
+
+.aura-editor .ProseMirror .table-node-view__scroller {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
 }
 
-.table-wrapper:hover .table-add-button {
-  opacity: 0.5 !important;
+.aura-editor .ProseMirror .table-node-view__table {
+  margin: 0;
+  width: 100%;
 }
 
-.table-add-button:hover {
-  opacity: 1 !important;
-  background: var(--bg-hover) !important;
-  color: var(--text-primary) !important;
+.aura-editor .ProseMirror .table-node-view__add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border-subtle);
+  border-radius: calc(var(--radius-md) - 2px);
+  background: color-mix(in srgb, var(--bg-elevated) 82%, transparent);
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.18s ease,
+    color 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease;
 }
 
-.table-wrapper table {
-  width: auto !important;
+.aura-editor .ProseMirror .table-node-view:hover .table-node-view__add,
+.aura-editor .ProseMirror .table-node-view:focus-within .table-node-view__add {
+  opacity: 0.88;
+  pointer-events: auto;
 }
 
-.table-wrapper table td,
-.table-wrapper table th {
-  min-width: 80px;
-  padding: 0.5rem 0.75rem;
+.aura-editor .ProseMirror .table-node-view__add:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--border-subtle));
+  color: var(--text-primary);
+}
+
+.aura-editor .ProseMirror .table-node-view__add:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.aura-editor .ProseMirror .table-node-view__add--column {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 2rem;
+  padding: 0.55rem 0.35rem;
+}
+
+.aura-editor .ProseMirror .table-node-view__add--row {
+  grid-column: 1;
+  grid-row: 2;
+  width: 100%;
+  min-height: 2rem;
+  padding: 0.35rem;
 }
 
 /* ═══════════════════════════════════════════════

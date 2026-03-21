@@ -75,7 +75,8 @@ export function createAuraEditorExtensions(): Extensions {
       nested: true,
     }),
     AuraTable.configure({
-      resizable: true,
+      resizable: false,
+      renderWrapper: false,
     }),
     TableRow,
     TableHeader,

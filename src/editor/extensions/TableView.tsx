@@ -1,145 +1,115 @@
-import { NodeViewContent, NodeViewWrapper } from '@tiptap/react'
-import type { NodeViewProps } from '@tiptap/react'
-import { useCallback, useRef } from 'react'
+import { useCallback } from 'react'
+
 import { Add01Icon } from '@hugeicons/core-free-icons'
+import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
+import type { NodeViewProps } from '@tiptap/react'
+import { NodeViewContent, NodeViewWrapper } from '@tiptap/react'
+
 import Icon from '../../components/Icon'
 
-function TableView({ editor, node, getPos }: NodeViewProps) {
-  const gridRef = useRef<HTMLDivElement>(null)
+function getCellFocusPosition(tablePos: number, tableNode: ProseMirrorNode, rowIndex: number, colIndex: number): number | null {
+  const targetRow = tableNode.child(rowIndex)
+  const targetCell = targetRow?.child(colIndex)
 
-  const focusLastCell = useCallback((row: number, col: number) => {
+  if (!targetRow || !targetCell) {
+    return null
+  }
+
+  let rowPos = tablePos + 1
+
+  for (let index = 0; index < rowIndex; index += 1) {
+    rowPos += tableNode.child(index).nodeSize
+  }
+
+  let cellPos = rowPos + 1
+
+  for (let index = 0; index < colIndex; index += 1) {
+    cellPos += targetRow.child(index).nodeSize
+  }
+
+  return Math.min(cellPos + 1, cellPos + Math.max(targetCell.nodeSize - 2, 1))
+}
+
+export default function TableView({ editor, getPos, node }: NodeViewProps) {
+  const appendRow = useCallback(() => {
+    if (!editor.isEditable || node.childCount === 0) {
+      return
+    }
+
     const tablePos = getPos()
-    if (tablePos == null) return false
-    const resolved = editor.state.doc.resolve(tablePos + 1)
-    const tableNode = resolved.parent.type.name === 'table' ? resolved.parent : node
-    const targetRow = tableNode.child(row)
-    if (!targetRow) return false
-    let offset = tablePos + 1
-    for (let r = 0; r < row; r++) offset += tableNode.child(r).nodeSize
-    offset += 1
-    for (let c = 0; c < col; c++) offset += targetRow.child(c).nodeSize
-    offset += 1
-    editor.chain().setTextSelection(offset).run()
-    return true
+    const lastRowIndex = node.childCount - 1
+    const lastRow = node.child(lastRowIndex)
+    const lastCellIndex = Math.max(lastRow.childCount - 1, 0)
+
+    if (typeof tablePos === 'number') {
+      const focusPos = getCellFocusPosition(tablePos, node, lastRowIndex, lastCellIndex)
+
+      if (focusPos != null) {
+        editor.chain().focus(focusPos, { scrollIntoView: false }).addRowAfter().run()
+        return
+      }
+    }
+
+    editor.chain().focus(undefined, { scrollIntoView: false }).addRowAfter().run()
   }, [editor, getPos, node])
 
-  const addRowAfter = useCallback(() => {
-    const rowCount = node.childCount
-    if (!rowCount) return
-    const lastRow = node.child(rowCount - 1)
-    focusLastCell(rowCount - 1, lastRow.childCount - 1)
-    editor.chain().addRowAfter().run()
-  }, [editor, node, focusLastCell])
+  const appendColumn = useCallback(() => {
+    if (!editor.isEditable || node.childCount === 0) {
+      return
+    }
 
-  const addColumnAfter = useCallback(() => {
     const firstRow = node.firstChild
-    if (!firstRow) return
-    focusLastCell(0, firstRow.childCount - 1)
-    editor.chain().addColumnAfter().run()
-  }, [editor, node, focusLastCell])
+    const tablePos = getPos()
+
+    if (!firstRow) {
+      return
+    }
+
+    const lastCellIndex = Math.max(firstRow.childCount - 1, 0)
+
+    if (typeof tablePos === 'number') {
+      const focusPos = getCellFocusPosition(tablePos, node, 0, lastCellIndex)
+
+      if (focusPos != null) {
+        editor.chain().focus(focusPos, { scrollIntoView: false }).addColumnAfter().run()
+        return
+      }
+    }
+
+    editor.chain().focus(undefined, { scrollIntoView: false }).addColumnAfter().run()
+  }, [editor, getPos, node])
 
   return (
-    <NodeViewWrapper className="table-wrapper">
-      <div
-        className="table-container"
-        style={{
-          display: 'inline-grid',
-          gridTemplateColumns: 'max-content min-content',
-          gridTemplateRows: 'auto auto',
-          columnGap: '4px',
-          rowGap: '4px',
-        }}
-      >
-        {/* (row 1, col 1) — the table */}
-        <div
-          ref={gridRef}
-          style={{ gridColumn: 1, gridRow: 1, overflowX: 'auto', position: 'relative' }}
-        >
-          <NodeViewContent
-            as={"table" as any}
-            style={{ borderCollapse: 'collapse', tableLayout: 'auto' }}
-          />
+    <NodeViewWrapper className="table-node-view">
+      <div className="table-node-view__frame">
+        <div className="table-node-view__scroller">
+          <NodeViewContent as={'table' as never} className="table-node-view__table" />
         </div>
 
-        {/* (rows 1-2, col 2) — add column, spans full height */}
         <button
           type="button"
           contentEditable={false}
-          onClick={addColumnAfter}
-          className="table-add-button table-add-column"
-          style={{
-            gridColumn: 2,
-            gridRow: '1 / 3',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '8px 6px',
-            border: '1px dashed var(--border-subtle)',
-            borderRadius: '6px',
-            background: 'transparent',
-            color: 'var(--text-muted)',
-            cursor: 'pointer',
-            opacity: 0,
-            transition: 'opacity 0.15s ease',
-          }}
+          className="table-node-view__add table-node-view__add--column"
+          onClick={appendColumn}
+          disabled={!editor.isEditable}
+          aria-label="Add column"
+          title="Add column"
         >
-          <Icon icon={Add01Icon} size={16} stroke={1.5} />
+          <Icon icon={Add01Icon} size={16} stroke={1.65} />
         </button>
 
-        {/* (row 2, col 1) — add row, exactly as wide as the table */}
         <button
           type="button"
           contentEditable={false}
-          onClick={addRowAfter}
-          className="table-add-button table-add-row"
-          style={{
-            gridColumn: 1,
-            gridRow: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '4px',
-            border: '1px dashed var(--border-subtle)',
-            borderRadius: '6px',
-            background: 'transparent',
-            color: 'var(--text-muted)',
-            cursor: 'pointer',
-            opacity: 0,
-            transition: 'opacity 0.15s ease',
-          }}
+          className="table-node-view__add table-node-view__add--row"
+          onClick={appendRow}
+          disabled={!editor.isEditable}
+          aria-label="Add row"
+          title="Add row"
         >
-          <Icon icon={Add01Icon} size={16} stroke={1.5} />
+          <Icon icon={Add01Icon} size={16} stroke={1.65} />
         </button>
       </div>
-
-      <style>{`
-        .table-wrapper {
-          position: relative;
-          overflow-x: auto;
-        }
-        .table-wrapper:hover .table-add-button {
-          opacity: 0.5 !important;
-        }
-        .table-add-button:hover {
-          opacity: 1 !important;
-          background: var(--bg-hover) !important;
-          color: var(--text-primary) !important;
-        }
-        /* Override global width:100% so the table sizes to its content */
-        .table-wrapper table {
-          width: auto !important;
-        }
-        .table-wrapper table td,
-        .table-wrapper table th {
-          min-width: 80px;
-          padding: 0.5rem 0.75rem;
-          word-wrap: break-word;
-          overflow-wrap: break-word;
-          white-space: normal;
-        }
-      `}</style>
     </NodeViewWrapper>
   )
 }
-
-export default TableView
