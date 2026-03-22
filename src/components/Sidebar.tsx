@@ -579,7 +579,7 @@ export default function Sidebar({
           {/* Header — app name + collapse icon */}
           <div className="sb-header-wrapper">
             <span className="flex items-center gap-1.5">
-              <span className="sb-app-name">Aura</span>
+              <span className="sb-app-name">Folio</span>
             </span>
             <button
               type="button"

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { createAuraEditorExtensions } from '../core/extensions'
+import { createFolioEditorExtensions } from '../core/extensions'
 import { docToMarkdown, markdownToDoc } from './markdownConversion'
 
 describe('markdownConversion', () => {
-  it('imports legacy markdown into a rich doc and preserves the main Aura blocks on export', () => {
+  it('imports legacy markdown into a rich doc and preserves the main Folio blocks on export', () => {
     const source = `# Title
 
 - [x] Ship migration
@@ -19,7 +19,7 @@ console.log("aura")
 | --- | --- |
 | Aura | Notes |`
 
-    const doc = markdownToDoc(source, createAuraEditorExtensions())
+    const doc = markdownToDoc(source, createFolioEditorExtensions())
     const markdown = docToMarkdown(doc)
 
     expect(doc.type).toBe('doc')

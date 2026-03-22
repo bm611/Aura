@@ -63,7 +63,7 @@ export default function LandingPage({ onStart, onSignIn }: LandingPageProps) {
           <div className="translate-y-12 opacity-0 transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] delay-100 [.is-mounted_&]:translate-y-0 [.is-mounted_&]:opacity-100">
 
             <h1 className="mb-6 max-w-2xl text-5xl leading-[1.05] tracking-tight sm:text-7xl lg:text-8xl xl:text-[10rem] text-[var(--accent)]" style={{ fontFamily: 'var(--font-logo)' }}>
-              Aura.
+              Folio.
             </h1>
 
             <p className="mb-14 max-w-lg text-lg leading-relaxed text-[var(--text-secondary)] sm:text-xl">

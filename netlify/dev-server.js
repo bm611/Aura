@@ -83,8 +83,8 @@ const server = createServer(async (req, res) => {
     .join('\n\n')
 
   const systemPrompt = contextBlock
-    ? `You are Aura AI, a helpful assistant embedded in a note-taking app. The user has referenced the following notes as context for their question. Use these notes to provide an accurate, well-grounded answer. If the notes don't contain enough information to fully answer, say so.\n\n${contextBlock}`
-    : `You are Aura AI, a helpful assistant embedded in a note-taking app. Answer the user's question concisely and helpfully.`
+    ? `You are Folio AI, a helpful assistant embedded in a note-taking app. The user has referenced the following notes as context for their question. Use these notes to provide an accurate, well-grounded answer. If the notes don't contain enough information to fully answer, say so.\n\n${contextBlock}`
+    : `You are Folio AI, a helpful assistant embedded in a note-taking app. Answer the user's question concisely and helpfully.`
 
   // Call OpenRouter
   let upstream

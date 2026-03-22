@@ -31,7 +31,7 @@
 }
 
 /* ═══════════════════════════════════════════════
-   Tailwind v4 Theme — Aura Design System
+   Tailwind v4 Theme — Folio Design System
    ═══════════════════════════════════════════════ */
 
 @theme {
@@ -503,7 +503,7 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   Aura Editor — TipTap / ProseMirror
+   Folio Editor — TipTap / ProseMirror
    ═══════════════════════════════════════════════ */
 
 .aura-editor {
@@ -1176,7 +1176,7 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   Callouts — Aura (TipTap)
+   Callouts — Folio (TipTap)
    ═══════════════════════════════════════════════ */
 
 .aura-callout {

@@ -6,7 +6,7 @@ import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
 import { ReactNodeViewRenderer } from '@tiptap/react'
 import CodeBlockView from '../extensions/CodeBlockView'
-import { AuraTaskItem } from '../extensions/TaskItemNode'
+import { FolioTaskItem } from '../extensions/TaskItemNode'
 import TaskList from '@tiptap/extension-task-list'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { textblockTypeInputRule, wrappingInputRule } from '@tiptap/core'
@@ -20,7 +20,7 @@ import TableView from '../extensions/TableView'
 
 const lowlight = createLowlight(all)
 
-const AuraTaskList = TaskList.extend({
+const FolioTaskList = TaskList.extend({
   addInputRules() {
     return [
       wrappingInputRule({
@@ -32,13 +32,13 @@ const AuraTaskList = TaskList.extend({
   },
 })
 
-const AuraTable = Table.extend({
+const FolioTable = Table.extend({
   addNodeView() {
     return ReactNodeViewRenderer(TableView)
   },
 })
 
-const AuraCodeBlockLowlight = CodeBlockLowlight.extend({
+const FolioCodeBlockLowlight = CodeBlockLowlight.extend({
   addInputRules() {
     const parentRules = this.parent?.() ?? []
     return [
@@ -55,7 +55,7 @@ const AuraCodeBlockLowlight = CodeBlockLowlight.extend({
   },
 })
 
-export function createAuraEditorExtensions(): Extensions {
+export function createFolioEditorExtensions(): Extensions {
   return [
     StarterKit.configure({
       heading: {
@@ -70,18 +70,18 @@ export function createAuraEditorExtensions(): Extensions {
       defaultProtocol: 'https',
       openOnClick: false,
     }),
-    AuraTaskList,
-    AuraTaskItem.configure({
+    FolioTaskList,
+    FolioTaskItem.configure({
       nested: true,
     }),
-    AuraTable.configure({
+    FolioTable.configure({
       resizable: false,
       renderWrapper: false,
     }),
     TableRow,
     TableHeader,
     TableCell,
-    AuraCodeBlockLowlight.configure({
+    FolioCodeBlockLowlight.configure({
       lowlight,
     }),
     CalloutNode,

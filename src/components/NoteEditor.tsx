@@ -789,7 +789,7 @@ export default function NoteEditor({
               className="text-6xl tracking-tight sm:text-7xl mb-4"
               style={{ fontFamily: 'var(--font-logo)', color: 'var(--text-primary)' }}
             >
-              Aura.
+              Folio.
             </h1>
             <div className="mb-6 space-y-2" style={{ fontFamily: '"Outfit", sans-serif' }}>
               <p className="text-[14px] text-[var(--text-muted)] tracking-wide">

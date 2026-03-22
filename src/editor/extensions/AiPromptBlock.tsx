@@ -7,7 +7,7 @@ import { Fragment, Slice } from '@tiptap/pm/model'
 
 import { streamAiChat } from '../../utils/aiChat'
 import { markdownToDoc } from '../markdown/markdownConversion'
-import { createAuraEditorExtensions } from '../core/extensions'
+import { createFolioEditorExtensions } from '../core/extensions'
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -125,7 +125,7 @@ function AiPromptView({ node, editor, getPos, deleteNode }: NodeViewProps) {
       const pos = typeof getPos === 'function' ? getPos() : null
       if (pos == null) return
 
-      const extensions = createAuraEditorExtensions()
+      const extensions = createFolioEditorExtensions()
       const doc = markdownToDoc(markdown, extensions)
       const contentNodes = doc.content ?? []
 

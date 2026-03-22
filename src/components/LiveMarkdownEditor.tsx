@@ -3,8 +3,8 @@ import { useEffect, useMemo, useRef } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import type { JSONContent, Editor } from '@tiptap/react'
 
-import { createAuraEditorExtensions } from '../editor/core/extensions'
-import { runAuraEditorCommand } from '../editor/core/editorCommands'
+import { createFolioEditorExtensions } from '../editor/core/extensions'
+import { runFolioEditorCommand } from '../editor/core/editorCommands'
 import { docToMarkdown, markdownToDoc } from '../editor/markdown/markdownConversion'
 import TableBubbleMenu from './TableBubbleMenu'
 import type { NoteFile } from '../types'
@@ -31,7 +31,7 @@ interface LiveMarkdownEditorProps {
   onRegisterEditorApi?: (api: EditorApi | null) => void
 }
 
-function sanitizeDoc(doc: JSONContent | undefined, extensions: ReturnType<typeof createAuraEditorExtensions>): JSONContent {
+function sanitizeDoc(doc: JSONContent | undefined, extensions: ReturnType<typeof createFolioEditorExtensions>): JSONContent {
   if (!doc || doc.type !== 'doc') {
     return markdownToDoc('', extensions)
   }
@@ -48,7 +48,7 @@ export default function LiveMarkdownEditor({
   onChange,
   onRegisterEditorApi,
 }: LiveMarkdownEditorProps) {
-  const extensions = useMemo(() => createAuraEditorExtensions(), [])
+  const extensions = useMemo(() => createFolioEditorExtensions(), [])
   const lastSerializedRef = useRef<string | null>(null)
   const debounceRef = useRef<number | undefined>(undefined)
   const initialDoc = useMemo(
@@ -145,7 +145,7 @@ export default function LiveMarkdownEditor({
         editor.chain().focus('end', { scrollIntoView: false }).run()
       },
       runCommand(commandId: string) {
-        runAuraEditorCommand(editor, commandId)
+        runFolioEditorCommand(editor, commandId)
       },
       getEditor() {
         return editor

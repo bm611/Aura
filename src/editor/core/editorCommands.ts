@@ -21,7 +21,7 @@ function getDefaultCalloutAttrs() {
   }
 }
 
-export function runAuraEditorCommand(editor: Editor, commandId: string, options: CommandOptions = {}): boolean {
+export function runFolioEditorCommand(editor: Editor, commandId: string, options: CommandOptions = {}): boolean {
   if (!editor) {
     return false
   }

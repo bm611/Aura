@@ -193,9 +193,9 @@ function getInitialOnlineState(): boolean {
   return navigator.onLine
 }
 
-const SAMPLE_NOTE = `# ✍️ Welcome to Aura
+const SAMPLE_NOTE = `# ✍️ Welcome to Folio
 
-Aura is a fast, private markdown editor designed for speed and clarity. This note is your interactive onboarding guide to help you master the editor.
+Folio is a fast, private markdown editor designed for speed and clarity. This note is your interactive onboarding guide to help you master the editor.
 
 > [!tip] - Pro Tip
 > Press \`Cmd + K\` (or \`Ctrl + K\`) to search notes, change fonts, or switch between Dark/Light mode.
@@ -216,14 +216,14 @@ Type \`/\` on a new line to see all available components. Try these new addition
 
 ## 📝 Markdown Cheat Sheet
 
-Aura supports standard markdown with some powerful enhancements:
+Folio supports standard markdown with some powerful enhancements:
 
 ### Typography
 - **Bold**: \`**text**\`
 - *Italic*: \`*text*\`
 - ~~Strikethrough~~: \`~~text~~\`
 - \`Inline Code\`: \` \`code\` \`
-- [Links are easy](https://github.com/bm611/aura)
+- [Links are easy](https://github.com/bm611/folio)
 
 ### Nested Lists & Tasks
 Press \`Tab\` to indent and \`Shift + Tab\` to un-indent:
@@ -242,7 +242,7 @@ Type \` \` \` \` followed by a language to start a block:
 
 \`\`\`js
 function hello() {
-  console.log("Hello from Aura!");
+  console.log("Hello from Folio!");
 }
 \`\`\`
 
@@ -251,7 +251,7 @@ function hello() {
 ## 🏗️ Premium Components
 
 ### Interactive Callouts
-Aura supports high-visibility callouts for expert organization. 
+Folio supports high-visibility callouts for expert organization.
 
 > [!important] New Callout Controls
 > - **Change Type**: Click the icon in the top-left of any callout to cycle through types (Note, Tip, Warning, etc.).
@@ -390,8 +390,8 @@ function makeSampleTree(): TreeNode[] {
     {
       id: generateId(),
       type: 'file',
-      name: 'Aura Knowledge Base',
-      title: 'Aura Knowledge Base',
+      name: 'Folio Knowledge Base',
+      title: 'Folio Knowledge Base',
       content: SAMPLE_NOTE,
       tags: [],
       createdAt: now,

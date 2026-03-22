@@ -34,7 +34,7 @@ function TaskItemView({ node, updateAttributes }: NodeViewProps) {
   )
 }
 
-export const AuraTaskItem = TaskItem.extend({
+export const FolioTaskItem = TaskItem.extend({
   addNodeView() {
     return ReactNodeViewRenderer(TaskItemView)
   },

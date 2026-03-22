@@ -1,7 +1,7 @@
 import { Extension } from '@tiptap/core'
 import Suggestion from '@tiptap/suggestion'
 import { getEditorCommands } from '../../utils/editorCommands'
-import { runAuraEditorCommand } from '../core/editorCommands'
+import { runFolioEditorCommand } from '../core/editorCommands'
 
 function createMenu(): HTMLDivElement {
   const element = document.createElement('div')
@@ -51,7 +51,7 @@ export const SlashCommand = Extension.create({
         char: '/',
         startOfLine: true,
         items: ({ query }: { query: string }) => getEditorCommands(query).slice(0, 12),
-        command: ({ editor, range, props }: { editor: unknown; range: { from: number; to: number }; props: { id: string } }) => runAuraEditorCommand(editor as import('@tiptap/react').Editor, props.id, { range }),
+        command: ({ editor, range, props }: { editor: unknown; range: { from: number; to: number }; props: { id: string } }) => runFolioEditorCommand(editor as import('@tiptap/react').Editor, props.id, { range }),
         allow: ({ state }: { state: import('@tiptap/pm/state').EditorState }) => state.selection.$from.parent.type.name === 'paragraph',
         render: () => {
           let element: HTMLDivElement | null = null
