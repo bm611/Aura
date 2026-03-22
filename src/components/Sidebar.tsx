@@ -584,7 +584,7 @@ export default function Sidebar({
             <button
               type="button"
               onClick={onToggleCollapse}
-              className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3 flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
+              className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] after:absolute after:-inset-3 active:scale-[0.96]"
               title="Toggle sidebar (Cmd+B)"
             >
               <Icon icon={SidebarLeftIcon} size={22} stroke={1.5} />
@@ -795,7 +795,7 @@ export default function Sidebar({
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3 md:hidden absolute bottom-[calc(2.5rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] shadow-2xl backdrop-blur-xl transition-all active:scale-95"
+            className="relative absolute bottom-[calc(2.5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-primary)] shadow-2xl backdrop-blur-xl transition-[transform,background-color,box-shadow] duration-150 ease-out after:absolute after:-inset-3 md:hidden active:scale-[0.96]"
             aria-label="Close sidebar"
           >
             <Icon icon={Cancel01Icon} size={24} stroke={2} />

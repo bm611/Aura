@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+
 import { ACCENT_COLORS, type AccentColor } from '../config/accents'
 
 interface DropdownPos {
@@ -19,6 +21,13 @@ interface AccentPickerProps {
   label?: string
   hideName?: boolean
 }
+
+const POPOVER_TRANSITION = { type: 'spring', duration: 0.3, bounce: 0 } as const
+const POPOVER_VARIANTS = {
+  hidden: { opacity: 0, y: -8, filter: 'blur(4px)', scale: 0.98 },
+  visible: { opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 },
+  exit: { opacity: 0, y: -6, filter: 'blur(2px)', scale: 0.985 },
+} as const
 
 export default function AccentPicker({ accentId, onAccentChange, theme, mobile = false, showLabel = false, className = '', label = 'Accent', hideName = false }: AccentPickerProps) {
   const [open, setOpen] = useState(false)
@@ -57,13 +66,12 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
   // mobile   = 40×40 circle for mobile action bar
   const desktopClasses = showLabel
     ? 'settings-item'
-    : 'hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]'
+    : 'hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.96]'
 
   const triggerClassName = mobile
-    ? 'relative flex h-10 w-10 items-center justify-center rounded-full border-none bg-transparent p-0 text-[var(--text-muted)] cursor-pointer after:absolute after:-inset-4 active:scale-90'
+    ? 'relative flex h-10 w-10 items-center justify-center rounded-full border-none bg-transparent p-0 text-[var(--text-muted)] cursor-pointer transition-transform duration-150 ease-out after:absolute after:-inset-4 active:scale-[0.96]'
     : desktopClasses
-
-  const dropdownBaseClassName = `fixed z-[9999] rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2.5 ${mobile ? '' : 'animate-ctx-fade-in'}`
+  const dropdownBaseClassName = 'fixed z-[9999] rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2.5'
 
   const handleOpen = () => {
     if (!open && buttonRef.current) {
@@ -118,68 +126,75 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
       </button>
 
       {/* Dropdown panel — portaled to body to escape overflow:hidden ancestors */}
-      {open && createPortal(
-        <div
-          ref={dropdownRef}
-          role="listbox"
-          aria-label="Accent color options"
-          data-accent-popover
-          className={dropdownBaseClassName}
-          style={{
-            boxShadow: 'var(--dialog-shadow)',
-            minWidth: '188px',
-            ...(mobile
-              ? { bottom: dropdownPos.bottom, left: dropdownPos.left, transform: 'translateX(-50%)' }
-              : { top: dropdownPos.top, right: dropdownPos.right }),
-          }}
-        >
-          {/* Label */}
-          <p className="mb-2 px-0.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)] select-none">
-            Accent
-          </p>
+      {createPortal(
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.div
+              ref={dropdownRef}
+              role="listbox"
+              aria-label="Accent color options"
+              data-accent-popover
+              className={dropdownBaseClassName}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={POPOVER_VARIANTS}
+              transition={POPOVER_TRANSITION}
+              style={{
+                boxShadow: 'var(--dialog-shadow)',
+                minWidth: '188px',
+                transformOrigin: mobile ? 'bottom center' : 'top right',
+                ...(mobile
+                  ? { bottom: dropdownPos.bottom, left: dropdownPos.left, x: '-50%' }
+                  : { top: dropdownPos.top, right: dropdownPos.right }),
+              }}
+            >
+              <p className="mb-2 px-0.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)] select-none">
+                Accent
+              </p>
 
-          {/* Swatches */}
-          <div className="flex gap-0.5">
-            {ACCENT_COLORS.map((color: AccentColor) => {
-              const swatch = (theme === 'light' ? color.light : color.dark).accent
-              const isActive = color.id === accentId
+              <div className="flex gap-0.5">
+                {ACCENT_COLORS.map((color: AccentColor) => {
+                  const swatch = (theme === 'light' ? color.light : color.dark).accent
+                  const isActive = color.id === accentId
 
-              return (
-                <button
-                  key={color.id}
-                  type="button"
-                  role="option"
-                  aria-selected={isActive}
-                  onClick={() => {
-                    onAccentChange(color.id)
-                    setOpen(false)
-                  }}
-                  className="group flex flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 transition-colors duration-100 hover:bg-[var(--bg-hover)] active:scale-95"
-                  title={color.label}
-                >
-                  {/* Circle with active ring */}
-                  <span
-                    className="h-5 w-5 rounded-full transition-[box-shadow] duration-150 ring-1 ring-black/10"
-                    style={{
-                      backgroundColor: swatch,
-                      boxShadow: isActive
-                        ? `0 0 0 2px var(--bg-elevated), 0 0 0 3.5px ${swatch}`
-                        : undefined,
-                    }}
-                  />
-                  {!hideName && (
-                    <span
-                      className="text-[9px] leading-none transition-colors duration-100"
-                      style={{ color: isActive ? swatch : 'var(--text-muted)' }}
+                  return (
+                    <button
+                      key={color.id}
+                      type="button"
+                      role="option"
+                      aria-selected={isActive}
+                      onClick={() => {
+                        onAccentChange(color.id)
+                        setOpen(false)
+                      }}
+                      className="group flex flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 transition-[transform,background-color] duration-100 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.96]"
+                      title={color.label}
                     >
-                      {color.label}
-                    </span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        </div>,
+                      <span
+                        className="h-5 w-5 rounded-full transition-[box-shadow] duration-150 ring-1 ring-black/10"
+                        style={{
+                          backgroundColor: swatch,
+                          boxShadow: isActive
+                            ? `0 0 0 2px var(--bg-elevated), 0 0 0 3.5px ${swatch}`
+                            : undefined,
+                        }}
+                      />
+                      {!hideName && (
+                        <span
+                          className="text-[9px] leading-none transition-colors duration-100"
+                          style={{ color: isActive ? swatch : 'var(--text-muted)' }}
+                        >
+                          {color.label}
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
         document.body
       )}
     </div>

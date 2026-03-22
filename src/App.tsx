@@ -1607,7 +1607,7 @@ function AppInner() {
           <button
             type="button"
             onClick={handleUndoDelete}
-            className="rounded-full bg-[var(--accent)] px-4 py-1.5 text-sm font-medium text-white transition-all duration-150 hover:brightness-110 active:scale-95"
+            className="rounded-full bg-[var(--accent)] px-4 py-1.5 text-sm font-medium text-white transition-[transform,filter] duration-150 ease-out hover:brightness-110 active:scale-[0.96]"
           >
             Undo
           </button>

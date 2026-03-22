@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
 import { Sun01Icon, Coffee01Icon, Target01Icon, FireIcon, RocketIcon, CometIcon, Moon02Icon } from '@hugeicons/core-free-icons'
 
@@ -84,9 +83,11 @@ export default function DailyHeader({ note }: DailyHeaderProps) {
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-2xl border border-[var(--border-subtle)] p-6 mb-6"
+      transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
+      className="relative mb-6 overflow-hidden rounded-2xl border border-[var(--border-subtle)]/55 p-6"
       style={{
         background: `linear-gradient(135deg, color-mix(in srgb, ${theme.color} 12%, var(--bg-surface)), var(--bg-surface))`,
+        boxShadow: '0 18px 40px rgba(0, 0, 0, 0.12), 0 1px 0 color-mix(in srgb, white 4%, transparent)',
       }}
     >
       <div
@@ -98,11 +99,12 @@ export default function DailyHeader({ note }: DailyHeaderProps) {
 
       <div className="relative z-10 flex items-center gap-4">
         <div
-          className="p-3 rounded-full backdrop-blur-md shadow-sm"
+          className="rounded-full p-3 backdrop-blur-md"
           style={{
             background: `color-mix(in srgb, ${theme.color} 10%, var(--bg-elevated))`,
             border: `1px solid color-mix(in srgb, ${theme.color} 15%, transparent)`,
             color: theme.color,
+            boxShadow: '0 12px 24px rgba(0, 0, 0, 0.1)',
           }}
         >
           <Icon icon={theme.icon} size={24} stroke={1.5} />

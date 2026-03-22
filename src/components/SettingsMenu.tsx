@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 
 import {
   CloudSavingDone01Icon,
@@ -66,6 +67,12 @@ function getSyncMeta(syncing: boolean, syncStatus?: SyncStatus): {
 /* ── Shared constants ───────────────────────────────────────── */
 
 const ICON_WRAP = 'settings-icon-wrap'
+const POPOVER_TRANSITION = { type: 'spring', duration: 0.3, bounce: 0 } as const
+const POPOVER_VARIANTS = {
+  hidden: { opacity: 0, y: -8, filter: 'blur(4px)', scale: 0.98 },
+  visible: { opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 },
+  exit: { opacity: 0, y: -6, filter: 'blur(2px)', scale: 0.985 },
+} as const
 
 /* ── Font Picker Popover (portaled to body) ─────────────────── */
 
@@ -109,15 +116,21 @@ function FontPopover({ anchorRef, fontId, onFontChange, onClose }: FontPopoverPr
   const activeFont = FONT_OPTIONS.find((o) => o.id === fontId) ?? FONT_OPTIONS[0]!
 
   return createPortal(
-    <div
+    <motion.div
       ref={popoverRef}
       data-settings-font-popover
       className="fixed z-[9999] w-52 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-1.5 animate-ctx-fade-in"
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={POPOVER_VARIANTS}
+      transition={POPOVER_TRANSITION}
       style={{
         top: pos.top,
         left: pos.left,
         boxShadow: 'var(--dialog-shadow)',
         fontFamily: '"Outfit", sans-serif',
+        transformOrigin: 'top left',
       }}
     >
       <p className="mb-1 px-2.5 pt-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)] select-none">
@@ -146,7 +159,7 @@ function FontPopover({ anchorRef, fontId, onFontChange, onClose }: FontPopoverPr
           )
         })}
       </div>
-    </div>,
+    </motion.div>,
     document.body,
   )
 }
@@ -235,7 +248,7 @@ export default function SettingsMenu({
       <button
         type="button"
         onClick={() => (open ? closeMenu() : setOpen(true))}
-        className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+        className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.96]"
         title="Settings"
         aria-label="Open settings"
         aria-expanded={open}
@@ -245,13 +258,19 @@ export default function SettingsMenu({
       </button>
 
       {/* ── Dropdown panel ──────────────────────────────────── */}
-      {open && (
-        <div
-          ref={panelRef}
-          className="absolute right-0 top-11 z-50 w-52 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-visible animate-ctx-fade-in"
-          style={{ boxShadow: 'var(--dialog-shadow)', fontFamily: '"Outfit", sans-serif' }}
-        >
-          <div className="settings-menu-body">
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            ref={panelRef}
+            className="absolute right-0 top-11 z-50 w-52 overflow-visible rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]"
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            variants={POPOVER_VARIANTS}
+            transition={POPOVER_TRANSITION}
+            style={{ boxShadow: 'var(--dialog-shadow)', fontFamily: '"Outfit", sans-serif', transformOrigin: 'top right' }}
+          >
+            <div className="settings-menu-body">
             {/* ── Accent ───────────────────────────────────── */}
             <AccentPicker
               accentId={accentId}
@@ -271,7 +290,32 @@ export default function SettingsMenu({
               data-settings-autofocus="true"
             >
               <span className={ICON_WRAP}>
-                <Icon icon={theme === 'dark' ? Sun01Icon : Moon01Icon} size={18} strokeWidth={1.8} />
+                <span className="relative flex h-[18px] w-[18px] items-center justify-center">
+                  <motion.span
+                    className="absolute inset-0 flex items-center justify-center"
+                    initial={false}
+                    animate={{
+                      opacity: theme === 'dark' ? 1 : 0,
+                      scale: theme === 'dark' ? 1 : 0.25,
+                      filter: theme === 'dark' ? 'blur(0px)' : 'blur(4px)',
+                    }}
+                    transition={POPOVER_TRANSITION}
+                  >
+                    <Icon icon={Sun01Icon} size={18} strokeWidth={1.8} />
+                  </motion.span>
+                  <motion.span
+                    className="absolute inset-0 flex items-center justify-center"
+                    initial={false}
+                    animate={{
+                      opacity: theme === 'dark' ? 0 : 1,
+                      scale: theme === 'dark' ? 0.25 : 1,
+                      filter: theme === 'dark' ? 'blur(4px)' : 'blur(0px)',
+                    }}
+                    transition={POPOVER_TRANSITION}
+                  >
+                    <Icon icon={Moon01Icon} size={18} strokeWidth={1.8} />
+                  </motion.span>
+                </span>
               </span>
               <span className="settings-item-label">Theme</span>
             </button>
@@ -312,22 +356,25 @@ export default function SettingsMenu({
               </span>
               <span className="settings-item-label">{syncMeta.label}</span>
             </button>
-          </div>
-        </div>
-      )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Portaled Font Popover ───────────────────────────── */}
-      {fontOpen && (
-        <FontPopover
-          anchorRef={fontBtnRef}
-          fontId={fontId}
-          onFontChange={(id) => {
-            onFontChange(id)
-            closeFontPopover()
-          }}
-          onClose={closeFontPopover}
-        />
-      )}
+      <AnimatePresence initial={false}>
+        {fontOpen && (
+          <FontPopover
+            anchorRef={fontBtnRef}
+            fontId={fontId}
+            onFontChange={(id) => {
+              onFontChange(id)
+              closeFontPopover()
+            }}
+            onClose={closeFontPopover}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

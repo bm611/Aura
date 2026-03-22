@@ -109,7 +109,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
               role="tab"
               aria-selected={tab === t.id}
               onClick={() => { setTab(t.id); setError(''); setSuccess('') }}
-              className={`flex-1 rounded-lg py-2 text-[13px] font-medium transition-all duration-200 ${
+              className={`flex-1 rounded-lg py-2 text-[13px] font-medium transition-[background-color,color,box-shadow] duration-200 ${
                 tab === t.id
                   ? 'bg-[var(--bg-elevated)] text-[var(--text-primary)] shadow-sm'
                   : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
@@ -180,7 +180,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
           <button
             type="submit"
             disabled={loading}
-            className="mt-1 flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] py-3 text-[14px] font-semibold text-white transition-all duration-200 hover:brightness-110 active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed"
+            className="mt-1 flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] py-3 text-[14px] font-semibold text-white transition-[transform,filter,opacity] duration-200 hover:brightness-110 active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-60"
             style={{ boxShadow: 'var(--neu-shadow)' }}
           >
             {loading && <Icon icon={Loading01Icon} size={15} stroke={2} className="animate-spin" />}
