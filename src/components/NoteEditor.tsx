@@ -1,1478 +1,1962 @@
-import { lazy, Suspense, useRef, useCallback, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useRef, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { motion, AnimatePresence } from 'framer-motion'
-import type { Editor } from '@tiptap/react'
-import type { IconSvgElement } from '@hugeicons/react'
-import { useAuth } from '../contexts/AuthContext'
+import { motion, AnimatePresence } from 'framer-motion';
+import type { Editor } from '@tiptap/react';
+import type { IconSvgElement } from '@hugeicons/react';
+import { useAuth } from '../contexts/AuthContext';
 import {
-  AlertCircleIcon,
-  Calendar01Icon,
-  CloudSavingDone01Icon,
-  CloudOffIcon,
-  Loading01Icon,
-  Moon01Icon,
-  Sun01Icon,
-  SidebarLeftIcon,
-  CommandIcon,
-  Add01Icon,
-  Logout01Icon,
-  CloudUploadIcon,
-  ArrowLeft01Icon,
-  StarIcon,
-  FireIcon,
-  File01Icon,
-  Clock01Icon,
-  File01Icon as FileText01Icon,
-  Download01Icon,
-  Home01Icon,
-} from '@hugeicons/core-free-icons'
+	AlertCircleIcon,
+	Calendar01Icon,
+	CloudSavingDone01Icon,
+	CloudOffIcon,
+	Loading01Icon,
+	Moon01Icon,
+	Sun01Icon,
+	SidebarLeftIcon,
+	CommandIcon,
+	Add01Icon,
+	Logout01Icon,
+	CloudUploadIcon,
+	ArrowLeft01Icon,
+	StarIcon,
+	FireIcon,
+	File01Icon,
+	Clock01Icon,
+	File01Icon as FileText01Icon,
+	Download01Icon,
+	Home01Icon
+} from '@hugeicons/core-free-icons';
 
-import Icon from './Icon'
-import SettingsMenu from './SettingsMenu'
-import { countBodyWords, estimateReadTime, formatCreatedAt, getNoteDisplayTitle } from '../utils/noteMeta'
-import { docToMarkdown } from '../editor/markdown/markdownConversion'
-import TagInput from './TagInput'
-import DailyHeader from './DailyHeader'
-import AccentPicker from './AccentPicker'
-import type { EditorApi } from './LiveMarkdownEditor'
-import MobileEditorToolbar from './MobileEditorToolbar'
-import type { NoteFile, TreeNode } from '../types'
+import Icon from './Icon';
+import SettingsMenu from './SettingsMenu';
+import {
+	countBodyWords,
+	estimateReadTime,
+	formatCreatedAt,
+	getNoteDisplayTitle
+} from '../utils/noteMeta';
+import {
+	HEATMAP_CELL_GAP,
+	HEATMAP_CELL_SIZE,
+	HEATMAP_DAY_LABEL_WIDTH,
+	HEATMAP_MIN_WEEKS,
+	HEATMAP_MONTH_LABEL_MIN_SPACING,
+	HEATMAP_SECTION_GAP,
+	buildHeatmapCells,
+	getHeatmapGridWidth,
+	getHeatmapWeekCount,
+	getMonthMarkers
+} from '../utils/activityHeatmap';
+import { docToMarkdown } from '../editor/markdown/markdownConversion';
+import TagInput from './TagInput';
+import DailyHeader from './DailyHeader';
+import AccentPicker from './AccentPicker';
+import type { EditorApi } from './LiveMarkdownEditor';
+import MobileEditorToolbar from './MobileEditorToolbar';
+import type { NoteFile, TreeNode } from '../types';
 
-const LiveMarkdownEditor = lazy(() => import('./LiveMarkdownEditor'))
+const LiveMarkdownEditor = lazy(() => import('./LiveMarkdownEditor'));
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface SaveStatus {
-  state: 'syncing' | 'saved' | 'offline' | 'error' | 'demo'
-  label: string
-  detail: string
-  error: string | null
-  canRetry: boolean
+	state: 'syncing' | 'saved' | 'offline' | 'error' | 'demo';
+	label: string;
+	detail: string;
+	error: string | null;
+	canRetry: boolean;
 }
 
 interface SyncStatus {
-  state: string
-  message?: string
-  error?: string | null
+	state: string;
+	message?: string;
+	error?: string | null;
 }
 
 interface NoteEditorProps {
-  note: NoteFile | null
-  notes: TreeNode[]
-  onNewNote: () => void
-  onCreateDailyNote: () => void
-  onUpdateNote: (id: string, updates: Record<string, unknown>, options?: Record<string, unknown>) => void
-  onSelectNote: (id: string | null) => void
-  onRegisterEditorApi?: (api: EditorApi | null) => void
-  theme: string
-  onToggleTheme: () => void
-  accentId: string
-  onAccentChange: (id: string) => void
-  sidebarCollapsed: boolean
-  onToggleSidebar: () => void
-  onOpenCommandPalette?: () => void
-  onOpenAuthModal: () => void
-  saveStatus: SaveStatus
-  lastSavedAt: string | null
-  onRetrySync?: () => void
-  syncing: boolean
-  syncStatus: SyncStatus
-  onSync: () => void
-  fontId: string
-  onFontChange: (id: string) => void
+	note: NoteFile | null;
+	notes: TreeNode[];
+	onNewNote: () => void;
+	onCreateDailyNote: () => void;
+	onUpdateNote: (
+		id: string,
+		updates: Record<string, unknown>,
+		options?: Record<string, unknown>
+	) => void;
+	onSelectNote: (id: string | null) => void;
+	onRegisterEditorApi?: (api: EditorApi | null) => void;
+	theme: string;
+	onToggleTheme: () => void;
+	accentId: string;
+	onAccentChange: (id: string) => void;
+	sidebarCollapsed: boolean;
+	onToggleSidebar: () => void;
+	onOpenCommandPalette?: () => void;
+	onOpenAuthModal: () => void;
+	saveStatus: SaveStatus;
+	lastSavedAt: string | null;
+	onRetrySync?: () => void;
+	syncing: boolean;
+	syncStatus: SyncStatus;
+	onSync: () => void;
+	fontId: string;
+	onFontChange: (id: string) => void;
 }
 
 interface SaveBadgeMeta {
-  icon: IconSvgElement
-  toneClassName: string
-  spin: boolean
+	icon: IconSvgElement;
+	toneClassName: string;
+	spin: boolean;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatRelativeTime(date: Date): string {
-  const now = Date.now()
-  const diff = now - date.getTime()
-  const seconds = Math.floor(diff / 1000)
-  const minutes = Math.floor(seconds / 60)
-  const hours = Math.floor(minutes / 60)
-  const days = Math.floor(hours / 24)
-  const weeks = Math.floor(days / 7)
-  const months = Math.floor(days / 30)
+	const now = Date.now();
+	const diff = now - date.getTime();
+	const seconds = Math.floor(diff / 1000);
+	const minutes = Math.floor(seconds / 60);
+	const hours = Math.floor(minutes / 60);
+	const days = Math.floor(hours / 24);
+	const weeks = Math.floor(days / 7);
+	const months = Math.floor(days / 30);
 
-  if (minutes < 1) return 'Just now'
-  if (minutes < 60) return `${minutes} min ago`
-  if (hours < 24) return `${hours}h ago`
-  if (days < 7) return `${days}d ago`
-  if (weeks < 5) return `${weeks}w ago`
-  return `${months}mo ago`
+	if (minutes < 1) return 'Just now';
+	if (minutes < 60) return `${minutes} min ago`;
+	if (hours < 24) return `${hours}h ago`;
+	if (days < 7) return `${days}d ago`;
+	if (weeks < 5) return `${weeks}w ago`;
+	return `${months}mo ago`;
 }
 
 function getComparableTimestamp(value: string | undefined | null): number {
-  const parsed = Date.parse(value || '')
-  return Number.isNaN(parsed) ? 0 : parsed
+	const parsed = Date.parse(value || '');
+	return Number.isNaN(parsed) ? 0 : parsed;
 }
 
 function compareRecentNotes(a: NoteFile, b: NoteFile): number {
-  const updatedDiff = getComparableTimestamp(b.updatedAt || b.createdAt) - getComparableTimestamp(a.updatedAt || a.createdAt)
+	const updatedDiff =
+		getComparableTimestamp(b.updatedAt || b.createdAt) -
+		getComparableTimestamp(a.updatedAt || a.createdAt);
 
-  if (updatedDiff !== 0) {
-    return updatedDiff
-  }
+	if (updatedDiff !== 0) {
+		return updatedDiff;
+	}
 
-  const createdDiff = getComparableTimestamp(b.createdAt) - getComparableTimestamp(a.createdAt)
-  if (createdDiff !== 0) {
-    return createdDiff
-  }
+	const createdDiff = getComparableTimestamp(b.createdAt) - getComparableTimestamp(a.createdAt);
+	if (createdDiff !== 0) {
+		return createdDiff;
+	}
 
-  const titleDiff = getNoteDisplayTitle(a).localeCompare(getNoteDisplayTitle(b))
-  if (titleDiff !== 0) {
-    return titleDiff
-  }
+	const titleDiff = getNoteDisplayTitle(a).localeCompare(getNoteDisplayTitle(b));
+	if (titleDiff !== 0) {
+		return titleDiff;
+	}
 
-  return a.id.localeCompare(b.id)
+	return a.id.localeCompare(b.id);
 }
 
 function exportNoteAsMarkdown(note: NoteFile): void {
-  const markdown = note.contentDoc ? docToMarkdown(note.contentDoc) : note.content || ''
-  const title = note.title?.trim() || 'untitled'
-  const fileName = title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.md'
-  const blob = new Blob([markdown], { type: 'text/markdown' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = fileName
-  a.style.display = 'none'
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+	const markdown = note.contentDoc ? docToMarkdown(note.contentDoc) : note.content || '';
+	const title = note.title?.trim() || 'untitled';
+	const fileName =
+		title
+			.toLowerCase()
+			.replace(/\s+/g, '-')
+			.replace(/[^a-z0-9-]/g, '') + '.md';
+	const blob = new Blob([markdown], { type: 'text/markdown' });
+	const url = URL.createObjectURL(blob);
+	const a = document.createElement('a');
+	a.href = url;
+	a.download = fileName;
+	a.style.display = 'none';
+	document.body.appendChild(a);
+	a.click();
+	document.body.removeChild(a);
+	URL.revokeObjectURL(url);
 }
 
 function EditorFallback() {
-  return (
-    <div className="flex min-h-[40vh] w-full items-center justify-center">
-      <svg width="100%" height="100%" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={{ maxWidth: '600px', maxHeight: '600px' }}>
-        <g filter="url(#editor-fallback-glow)">
-          <path d="M 400 200 C 600 200, 700 400, 600 600 C 500 800, 200 700, 200 500 C 200 300, 200 200, 400 200 Z" fill="none" stroke="var(--success)" strokeWidth="2" strokeOpacity="0.5">
-            <animate attributeName="d"
-              values="M 400 200 C 600 200, 700 400, 600 600 C 500 800, 200 700, 200 500 C 200 300, 200 200, 400 200 Z;
+	return (
+		<div className="flex min-h-[40vh] w-full items-center justify-center">
+			<svg
+				width="100%"
+				height="100%"
+				viewBox="0 0 800 800"
+				xmlns="http://www.w3.org/2000/svg"
+				aria-hidden="true"
+				style={{ maxWidth: '600px', maxHeight: '600px' }}
+			>
+				<g filter="url(#editor-fallback-glow)">
+					<path
+						d="M 400 200 C 600 200, 700 400, 600 600 C 500 800, 200 700, 200 500 C 200 300, 200 200, 400 200 Z"
+						fill="none"
+						stroke="var(--success)"
+						strokeWidth="2"
+						strokeOpacity="0.5"
+					>
+						<animate
+							attributeName="d"
+							values="M 400 200 C 600 200, 700 400, 600 600 C 500 800, 200 700, 200 500 C 200 300, 200 200, 400 200 Z;
                       M 400 250 C 650 150, 750 450, 550 650 C 350 850, 150 650, 250 450 C 350 250, 150 350, 400 250 Z;
                       M 400 200 C 600 200, 700 400, 600 600 C 500 800, 200 700, 200 500 C 200 300, 200 200, 400 200 Z"
-              dur="20s" repeatCount="indefinite" />
-          </path>
-          <path d="M 400 250 C 550 250, 650 400, 550 550 C 450 700, 250 650, 250 500 C 250 350, 250 250, 400 250 Z" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeOpacity="0.6">
-            <animate attributeName="d"
-              values="M 400 250 C 550 250, 650 400, 550 550 C 450 700, 250 650, 250 500 C 250 350, 250 250, 400 250 Z;
+							dur="20s"
+							repeatCount="indefinite"
+						/>
+					</path>
+					<path
+						d="M 400 250 C 550 250, 650 400, 550 550 C 450 700, 250 650, 250 500 C 250 350, 250 250, 400 250 Z"
+						fill="none"
+						stroke="var(--accent)"
+						strokeWidth="1.5"
+						strokeOpacity="0.6"
+					>
+						<animate
+							attributeName="d"
+							values="M 400 250 C 550 250, 650 400, 550 550 C 450 700, 250 650, 250 500 C 250 350, 250 250, 400 250 Z;
                       M 400 200 C 500 150, 700 350, 600 550 C 500 750, 200 600, 200 450 C 200 300, 300 250, 400 200 Z;
                       M 400 250 C 550 250, 650 400, 550 550 C 450 700, 250 650, 250 500 C 250 350, 250 250, 400 250 Z"
-              dur="15s" repeatCount="indefinite" />
-          </path>
-          <path d="M 400 300 C 500 300, 600 400, 500 500 C 400 600, 300 550, 300 450 C 300 350, 300 300, 400 300 Z" fill="none" stroke="var(--color-h2)" strokeWidth="1" strokeOpacity="0.7">
-            <animate attributeName="d"
-              values="M 400 300 C 500 300, 600 400, 500 500 C 400 600, 300 550, 300 450 C 300 350, 300 300, 400 300 Z;
+							dur="15s"
+							repeatCount="indefinite"
+						/>
+					</path>
+					<path
+						d="M 400 300 C 500 300, 600 400, 500 500 C 400 600, 300 550, 300 450 C 300 350, 300 300, 400 300 Z"
+						fill="none"
+						stroke="var(--color-h2)"
+						strokeWidth="1"
+						strokeOpacity="0.7"
+					>
+						<animate
+							attributeName="d"
+							values="M 400 300 C 500 300, 600 400, 500 500 C 400 600, 300 550, 300 450 C 300 350, 300 300, 400 300 Z;
                       M 400 350 C 550 250, 550 450, 450 550 C 350 650, 250 500, 350 400 C 450 300, 250 400, 400 350 Z;
                       M 400 300 C 500 300, 600 400, 500 500 C 400 600, 300 550, 300 450 C 300 350, 300 300, 400 300 Z"
-              dur="10s" repeatCount="indefinite" />
-          </path>
-        </g>
-        <defs>
-          <filter id="editor-fallback-glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="15" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
-      </svg>
-    </div>
-  )
+							dur="10s"
+							repeatCount="indefinite"
+						/>
+					</path>
+				</g>
+				<defs>
+					<filter id="editor-fallback-glow" x="-20%" y="-20%" width="140%" height="140%">
+						<feGaussianBlur stdDeviation="15" result="blur" />
+						<feComposite in="SourceGraphic" in2="blur" operator="over" />
+					</filter>
+				</defs>
+			</svg>
+		</div>
+	);
 }
 
 // ── Favorites empty state ────────────────────────────────────────────────────
 function FavoritesEmptyPrompt() {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 24, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
-      className="flex flex-col items-center justify-center py-12 px-4 gap-6 select-none h-full"
-    >
-      {/* Animated illustration */}
-      <div className="relative w-48 h-44">
-        <svg
-          viewBox="0 0 192 176"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-full"
-          aria-hidden="true"
-        >
-          {/* Glow backdrop */}
-          <motion.ellipse
-            cx="96" cy="110" rx="64" ry="18"
-            fill="var(--accent)"
-            initial={{ opacity: 0, scaleX: 0.4 }}
-            animate={{ opacity: [0.06, 0.12, 0.06], scaleX: [0.8, 1, 0.8] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-          />
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 24, scale: 0.95 }}
+			animate={{ opacity: 1, y: 0, scale: 1 }}
+			transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
+			className="flex flex-col items-center justify-center py-12 px-4 gap-6 select-none h-full"
+		>
+			{/* Animated illustration */}
+			<div className="relative w-48 h-44">
+				<svg
+					viewBox="0 0 192 176"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					className="w-full h-full"
+					aria-hidden="true"
+				>
+					{/* Glow backdrop */}
+					<motion.ellipse
+						cx="96"
+						cy="110"
+						rx="64"
+						ry="18"
+						fill="var(--accent)"
+						initial={{ opacity: 0, scaleX: 0.4 }}
+						animate={{ opacity: [0.06, 0.12, 0.06], scaleX: [0.8, 1, 0.8] }}
+						transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+					/>
 
-          {/* Back star — tilted left */}
-          <motion.g
-            initial={{ opacity: 0, y: 14, rotate: -10 }}
-            animate={{ opacity: 1, y: 0, rotate: -6 }}
-            transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 1, 0.5, 1] }}
-            style={{ transformOrigin: '96px 95px' }}
-          >
-            <motion.path
-              d="M 96 34 L 108.9 63.8 L 140 66.2 L 116.3 87 L 123.6 117.4 L 96 100.8 L 68.4 117.4 L 75.6 87 L 52 66.2 L 83 63.8 Z"
-              fill="var(--bg-elevated)"
-              stroke="var(--border-subtle)"
-              strokeWidth="1.2"
-              animate={{ y: [0, -3, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
-            />
-          </motion.g>
+					{/* Back star — tilted left */}
+					<motion.g
+						initial={{ opacity: 0, y: 14, rotate: -10 }}
+						animate={{ opacity: 1, y: 0, rotate: -6 }}
+						transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 1, 0.5, 1] }}
+						style={{ transformOrigin: '96px 95px' }}
+					>
+						<motion.path
+							d="M 96 34 L 108.9 63.8 L 140 66.2 L 116.3 87 L 123.6 117.4 L 96 100.8 L 68.4 117.4 L 75.6 87 L 52 66.2 L 83 63.8 Z"
+							fill="var(--bg-elevated)"
+							stroke="var(--border-subtle)"
+							strokeWidth="1.2"
+							animate={{ y: [0, -3, 0] }}
+							transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
+						/>
+					</motion.g>
 
-          {/* Front star — slight right tilt */}
-          <motion.g
-            initial={{ opacity: 0, y: 20, rotate: 8 }}
-            animate={{ opacity: 1, y: 0, rotate: 4 }}
-            transition={{ duration: 0.65, delay: 0.55, ease: [0.25, 1, 0.5, 1] }}
-            style={{ transformOrigin: '96px 95px' }}
-          >
-            <motion.path
-              d="M 96 34 L 108.9 63.8 L 140 66.2 L 116.3 87 L 123.6 117.4 L 96 100.8 L 68.4 117.4 L 75.6 87 L 52 66.2 L 83 63.8 Z"
-              fill="var(--bg-surface)"
-              stroke="var(--border-default)"
-              strokeWidth="1.2"
-              strokeLinejoin="round"
-              animate={{ y: [0, -5, 0], rotate: [4, 5.5, 4] }}
-              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-              style={{ transformOrigin: '96px 78px' }}
-            />
-            {/* Accent inner shape */}
-            <motion.path
-              d="M 96 34 L 108.9 63.8 L 140 66.2 L 116.3 87 L 123.6 117.4 L 96 100.8 L 68.4 117.4 L 75.6 87 L 52 66.2 L 83 63.8 Z"
-              fill="var(--accent)"
-              opacity="0.18"
-              animate={{ opacity: [0.18, 0.28, 0.18], scale: [0.95, 1, 0.95] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-              style={{ transformOrigin: '96px 78px' }}
-            />
-          </motion.g>
+					{/* Front star — slight right tilt */}
+					<motion.g
+						initial={{ opacity: 0, y: 20, rotate: 8 }}
+						animate={{ opacity: 1, y: 0, rotate: 4 }}
+						transition={{ duration: 0.65, delay: 0.55, ease: [0.25, 1, 0.5, 1] }}
+						style={{ transformOrigin: '96px 95px' }}
+					>
+						<motion.path
+							d="M 96 34 L 108.9 63.8 L 140 66.2 L 116.3 87 L 123.6 117.4 L 96 100.8 L 68.4 117.4 L 75.6 87 L 52 66.2 L 83 63.8 Z"
+							fill="var(--bg-surface)"
+							stroke="var(--border-default)"
+							strokeWidth="1.2"
+							strokeLinejoin="round"
+							animate={{ y: [0, -5, 0], rotate: [4, 5.5, 4] }}
+							transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+							style={{ transformOrigin: '96px 78px' }}
+						/>
+						{/* Accent inner shape */}
+						<motion.path
+							d="M 96 34 L 108.9 63.8 L 140 66.2 L 116.3 87 L 123.6 117.4 L 96 100.8 L 68.4 117.4 L 75.6 87 L 52 66.2 L 83 63.8 Z"
+							fill="var(--accent)"
+							opacity="0.18"
+							animate={{ opacity: [0.18, 0.28, 0.18], scale: [0.95, 1, 0.95] }}
+							transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+							style={{ transformOrigin: '96px 78px' }}
+						/>
+					</motion.g>
 
-          {/* Orbiting sparkle ring */}
-          <motion.g
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-            style={{ transformOrigin: '96px 78px' }}
-          >
-            {[0, 72, 144, 216, 288].map((deg, i) => {
-              const rad = (deg * Math.PI) / 180
-              const r = 66
-              const cx = 96 + r * Math.cos(rad)
-              const cy = 78 + r * Math.sin(rad)
-              return (
-                <motion.circle
-                  key={deg} cx={cx} cy={cy} r={i % 2 === 0 ? 2.5 : 1.5}
-                  fill={i % 2 === 0 ? 'var(--accent)' : 'var(--color-h2)'}
-                  animate={{ opacity: [0.2, 0.7, 0.2], scale: [0.8, 1.2, 0.8] }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }}
-                  style={{ transformOrigin: `${cx}px ${cy}px` }}
-                />
-              )
-            })}
-          </motion.g>
+					{/* Orbiting sparkle ring */}
+					<motion.g
+						animate={{ rotate: 360 }}
+						transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+						style={{ transformOrigin: '96px 78px' }}
+					>
+						{[0, 72, 144, 216, 288].map((deg, i) => {
+							const rad = (deg * Math.PI) / 180;
+							const r = 66;
+							const cx = 96 + r * Math.cos(rad);
+							const cy = 78 + r * Math.sin(rad);
+							return (
+								<motion.circle
+									key={deg}
+									cx={cx}
+									cy={cy}
+									r={i % 2 === 0 ? 2.5 : 1.5}
+									fill={i % 2 === 0 ? 'var(--accent)' : 'var(--color-h2)'}
+									animate={{ opacity: [0.2, 0.7, 0.2], scale: [0.8, 1.2, 0.8] }}
+									transition={{
+										duration: 2.5,
+										repeat: Infinity,
+										ease: 'easeInOut',
+										delay: i * 0.4
+									}}
+									style={{ transformOrigin: `${cx}px ${cy}px` }}
+								/>
+							);
+						})}
+					</motion.g>
 
-          {/* Floating ink drops */}
-          {[
-            { x: 32, y: 44, delay: 0.8, color: 'var(--accent)' },
-            { x: 158, y: 58, delay: 1.4, color: 'var(--color-h2)' },
-            { x: 148, y: 128, delay: 2.1, color: 'var(--success)' },
-          ].map(({ x, y, delay, color }, i) => (
-            <motion.circle
-              key={i} cx={x} cy={y} r="3.5" fill={color}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: [0, 0.6, 0], scale: [0, 1, 0], y: [0, -12, -20] }}
-              transition={{ duration: 2.8, delay, repeat: Infinity, repeatDelay: 2, ease: 'easeOut' }}
-            />
-          ))}
-        </svg>
-      </div>
+					{/* Floating ink drops */}
+					{[
+						{ x: 32, y: 44, delay: 0.8, color: 'var(--accent)' },
+						{ x: 158, y: 58, delay: 1.4, color: 'var(--color-h2)' },
+						{ x: 148, y: 128, delay: 2.1, color: 'var(--success)' }
+					].map(({ x, y, delay, color }, i) => (
+						<motion.circle
+							key={i}
+							cx={x}
+							cy={y}
+							r="3.5"
+							fill={color}
+							initial={{ opacity: 0, scale: 0 }}
+							animate={{ opacity: [0, 0.6, 0], scale: [0, 1, 0], y: [0, -12, -20] }}
+							transition={{
+								duration: 2.8,
+								delay,
+								repeat: Infinity,
+								repeatDelay: 2,
+								ease: 'easeOut'
+							}}
+						/>
+					))}
+				</svg>
+			</div>
 
-      {/* Text */}
-      <motion.div
-        className="flex flex-col items-center gap-2 text-center"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.8 }}
-      >
-        <p
-          className="text-[22px] font-medium text-[var(--text-primary)] tracking-tight"
-          style={{ fontFamily: 'var(--font-display)' }}
-        >
-          No favorites yet.
-        </p>
-        <p
-          className="text-[14px] text-[var(--text-muted)] max-w-[240px] leading-relaxed"
-        >
-          Star your most important notes to keep them handy here.
-        </p>
-      </motion.div>
-    </motion.div>
-  )
+			{/* Text */}
+			<motion.div
+				className="flex flex-col items-center gap-2 text-center"
+				initial={{ opacity: 0, y: 8 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.5, delay: 0.8 }}
+			>
+				<p
+					className="text-[22px] font-medium text-[var(--text-primary)] tracking-tight"
+					style={{ fontFamily: 'var(--font-display)' }}
+				>
+					No favorites yet.
+				</p>
+				<p className="text-[14px] text-[var(--text-muted)] max-w-[240px] leading-relaxed">
+					Star your most important notes to keep them handy here.
+				</p>
+			</motion.div>
+		</motion.div>
+	);
 }
 
 // ── First-note empty state ───────────────────────────────────────────────────
 function FirstNotePrompt() {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 24, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
-      className="flex flex-col items-center justify-center py-12 px-4 gap-6 select-none h-full"
-    >
-      {/* Animated illustration */}
-      <div className="relative w-48 h-44">
-        <svg
-          viewBox="0 0 192 176"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-full"
-          aria-hidden="true"
-        >
-          {/* Glow backdrop */}
-          <motion.ellipse
-            cx="96" cy="110" rx="64" ry="18"
-            fill="var(--accent)"
-            initial={{ opacity: 0, scaleX: 0.4 }}
-            animate={{ opacity: [0.06, 0.12, 0.06], scaleX: [0.8, 1, 0.8] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-          />
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 24, scale: 0.95 }}
+			animate={{ opacity: 1, y: 0, scale: 1 }}
+			transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
+			className="flex flex-col items-center justify-center py-12 px-4 gap-6 select-none h-full"
+		>
+			{/* Animated illustration */}
+			<div className="relative w-48 h-44">
+				<svg
+					viewBox="0 0 192 176"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					className="w-full h-full"
+					aria-hidden="true"
+				>
+					{/* Glow backdrop */}
+					<motion.ellipse
+						cx="96"
+						cy="110"
+						rx="64"
+						ry="18"
+						fill="var(--accent)"
+						initial={{ opacity: 0, scaleX: 0.4 }}
+						animate={{ opacity: [0.06, 0.12, 0.06], scaleX: [0.8, 1, 0.8] }}
+						transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+					/>
 
-          {/* Back paper — tilted left */}
-          <motion.g
-            initial={{ opacity: 0, y: 14, rotate: -10 }}
-            animate={{ opacity: 1, y: 0, rotate: -6 }}
-            transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 1, 0.5, 1] }}
-            style={{ transformOrigin: '96px 95px' }}
-          >
-            <motion.rect
-              x="44" y="30" width="88" height="112" rx="10"
-              fill="var(--bg-elevated)"
-              stroke="var(--border-subtle)"
-              strokeWidth="1.2"
-              animate={{ y: [0, -3, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
-            />
-            {/* Lines on back paper */}
-            {[55, 68, 81, 94].map((y, i) => (
-              <motion.line
-                key={y} x1="58" y1={y} x2="118" y2={y}
-                stroke="var(--border-subtle)" strokeWidth="1.5" strokeLinecap="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.7 + i * 0.08 }}
-              />
-            ))}
-          </motion.g>
+					{/* Back paper — tilted left */}
+					<motion.g
+						initial={{ opacity: 0, y: 14, rotate: -10 }}
+						animate={{ opacity: 1, y: 0, rotate: -6 }}
+						transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 1, 0.5, 1] }}
+						style={{ transformOrigin: '96px 95px' }}
+					>
+						<motion.rect
+							x="44"
+							y="30"
+							width="88"
+							height="112"
+							rx="10"
+							fill="var(--bg-elevated)"
+							stroke="var(--border-subtle)"
+							strokeWidth="1.2"
+							animate={{ y: [0, -3, 0] }}
+							transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
+						/>
+						{/* Lines on back paper */}
+						{[55, 68, 81, 94].map((y, i) => (
+							<motion.line
+								key={y}
+								x1="58"
+								y1={y}
+								x2="118"
+								y2={y}
+								stroke="var(--border-subtle)"
+								strokeWidth="1.5"
+								strokeLinecap="round"
+								initial={{ pathLength: 0, opacity: 0 }}
+								animate={{ pathLength: 1, opacity: 1 }}
+								transition={{ duration: 0.5, delay: 0.7 + i * 0.08 }}
+							/>
+						))}
+					</motion.g>
 
-          {/* Front paper — slight right tilt */}
-          <motion.g
-            initial={{ opacity: 0, y: 20, rotate: 8 }}
-            animate={{ opacity: 1, y: 0, rotate: 4 }}
-            transition={{ duration: 0.65, delay: 0.55, ease: [0.25, 1, 0.5, 1] }}
-            style={{ transformOrigin: '96px 95px' }}
-          >
-            <motion.rect
-              x="52" y="22" width="88" height="112" rx="10"
-              fill="var(--bg-surface)"
-              stroke="var(--border-default)"
-              strokeWidth="1.2"
-              animate={{ y: [0, -5, 0], rotate: [4, 5.5, 4] }}
-              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-              style={{ transformOrigin: '96px 78px' }}
-            />
-            {/* Accent top bar */}
-            <motion.rect
-              x="52" y="22" width="88" height="22" rx="10"
-              fill="var(--accent)"
-              opacity="0.18"
-              animate={{ opacity: [0.18, 0.28, 0.18] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-            />
-            {/* Pen/cursor icon on front paper */}
-            <motion.g
-              animate={{ y: [0, -2, 0], rotate: [0, 3, 0] }}
-              transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-              style={{ transformOrigin: '96px 70px' }}
-            >
-              {/* Pen body */}
-              <motion.path
-                d="M89 62 L103 48 L111 56 L97 70 Z"
-                fill="var(--accent)"
-                opacity="0.9"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 0.9 }}
-                transition={{ duration: 0.4, delay: 1 }}
-                style={{ transformOrigin: '100px 59px' }}
-              />
-              {/* Pen tip */}
-              <motion.path
-                d="M97 70 L93 74 L96 71 Z"
-                fill="var(--accent)"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.2 }}
-              />
-              {/* Pen highlight */}
-              <motion.line
-                x1="92" y1="66" x2="100" y2="58"
-                stroke="white" strokeWidth="1" strokeLinecap="round" opacity="0.3"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 0.3, delay: 1.1 }}
-              />
-            </motion.g>
-            {/* Placeholder lines */}
-            {[90, 103, 116].map((y, i) => (
-              <motion.line
-                key={y} x1="66" y1={y} x2={i === 2 ? '110' : '126'} y2={y}
-                stroke="var(--border-subtle)" strokeWidth="1.5" strokeLinecap="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.9 + i * 0.1 }}
-              />
-            ))}
-          </motion.g>
+					{/* Front paper — slight right tilt */}
+					<motion.g
+						initial={{ opacity: 0, y: 20, rotate: 8 }}
+						animate={{ opacity: 1, y: 0, rotate: 4 }}
+						transition={{ duration: 0.65, delay: 0.55, ease: [0.25, 1, 0.5, 1] }}
+						style={{ transformOrigin: '96px 95px' }}
+					>
+						<motion.rect
+							x="52"
+							y="22"
+							width="88"
+							height="112"
+							rx="10"
+							fill="var(--bg-surface)"
+							stroke="var(--border-default)"
+							strokeWidth="1.2"
+							animate={{ y: [0, -5, 0], rotate: [4, 5.5, 4] }}
+							transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+							style={{ transformOrigin: '96px 78px' }}
+						/>
+						{/* Accent top bar */}
+						<motion.rect
+							x="52"
+							y="22"
+							width="88"
+							height="22"
+							rx="10"
+							fill="var(--accent)"
+							opacity="0.18"
+							animate={{ opacity: [0.18, 0.28, 0.18] }}
+							transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+						/>
+						{/* Pen/cursor icon on front paper */}
+						<motion.g
+							animate={{ y: [0, -2, 0], rotate: [0, 3, 0] }}
+							transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+							style={{ transformOrigin: '96px 70px' }}
+						>
+							{/* Pen body */}
+							<motion.path
+								d="M89 62 L103 48 L111 56 L97 70 Z"
+								fill="var(--accent)"
+								opacity="0.9"
+								initial={{ scale: 0, opacity: 0 }}
+								animate={{ scale: 1, opacity: 0.9 }}
+								transition={{ duration: 0.4, delay: 1 }}
+								style={{ transformOrigin: '100px 59px' }}
+							/>
+							{/* Pen tip */}
+							<motion.path
+								d="M97 70 L93 74 L96 71 Z"
+								fill="var(--accent)"
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								transition={{ delay: 1.2 }}
+							/>
+							{/* Pen highlight */}
+							<motion.line
+								x1="92"
+								y1="66"
+								x2="100"
+								y2="58"
+								stroke="white"
+								strokeWidth="1"
+								strokeLinecap="round"
+								opacity="0.3"
+								initial={{ pathLength: 0 }}
+								animate={{ pathLength: 1 }}
+								transition={{ duration: 0.3, delay: 1.1 }}
+							/>
+						</motion.g>
+						{/* Placeholder lines */}
+						{[90, 103, 116].map((y, i) => (
+							<motion.line
+								key={y}
+								x1="66"
+								y1={y}
+								x2={i === 2 ? '110' : '126'}
+								y2={y}
+								stroke="var(--border-subtle)"
+								strokeWidth="1.5"
+								strokeLinecap="round"
+								initial={{ pathLength: 0, opacity: 0 }}
+								animate={{ pathLength: 1, opacity: 1 }}
+								transition={{ duration: 0.4, delay: 0.9 + i * 0.1 }}
+							/>
+						))}
+					</motion.g>
 
-          {/* Orbiting sparkle ring */}
-          <motion.g
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-            style={{ transformOrigin: '96px 78px' }}
-          >
-            {[0, 72, 144, 216, 288].map((deg, i) => {
-              const rad = (deg * Math.PI) / 180
-              const r = 66
-              const cx = 96 + r * Math.cos(rad)
-              const cy = 78 + r * Math.sin(rad)
-              return (
-                <motion.circle
-                  key={deg} cx={cx} cy={cy} r={i % 2 === 0 ? 2.5 : 1.5}
-                  fill={i % 2 === 0 ? 'var(--accent)' : 'var(--color-h2)'}
-                  animate={{ opacity: [0.2, 0.7, 0.2], scale: [0.8, 1.2, 0.8] }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }}
-                  style={{ transformOrigin: `${cx}px ${cy}px` }}
-                />
-              )
-            })}
-          </motion.g>
+					{/* Orbiting sparkle ring */}
+					<motion.g
+						animate={{ rotate: 360 }}
+						transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+						style={{ transformOrigin: '96px 78px' }}
+					>
+						{[0, 72, 144, 216, 288].map((deg, i) => {
+							const rad = (deg * Math.PI) / 180;
+							const r = 66;
+							const cx = 96 + r * Math.cos(rad);
+							const cy = 78 + r * Math.sin(rad);
+							return (
+								<motion.circle
+									key={deg}
+									cx={cx}
+									cy={cy}
+									r={i % 2 === 0 ? 2.5 : 1.5}
+									fill={i % 2 === 0 ? 'var(--accent)' : 'var(--color-h2)'}
+									animate={{ opacity: [0.2, 0.7, 0.2], scale: [0.8, 1.2, 0.8] }}
+									transition={{
+										duration: 2.5,
+										repeat: Infinity,
+										ease: 'easeInOut',
+										delay: i * 0.4
+									}}
+									style={{ transformOrigin: `${cx}px ${cy}px` }}
+								/>
+							);
+						})}
+					</motion.g>
 
-          {/* Floating ink drops */}
-          {[
-            { x: 32, y: 44, delay: 0.8, color: 'var(--accent)' },
-            { x: 158, y: 58, delay: 1.4, color: 'var(--color-h2)' },
-            { x: 148, y: 128, delay: 2.1, color: 'var(--success)' },
-          ].map(({ x, y, delay, color }, i) => (
-            <motion.circle
-              key={i} cx={x} cy={y} r="3.5" fill={color}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: [0, 0.6, 0], scale: [0, 1, 0], y: [0, -12, -20] }}
-              transition={{ duration: 2.8, delay, repeat: Infinity, repeatDelay: 2, ease: 'easeOut' }}
-            />
-          ))}
-        </svg>
-      </div>
+					{/* Floating ink drops */}
+					{[
+						{ x: 32, y: 44, delay: 0.8, color: 'var(--accent)' },
+						{ x: 158, y: 58, delay: 1.4, color: 'var(--color-h2)' },
+						{ x: 148, y: 128, delay: 2.1, color: 'var(--success)' }
+					].map(({ x, y, delay, color }, i) => (
+						<motion.circle
+							key={i}
+							cx={x}
+							cy={y}
+							r="3.5"
+							fill={color}
+							initial={{ opacity: 0, scale: 0 }}
+							animate={{ opacity: [0, 0.6, 0], scale: [0, 1, 0], y: [0, -12, -20] }}
+							transition={{
+								duration: 2.8,
+								delay,
+								repeat: Infinity,
+								repeatDelay: 2,
+								ease: 'easeOut'
+							}}
+						/>
+					))}
+				</svg>
+			</div>
 
-      {/* Text */}
-      <motion.div
-        className="flex flex-col items-center gap-2 text-center"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.8 }}
-      >
-        <p
-          className="text-[22px] font-medium text-[var(--text-primary)] tracking-tight"
-          style={{ fontFamily: 'var(--font-display)' }}
-        >
-          Your canvas is empty.
-        </p>
-        <p
-          className="text-[14px] text-[var(--text-muted)] max-w-[240px] leading-relaxed"
-        >
-          Every great idea starts somewhere. Write your first note.
-        </p>
-      </motion.div>
-    </motion.div>
-  )
+			{/* Text */}
+			<motion.div
+				className="flex flex-col items-center gap-2 text-center"
+				initial={{ opacity: 0, y: 8 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.5, delay: 0.8 }}
+			>
+				<p
+					className="text-[22px] font-medium text-[var(--text-primary)] tracking-tight"
+					style={{ fontFamily: 'var(--font-display)' }}
+				>
+					Your canvas is empty.
+				</p>
+				<p className="text-[14px] text-[var(--text-muted)] max-w-[240px] leading-relaxed">
+					Every great idea starts somewhere. Write your first note.
+				</p>
+			</motion.div>
+		</motion.div>
+	);
 }
 
 function getGradientForNote(id: string): string {
-  let hash = 0
-  for (let i = 0; i < id.length; i++) {
-    hash = id.charCodeAt(i) + ((hash << 5) - hash)
-  }
+	let hash = 0;
+	for (let i = 0; i < id.length; i++) {
+		hash = id.charCodeAt(i) + ((hash << 5) - hash);
+	}
 
-  const colors = [
-    'var(--accent)',
-    'var(--success)',
-    'var(--color-h2)',
-    'var(--accent)',
-    'var(--success)',
-    'var(--color-h2)',
-    'var(--accent-hover)',
-  ]
+	const colors = [
+		'var(--accent)',
+		'var(--success)',
+		'var(--color-h2)',
+		'var(--accent)',
+		'var(--success)',
+		'var(--color-h2)',
+		'var(--accent-hover)'
+	];
 
-  const color1 = colors[Math.abs(hash) % colors.length]
-  const color2 = colors[Math.abs(hash * 31) % colors.length]
+	const color1 = colors[Math.abs(hash) % colors.length];
+	const color2 = colors[Math.abs(hash * 31) % colors.length];
 
-  return `radial-gradient(ellipse at top left, color-mix(in srgb, ${color1} 15%, transparent) 0%, transparent 50%),
-          radial-gradient(ellipse at top right, color-mix(in srgb, ${color2} 15%, transparent) 0%, transparent 50%)`
+	return `radial-gradient(ellipse at top left, color-mix(in srgb, ${color1} 15%, transparent) 0%, transparent 50%),
+          radial-gradient(ellipse at top right, color-mix(in srgb, ${color2} 15%, transparent) 0%, transparent 50%)`;
 }
 
 function formatRelativeSaveTime(timestamp: string | null | undefined): string | null {
-  if (!timestamp) {
-    return null
-  }
+	if (!timestamp) {
+		return null;
+	}
 
-  const parsed = new Date(timestamp)
-  if (Number.isNaN(parsed.getTime())) {
-    return null
-  }
+	const parsed = new Date(timestamp);
+	if (Number.isNaN(parsed.getTime())) {
+		return null;
+	}
 
-  const diffSeconds = Math.max(0, Math.round((Date.now() - parsed.getTime()) / 1000))
+	const diffSeconds = Math.max(0, Math.round((Date.now() - parsed.getTime()) / 1000));
 
-  if (diffSeconds < 5) {
-    return 'just now'
-  }
+	if (diffSeconds < 5) {
+		return 'just now';
+	}
 
-  if (diffSeconds < 60) {
-    return `${diffSeconds}s ago`
-  }
+	if (diffSeconds < 60) {
+		return `${diffSeconds}s ago`;
+	}
 
-  const diffMinutes = Math.round(diffSeconds / 60)
-  if (diffMinutes < 60) {
-    return `${diffMinutes}m ago`
-  }
+	const diffMinutes = Math.round(diffSeconds / 60);
+	if (diffMinutes < 60) {
+		return `${diffMinutes}m ago`;
+	}
 
-  const diffHours = Math.round(diffMinutes / 60)
-  if (diffHours < 24) {
-    return `${diffHours}h ago`
-  }
+	const diffHours = Math.round(diffMinutes / 60);
+	if (diffHours < 24) {
+		return `${diffHours}h ago`;
+	}
 
-  const diffDays = Math.round(diffHours / 24)
-  return `${diffDays}d ago`
+	const diffDays = Math.round(diffHours / 24);
+	return `${diffDays}d ago`;
 }
 
 function getSaveBadgeMeta(saveStatus: SaveStatus): SaveBadgeMeta {
-  switch (saveStatus.state) {
-    case 'syncing':
-      return {
-        icon: Loading01Icon,
-        toneClassName: 'text-[var(--success)] border-[color-mix(in_srgb,var(--success)_26%,transparent)] bg-[color-mix(in_srgb,var(--success)_14%,transparent)]',
-        spin: true,
-      }
-    case 'saved':
-      return {
-        icon: CloudSavingDone01Icon,
-        toneClassName: 'text-[var(--success)] border-[color-mix(in_srgb,var(--success)_26%,transparent)] bg-[color-mix(in_srgb,var(--success)_14%,transparent)]',
-        spin: false,
-      }
-    case 'offline':
-      return {
-        icon: CloudOffIcon,
-        toneClassName: 'text-[var(--warning)] border-[color-mix(in_srgb,var(--warning)_28%,transparent)] bg-[color-mix(in_srgb,var(--warning)_12%,transparent)]',
-        spin: false,
-      }
-    case 'error':
-      return {
-        icon: AlertCircleIcon,
-        toneClassName: 'text-[var(--danger)] border-[color-mix(in_srgb,var(--danger)_28%,transparent)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)]',
-        spin: false,
-      }
-    case 'demo':
-    default:
-      return {
-        icon: CloudUploadIcon,
-        toneClassName: 'text-[var(--warning)] border-[color-mix(in_srgb,var(--warning)_28%,transparent)] bg-[color-mix(in_srgb,var(--warning)_12%,transparent)]',
-        spin: false,
-      }
-  }
+	switch (saveStatus.state) {
+		case 'syncing':
+			return {
+				icon: Loading01Icon,
+				toneClassName:
+					'text-[var(--success)] border-[color-mix(in_srgb,var(--success)_26%,transparent)] bg-[color-mix(in_srgb,var(--success)_14%,transparent)]',
+				spin: true
+			};
+		case 'saved':
+			return {
+				icon: CloudSavingDone01Icon,
+				toneClassName:
+					'text-[var(--success)] border-[color-mix(in_srgb,var(--success)_26%,transparent)] bg-[color-mix(in_srgb,var(--success)_14%,transparent)]',
+				spin: false
+			};
+		case 'offline':
+			return {
+				icon: CloudOffIcon,
+				toneClassName:
+					'text-[var(--warning)] border-[color-mix(in_srgb,var(--warning)_28%,transparent)] bg-[color-mix(in_srgb,var(--warning)_12%,transparent)]',
+				spin: false
+			};
+		case 'error':
+			return {
+				icon: AlertCircleIcon,
+				toneClassName:
+					'text-[var(--danger)] border-[color-mix(in_srgb,var(--danger)_28%,transparent)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)]',
+				spin: false
+			};
+		case 'demo':
+		default:
+			return {
+				icon: CloudUploadIcon,
+				toneClassName:
+					'text-[var(--warning)] border-[color-mix(in_srgb,var(--warning)_28%,transparent)] bg-[color-mix(in_srgb,var(--warning)_12%,transparent)]',
+				spin: false
+			};
+	}
 }
 
 export default function NoteEditor({
-  note,
-  notes,
-  onNewNote,
-  onCreateDailyNote,
-  onUpdateNote,
-  onSelectNote,
-  onRegisterEditorApi,
-  theme,
-  onToggleTheme,
-  accentId,
-  onAccentChange,
-  sidebarCollapsed,
-  onToggleSidebar,
-  onOpenCommandPalette,
-  onOpenAuthModal,
-  saveStatus,
-  lastSavedAt,
-  onRetrySync,
-  syncing,
-  syncStatus,
-  onSync,
-  fontId,
-  onFontChange,
+	note,
+	notes,
+	onNewNote,
+	onCreateDailyNote,
+	onUpdateNote,
+	onSelectNote,
+	onRegisterEditorApi,
+	theme,
+	onToggleTheme,
+	accentId,
+	onAccentChange,
+	sidebarCollapsed,
+	onToggleSidebar,
+	onOpenCommandPalette,
+	onOpenAuthModal,
+	saveStatus,
+	lastSavedAt,
+	onRetrySync,
+	syncing,
+	syncStatus,
+	onSync,
+	fontId,
+	onFontChange
 }: NoteEditorProps) {
-  const { user, signOut } = useAuth()
+	const { user, signOut } = useAuth();
 
-  // Flat file notes for reuse across home screen and editor
-  const fileNotes = useMemo(
-    () => notes.filter((n): n is NoteFile => n.type === 'file'),
-    [notes],
-  )
+	// Flat file notes for reuse across home screen and editor
+	const fileNotes = useMemo(() => notes.filter((n): n is NoteFile => n.type === 'file'), [notes]);
 
-  // Calculate writing streak and total words for personalized greeting
-  const [now] = useState(() => Date.now())
+	// Calculate writing streak and total words for personalized greeting
+	const [now] = useState(() => Date.now());
 
-  const { streak, totalWords } = useMemo(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    const sortedNotes = [...fileNotes].sort((a, b) => 
-      new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime()
-    )
-    
-    let streak = 0
-    const currentDate = new Date(today)
-    
-    // Check for consecutive days with activity
-    for (let i = 0; i < 365; i++) { // Check up to a year
-      const dayStart = new Date(currentDate)
-      const dayEnd = new Date(currentDate)
-      dayEnd.setHours(23, 59, 59, 999)
-      
-      const hasActivityOnDay = sortedNotes.some(note => {
-        const noteDate = new Date(note.updatedAt || note.createdAt)
-        return noteDate >= dayStart && noteDate <= dayEnd
-      })
-      
-      if (hasActivityOnDay) {
-        streak++
-        currentDate.setDate(currentDate.getDate() - 1)
-      } else {
-        break
-      }
-    }
-    
-    const totalWords = sortedNotes.reduce((sum, note) => sum + countBodyWords(note.content), 0)
-    
-    return { streak, totalWords }
-  }, [fileNotes])
+	const { streak, totalWords } = useMemo(() => {
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
 
-  // Generate motivational message based on streak and recent activity
-  const getMotivationalMessage = (streak: number) => {
-    if (streak === 0) return "Ready to start your writing journey?"
-    if (streak === 1) return "Great start! Keep the momentum going."
-    if (streak < 7) return "You're building a great habit."
-    if (streak < 30) return 'Consistency is your superpower.'
-    return "You're a writing warrior."
-  }
+		const sortedNotes = [...fileNotes].sort(
+			(a, b) =>
+				new Date(b.updatedAt || b.createdAt).getTime() -
+				new Date(a.updatedAt || a.createdAt).getTime()
+		);
 
-  // Mobile home tab state (Recent / Favorites)
-  const [homeTab, setHomeTab] = useState<'recent' | 'favorites'>('recent')
+		let streak = 0;
+		const currentDate = new Date(today);
 
-  // Session word count: capture baseline when a note is first opened
-  const prevNoteIdRef = useRef<string | null>(null)
-  const [sessionBase, setSessionBase] = useState<number | null>(null)
-  const [editorInstance, setEditorInstance] = useState<Editor | null>(null)
+		// Check for consecutive days with activity
+		for (let i = 0; i < 365; i++) {
+			// Check up to a year
+			const dayStart = new Date(currentDate);
+			const dayEnd = new Date(currentDate);
+			dayEnd.setHours(23, 59, 59, 999);
 
-  // Reset session baseline whenever the active note changes
-  useEffect(() => {
-    if (!note) return
-    if (note.id !== prevNoteIdRef.current) {
-      prevNoteIdRef.current = note.id
-      setSessionBase(countBodyWords(note.content))
-    }
-  }, [note])
+			const hasActivityOnDay = sortedNotes.some((note) => {
+				const noteDate = new Date(note.updatedAt || note.createdAt);
+				return noteDate >= dayStart && noteDate <= dayEnd;
+			});
 
-  // Keeps a local reference to the editor API so the title input can focus it
-  const editorApiRef = useRef<EditorApi | null>(null)
+			if (hasActivityOnDay) {
+				streak++;
+				currentDate.setDate(currentDate.getDate() - 1);
+			} else {
+				break;
+			}
+		}
 
-  const handleRegisterEditorApi = useCallback(
-    (api: EditorApi | null) => {
-      editorApiRef.current = api
-      setEditorInstance(api?.getEditor() ?? null)
-      onRegisterEditorApi?.(api)
-    },
-    [onRegisterEditorApi],
-  )
+		const totalWords = sortedNotes.reduce((sum, note) => sum + countBodyWords(note.content), 0);
 
-  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === 'Tab') {
-      e.preventDefault()
-      editorApiRef.current?.focus()
-    }
-  }
+		return { streak, totalWords };
+	}, [fileNotes]);
 
-  if (!note) {
-    const recentNotes = [...fileNotes]
-      .sort(compareRecentNotes)
-      .slice(0, 6)
+	const activityHeatmapRef = useRef<HTMLDivElement | null>(null);
+	const [heatmapWeeks, setHeatmapWeeks] = useState(HEATMAP_MIN_WEEKS);
+	const heatmapGridWidth = useMemo(() => getHeatmapGridWidth(heatmapWeeks), [heatmapWeeks]);
 
-    // Keep favorites even (2-col grid) — max 4
-    const rawFavorites = [...fileNotes]
-      .filter((n) => n.tags?.includes('favorite') || (n as NoteFile & { isFavorite?: boolean }).isFavorite)
-      .sort(compareRecentNotes)
-    const favoriteNotes = rawFavorites.slice(0, rawFavorites.length % 2 === 0 ? rawFavorites.length : rawFavorites.length - 1).slice(0, 4)
+	useEffect(() => {
+		const container = activityHeatmapRef.current;
+		if (!container) return;
 
-    return (
-      <div className="flex flex-1 min-w-0 flex-col max-md:rounded-none rounded-2xl bg-[var(--bg-primary)]">
-        {/* Top bar */}
-        <div className="flex items-center justify-between px-4 py-2 md:px-6">
-          {sidebarCollapsed ? (
-            <button
-              type="button"
-              onClick={onToggleSidebar}
-              className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
-              title="Open sidebar (Cmd+B)"
-            >
-              <Icon icon={SidebarLeftIcon} size={22} strokeWidth={1.5} style={{ transform: 'scaleX(-1)' }} />
-            </button>
-          ) : (
-            <div className="hidden md:block w-10" />
-          )}
-          <div className="ml-auto flex items-center gap-1.5 md:gap-2">
-            <SettingsMenu
-              theme={theme}
-              onToggleTheme={onToggleTheme}
-              accentId={accentId}
-              onAccentChange={onAccentChange}
-              syncing={syncing}
-              syncStatus={syncStatus}
-              onSync={onSync}
-              fontId={fontId}
-              onFontChange={onFontChange}
-            />
-            {user ? (
-              <div className="auth-group">
-                <div className="auth-pill auth-pill--signed-in" title={`Signed in as ${user.email}`}>
-                  <span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
-                  <span className="auth-pill__dot" />
-                </div>
-                <button
-                  type="button"
-                  onClick={signOut}
-                  className="auth-signout-btn"
-                  title="Sign out"
-                >
-                  <Icon icon={Logout01Icon} size={19} strokeWidth={2} />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={onOpenAuthModal}
-                className="auth-pill auth-pill--signed-out h-10 px-4"
-                title="Sign in to sync your notes"
-                style={{ fontFamily: '"Outfit", sans-serif' }}
-              >
-                <Icon icon={CloudUploadIcon} size={18} strokeWidth={2} />
-                <span>Sign in</span>
-              </button>
-            )}
-          </div>
-        </div>
+		const syncHeatmapWeeks = () => {
+			const nextWeeks = getHeatmapWeekCount(container.getBoundingClientRect().width);
+			setHeatmapWeeks((currentWeeks) =>
+				currentWeeks === nextWeeks ? currentWeeks : nextWeeks
+			);
+		};
 
-        {/* Welcome content */}
-        <div className="flex flex-1 flex-col items-center px-6 pt-[5vh] md:pt-[5vh] pb-36 md:pb-6 overflow-y-auto">
-          <div className="animate-fade-in-up flex flex-col items-center text-center">
-            <h1
-              className="text-6xl tracking-tight sm:text-7xl mb-4"
-              style={{ fontFamily: 'var(--font-logo)', color: 'var(--text-primary)' }}
-            >
-              Folio.
-            </h1>
-            <div className="mb-6 space-y-2" style={{ fontFamily: '"Outfit", sans-serif' }}>
-              <p className="text-[14px] text-[var(--text-muted)] tracking-wide">
-                {getMotivationalMessage(streak)}
-              </p>
-              <div className="flex items-center justify-center gap-6 text-[13px] text-[var(--text-secondary)]">
-                <div className="flex items-center gap-1.5">
-                  <Icon icon={FireIcon} size={14} strokeWidth={2} className="text-[var(--warning)]" />
-                  <span>{streak} day streak</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Icon icon={FileText01Icon} size={14} strokeWidth={2} className="text-[var(--accent)]" />
-                  <span>{totalWords.toLocaleString()} words</span>
-                </div>
-              </div>
-            </div>
-          </div>
+		syncHeatmapWeeks();
 
-          <div className="animate-fade-in-up-delay-2 mt-8 mb-2 flex items-center justify-center w-full max-w-md">
-            <div className="flex items-center gap-3 w-full justify-center px-4 sm:px-0">
-              <motion.button
-                onClick={() => onNewNote?.()}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.96 }}
-                className="neu-btn-primary group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] border border-transparent px-3 py-4 text-[14px] font-medium text-white shadow-[0_4px_20px_var(--accent)]/30 transition-all duration-300 hover:brightness-110 hover:shadow-[0_4px_24px_var(--accent)]/50 sm:px-6 sm:text-[15px]"
-                style={{ fontFamily: '"Outfit", sans-serif' }}
-              >
-                <Icon
-                  icon={Add01Icon}
-                  size={20}
-                  strokeWidth={2.5}
-                  className="shrink-0 transition-transform duration-300 group-hover:rotate-90"
-                  style={{ filter: 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.6))' }}
-                />
-                <span className="truncate tracking-wide">New Note</span>
-              </motion.button>
-              <motion.button
-                onClick={() => onCreateDailyNote?.()}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.96 }}
-                className="group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 px-3 py-4 text-[14px] font-medium text-[var(--accent)] transition-all duration-300 hover:bg-[var(--accent)]/15 hover:border-[var(--accent)]/30 hover:shadow-[0_2px_12px_var(--accent)]/20 sm:px-6 sm:text-[15px]"
-                style={{ fontFamily: '"Outfit", sans-serif' }}
-              >
-                <Icon icon={Calendar01Icon} size={20} strokeWidth={2} className="shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5" />
-                <span className="truncate tracking-wide">Daily Note</span>
-              </motion.button>
-            </div>
-          </div>
+		if (typeof ResizeObserver === 'undefined') {
+			return;
+		}
 
-          {/* ── Mobile Tab View ─────────────────────────────────── */}
-          <div className="animate-fade-in-up-delay-2 mt-8 w-full px-4 md:hidden" style={{ fontFamily: '"Outfit", sans-serif' }}>
-            {/* Tab bar */}
-            <div className="relative mb-6 flex border-b border-[var(--border-subtle)]">
-              <button
-                type="button"
-                onClick={() => setHomeTab('recent')}
-                className="relative flex flex-1 items-center justify-center gap-2 pb-3 pt-1 text-[14px] font-medium tracking-wide transition-colors duration-150"
-                style={{ color: homeTab === 'recent' ? 'var(--text-primary)' : 'var(--text-muted)' }}
-              >
-                <Icon icon={Clock01Icon} size={17} strokeWidth={2} style={{ color: homeTab === 'recent' ? 'var(--accent)' : 'var(--text-muted)', transition: 'color 150ms' }} />
-                Recent
-                {homeTab === 'recent' && (
-                  <motion.div
-                    layoutId="home-tab-underline"
-                    className="absolute bottom-0 left-1/2 h-[2px] w-16 -translate-x-1/2 rounded-full bg-[var(--accent)]"
-                    transition={{ type: 'spring', duration: 0.4, bounce: 0.15 }}
-                  />
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setHomeTab('favorites')}
-                className="relative flex flex-1 items-center justify-center gap-2 pb-3 pt-1 text-[14px] font-medium tracking-wide transition-colors duration-150"
-                style={{ color: homeTab === 'favorites' ? 'var(--text-primary)' : 'var(--text-muted)' }}
-              >
-                <Icon icon={StarIcon} size={17} strokeWidth={2} style={{ color: homeTab === 'favorites' ? 'var(--warning)' : 'var(--text-muted)', transition: 'color 150ms' }} />
-                Favorites
-                {homeTab === 'favorites' && (
-                  <motion.div
-                    layoutId="home-tab-underline"
-                    className="absolute bottom-0 left-1/2 h-[2px] w-20 -translate-x-1/2 rounded-full bg-[var(--accent)]"
-                    transition={{ type: 'spring', duration: 0.4, bounce: 0.15 }}
-                  />
-                )}
-              </button>
-            </div>
+		const observer = new ResizeObserver(() => {
+			syncHeatmapWeeks();
+		});
 
-            {/* Tab content with AnimatePresence crossfade */}
-            <div className="relative overflow-hidden">
-              <AnimatePresence mode="wait" initial={false}>
-                {homeTab === 'recent' ? (
-                  <motion.div
-                    key="recent"
-                    initial={{ opacity: 0, x: -16, filter: 'blur(4px)' }}
-                    animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, x: 16, filter: 'blur(4px)' }}
-                    transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-                  >
-                    {recentNotes.length > 0 ? (
-                      <div className="flex flex-col divide-y divide-[var(--border-subtle)]/50">
-                        {recentNotes.map((n, i) => {
-                          const isDaily = n.tags?.includes('daily')
-                          const rawTitle = getNoteDisplayTitle(n)
-                          const date = new Date(n.updatedAt || n.createdAt)
-                          let displayTitle = rawTitle
-                          if (isDaily) {
-                            const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/)
-                            if (parts) {
-                              const [, dd, mm, yyyy] = parts
-                              const d = new Date(`${yyyy}-${mm}-${dd}`)
-                              const readable = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-                              displayTitle = `Daily \u2014 ${readable}`
-                            } else {
-                              displayTitle = `Daily \u2014 ${rawTitle}`
-                            }
-                          }
-                          const freshness = now - date.getTime() < 86400000
-                            ? { dot: 'var(--success)', opacity: 0.9 }
-                            : now - date.getTime() < 604800000
-                            ? { dot: 'var(--accent)', opacity: 0.6 }
-                            : { dot: 'var(--text-muted)', opacity: 0.35 }
-                          return (
-                            <motion.button
-                              key={n.id}
-                              type="button"
-                              onClick={() => onSelectNote(n.id)}
-                              className="group flex items-center gap-3 py-3 px-1 rounded-xl transition-[background-color,transform] duration-150 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.98]"
-                              initial={{ opacity: 0, y: 6 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.25, delay: i * 0.04, ease: [0.23, 1, 0.32, 1] }}
-                              style={{ WebkitTapHighlightColor: 'transparent' }}
-                            >
-                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/60 text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
-                                <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={15} strokeWidth={1.5} />
-                              </div>
-                              <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-left">
-                                <span className="truncate text-[14px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
-                                  {displayTitle}
-                                </span>
-                                <div className="flex items-center gap-1.5">
-                                  <span
-                                    className="h-1.5 w-1.5 shrink-0 rounded-full"
-                                    style={{ background: freshness.dot, opacity: freshness.opacity }}
-                                  />
-                                  <span className="text-[11px] text-[var(--text-muted)] tabular-nums">
-                                    {formatRelativeTime(date)}
-                                  </span>
-                                </div>
-                              </div>
-                            </motion.button>
-                          )
-                        })}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col justify-center min-h-[260px]">
-                        <FirstNotePrompt />
-                      </div>
-                    )}
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="favorites"
-                    initial={{ opacity: 0, x: 16, filter: 'blur(4px)' }}
-                    animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, x: -16, filter: 'blur(4px)' }}
-                    transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-                  >
-                    {favoriteNotes.length > 0 ? (
-                      <div className="grid grid-cols-2 gap-3">
-                        {favoriteNotes.map((n, i) => {
-                          const isDaily = n.tags?.includes('daily')
-                          const rawTitle = getNoteDisplayTitle(n)
-                          const date = new Date(n.updatedAt || n.createdAt)
-                          let displayTitle = rawTitle
-                          if (isDaily) {
-                            const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/)
-                            if (parts) {
-                              const [, dd, mm, yyyy] = parts
-                              const d = new Date(`${yyyy}-${mm}-${dd}`)
-                              const readable = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-                              displayTitle = `Daily \u2014 ${readable}`
-                            } else {
-                              displayTitle = `Daily \u2014 ${rawTitle}`
-                            }
-                          }
-                          return (
-                            <motion.button
-                              key={n.id}
-                              type="button"
-                              onClick={() => onSelectNote(n.id)}
-                              initial={{ opacity: 0, scale: 0.95 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ duration: 0.28, delay: i * 0.06, ease: [0.23, 1, 0.32, 1] }}
-                              className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-[var(--border-subtle)]/60 p-3.5 text-left transition-[transform,border-color] duration-150 ease-out hover:border-[var(--warning)]/40 active:scale-[0.97]"
-                              style={{
-                                background: getGradientForNote(n.id),
-                                backgroundColor: 'var(--bg-surface)',
-                                WebkitTapHighlightColor: 'transparent',
-                                minHeight: '110px',
-                              }}
-                            >
-                              <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[var(--bg-surface)]/70" />
-                              <div className="relative z-10 mb-2 flex items-start justify-between">
-                                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--warning)]/10 text-[var(--warning)] border border-[var(--warning)]/15">
-                                  <Icon icon={isDaily ? Calendar01Icon : StarIcon} size={13} strokeWidth={1.8} />
-                                </div>
-                                <span className="text-[10px] text-[var(--text-muted)] tabular-nums">
-                                  {formatRelativeTime(date)}
-                                </span>
-                              </div>
-                              <div className="relative z-10">
-                                <p className="line-clamp-2 text-[13px] font-semibold leading-snug tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
-                                  {displayTitle}
-                                </p>
-                              </div>
-                            </motion.button>
-                          )
-                        })}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col justify-center min-h-[260px]">
-                        <FavoritesEmptyPrompt />
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
+		observer.observe(container);
 
-          
-          {/* ── Desktop Two-Column View ──────────────────────────── */}
-          <div className="animate-fade-in-up-delay-2 mt-10 w-full max-w-[1200px] md:mt-16 hidden md:grid md:grid-cols-[4fr_5fr] lg:grid-cols-[4fr_6fr] gap-10 lg:gap-14 px-8" style={{ fontFamily: '"Outfit", sans-serif' }}>
+		return () => {
+			observer.disconnect();
+		};
+	}, []);
 
-            {/* ── Recent Column — Sleek list ────────────────────────── */}
-            <div className="flex flex-col">
-              <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent)]/10 text-[var(--accent)]">
-                  <Icon icon={Clock01Icon} size={17} strokeWidth={2} />
-                </div>
-                <h2 className="text-[15px] font-semibold tracking-wide text-[var(--text-primary)] uppercase letter-spacing-widest opacity-60">
-                  Recent
-                </h2>
-              </div>
+	// Generate activity heatmap data: word counts per day over the visible week range
+	const heatmapCells = useMemo(() => {
+		const entries = fileNotes.map((note) => ({
+			date: new Date(note.updatedAt || note.createdAt),
+			words: countBodyWords(note.content)
+		}));
 
-              {recentNotes.length > 0 ? (
-                <div className="flex flex-col divide-y divide-[var(--border-subtle)]/50">
-                  {recentNotes.map((n, i) => {
-                    const isDaily = n.tags?.includes('daily')
-                    const rawTitle = getNoteDisplayTitle(n)
-                    const date = new Date(n.updatedAt || n.createdAt)
+		return buildHeatmapCells(entries, heatmapWeeks);
+	}, [fileNotes, heatmapWeeks]);
 
-                    let displayTitle = rawTitle
-                    if (isDaily) {
-                      const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/)
-                      if (parts) {
-                        const [, dd, mm, yyyy] = parts
-                        const d = new Date(`${yyyy}-${mm}-${dd}`)
-                        const readable = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-                        displayTitle = `Daily \u2014 ${readable}`
-                      } else {
-                        displayTitle = `Daily \u2014 ${rawTitle}`
-                      }
-                    }
+	const monthMarkers = useMemo(
+		() => getMonthMarkers(heatmapCells, HEATMAP_MONTH_LABEL_MIN_SPACING),
+		[heatmapCells]
+	);
 
-                    const freshness = now - date.getTime() < 86400000
-                      ? { dot: 'var(--success)', opacity: 0.9 }
-                      : now - date.getTime() < 604800000
-                      ? { dot: 'var(--accent)', opacity: 0.6 }
-                      : { dot: 'var(--text-muted)', opacity: 0.35 }
+	// Generate motivational message based on streak and recent activity
+	const getMotivationalMessage = (streak: number) => {
+		if (streak === 0) return 'Ready to start your writing journey?';
+		if (streak === 1) return 'Great start! Keep the momentum going.';
+		if (streak < 7) return "You're building a great habit.";
+		if (streak < 30) return 'Consistency is your superpower.';
+		return "You're a writing warrior.";
+	};
 
-                    return (
-                      <motion.button
-                        key={n.id}
-                        type="button"
-                        onClick={() => onSelectNote(n.id)}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.28, delay: i * 0.04, ease: [0.23, 1, 0.32, 1] }}
-                        className="group flex items-center gap-4 py-3.5 px-2 rounded-xl transition-[background-color,transform] duration-150 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.98]"
-                        style={{ WebkitTapHighlightColor: 'transparent' }}
-                      >
-                        {/* Icon block */}
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/60 text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
-                          <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={17} strokeWidth={1.5} />
-                        </div>
+	// Mobile home tab state (Recent / Favorites)
+	const [homeTab, setHomeTab] = useState<'recent' | 'favorites'>('recent');
 
-                        {/* Title + timestamp */}
-                        <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-left">
-                          <span className="truncate text-[15px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
-                            {displayTitle}
-                          </span>
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className="h-1.5 w-1.5 shrink-0 rounded-full transition-transform duration-150 group-hover:scale-125"
-                              style={{ background: freshness.dot, opacity: freshness.opacity }}
-                            />
-                            <span className="text-[12px] text-[var(--text-muted)] tabular-nums transition-colors duration-150 group-hover:text-[var(--text-secondary)]">
-                              {formatRelativeTime(date)}
-                            </span>
-                          </div>
-                        </div>
+	// Session word count: capture baseline when a note is first opened
+	const prevNoteIdRef = useRef<string | null>(null);
+	const [sessionBase, setSessionBase] = useState<number | null>(null);
+	const [editorInstance, setEditorInstance] = useState<Editor | null>(null);
 
-                        {/* Chevron hint */}
-                        <svg
-                          className="shrink-0 opacity-0 group-hover:opacity-40 transition-opacity duration-150 -translate-x-1 group-hover:translate-x-0 transition-transform"
-                          width="14" height="14" viewBox="0 0 14 14" fill="none"
-                          aria-hidden="true"
-                        >
-                          <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </motion.button>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="flex flex-1 flex-col justify-center min-h-[300px]">
-                  <FirstNotePrompt />
-                </div>
-              )}
-            </div>
+	// Reset session baseline whenever the active note changes
+	useEffect(() => {
+		if (!note) return;
+		if (note.id !== prevNoteIdRef.current) {
+			prevNoteIdRef.current = note.id;
+			setSessionBase(countBodyWords(note.content));
+		}
+	}, [note]);
 
-            {/* ── Favorites Column — Bento card grid ───────────────── */}
-            <div className="flex flex-col">
-              <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--warning)]/10 text-[var(--warning)]">
-                  <Icon icon={StarIcon} size={17} strokeWidth={2} />
-                </div>
-                <h2 className="text-[15px] font-semibold tracking-wide text-[var(--text-primary)] uppercase letter-spacing-widest opacity-60">
-                  Favorites
-                </h2>
-              </div>
+	// Keeps a local reference to the editor API so the title input can focus it
+	const editorApiRef = useRef<EditorApi | null>(null);
 
-              {favoriteNotes.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3">
-                  {favoriteNotes.map((n, i) => {
-                    const isDaily = n.tags?.includes('daily')
-                    const rawTitle = getNoteDisplayTitle(n)
-                    const date = new Date(n.updatedAt || n.createdAt)
+	const handleRegisterEditorApi = useCallback(
+		(api: EditorApi | null) => {
+			editorApiRef.current = api;
+			setEditorInstance(api?.getEditor() ?? null);
+			onRegisterEditorApi?.(api);
+		},
+		[onRegisterEditorApi]
+	);
 
-                    let displayTitle = rawTitle
-                    if (isDaily) {
-                      const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/)
-                      if (parts) {
-                        const [, dd, mm, yyyy] = parts
-                        const d = new Date(`${yyyy}-${mm}-${dd}`)
-                        const readable = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-                        displayTitle = `Daily \u2014 ${readable}`
-                      } else {
-                        displayTitle = `Daily \u2014 ${rawTitle}`
-                      }
-                    }
+	const handleTitleKeyDown = (e: React.KeyboardEvent) => {
+		if (e.key === 'Enter' || e.key === 'Tab') {
+			e.preventDefault();
+			editorApiRef.current?.focus();
+		}
+	};
 
-                    return (
-                      <motion.button
-                        key={n.id}
-                        type="button"
-                        onClick={() => onSelectNote(n.id)}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.3, delay: i * 0.06, ease: [0.23, 1, 0.32, 1] }}
-                        className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-[var(--border-subtle)]/60 p-4 text-left transition-[transform,box-shadow,border-color] duration-150 ease-out hover:border-[var(--warning)]/40 hover:shadow-[0_4px_20px_color-mix(in_srgb,var(--warning)_10%,transparent)] active:scale-[0.97]"
-                        style={{
-                          background: getGradientForNote(n.id),
-                          backgroundColor: 'var(--bg-surface)',
-                          WebkitTapHighlightColor: 'transparent',
-                          minHeight: '130px',
-                        }}
-                      >
-                        {/* Subtle noise/glass overlay */}
-                        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[var(--bg-surface)]/70 backdrop-blur-[2px]" />
+	if (!note) {
+		const recentNotes = [...fileNotes].sort(compareRecentNotes).slice(0, 6);
 
-                        {/* Star badge */}
-                        <div className="relative z-10 mb-3 flex items-start justify-between">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--warning)]/10 text-[var(--warning)] border border-[var(--warning)]/15 transition-colors duration-150 group-hover:bg-[var(--warning)]/15">
-                            <Icon icon={isDaily ? Calendar01Icon : StarIcon} size={15} strokeWidth={1.8} className="group-hover:drop-shadow-sm transition-all" />
-                          </div>
-                          <span className="text-[11px] text-[var(--text-muted)] tabular-nums">
-                            {formatRelativeTime(date)}
-                          </span>
-                        </div>
+		// Keep favorites even (2-col grid) — max 6
+		const rawFavorites = [...fileNotes]
+			.filter(
+				(n) => n.tags?.includes('favorite') || (n as NoteFile & { isFavorite?: boolean }).isFavorite
+			)
+			.sort(compareRecentNotes);
+		const favoriteNotes = rawFavorites
+			.slice(0, rawFavorites.length % 2 === 0 ? rawFavorites.length : rawFavorites.length - 1)
+			.slice(0, 6);
 
-                        {/* Title */}
-                        <div className="relative z-10">
-                          <p className="line-clamp-2 text-[14px] font-semibold leading-snug tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
-                            {displayTitle}
-                          </p>
-                        </div>
-                      </motion.button>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="flex flex-1 flex-col justify-center min-h-[300px]">
-                  <FavoritesEmptyPrompt />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        {/* Mobile action bar */}
-        <div className="mobile-action-bar" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-          <div className="mobile-action-bar-inner">
-            <button type="button" onClick={onToggleSidebar}>
-              <Icon icon={SidebarLeftIcon} size={18} strokeWidth={1.5} />
-            </button>
-            <button type="button" onClick={() => onNewNote?.()}>
-              <Icon icon={Add01Icon} size={18} strokeWidth={1.5} />
-            </button>
-            {onOpenCommandPalette && (
-              <button type="button" onClick={onOpenCommandPalette}>
-                <Icon icon={CommandIcon} size={18} strokeWidth={1.5} />
-              </button>
-            )}
-            <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} mobile />
-            <button type="button" onClick={onToggleTheme}>
-              {theme === 'dark' ? <Icon icon={Sun01Icon} size={18} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={18} strokeWidth={1.5} />}
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
+		return (
+			<div className="flex flex-1 min-w-0 flex-col max-md:rounded-none rounded-2xl bg-[var(--bg-primary)]">
+				{/* Top bar */}
+				<div className="flex items-center justify-between px-4 py-2 md:px-6">
+					{sidebarCollapsed ? (
+						<button
+							type="button"
+							onClick={onToggleSidebar}
+							className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+							title="Open sidebar (Cmd+B)"
+						>
+							<Icon
+								icon={SidebarLeftIcon}
+								size={22}
+								strokeWidth={1.5}
+								style={{ transform: 'scaleX(-1)' }}
+							/>
+						</button>
+					) : (
+						<div className="hidden md:block w-10" />
+					)}
+					<div className="ml-auto flex items-center gap-1.5 md:gap-2">
+						<SettingsMenu
+							theme={theme}
+							onToggleTheme={onToggleTheme}
+							accentId={accentId}
+							onAccentChange={onAccentChange}
+							syncing={syncing}
+							syncStatus={syncStatus}
+							onSync={onSync}
+							fontId={fontId}
+							onFontChange={onFontChange}
+						/>
+						{user ? (
+							<div className="auth-group">
+								<div
+									className="auth-pill auth-pill--signed-in"
+									title={`Signed in as ${user.email}`}
+								>
+									<span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
+									<span className="auth-pill__dot" />
+								</div>
+								<button
+									type="button"
+									onClick={signOut}
+									className="auth-signout-btn"
+									title="Sign out"
+								>
+									<Icon icon={Logout01Icon} size={19} strokeWidth={2} />
+								</button>
+							</div>
+						) : (
+							<button
+								type="button"
+								onClick={onOpenAuthModal}
+								className="auth-pill auth-pill--signed-out h-10 px-4"
+								title="Sign in to sync your notes"
+								style={{ fontFamily: '"Outfit", sans-serif' }}
+							>
+								<Icon icon={CloudUploadIcon} size={18} strokeWidth={2} />
+								<span>Sign in</span>
+							</button>
+						)}
+					</div>
+				</div>
 
-  // ── Derived state ───────────────────────────────────────────────────────────
+				{/* Welcome content */}
+				<div className="flex flex-1 flex-col items-center px-6 pt-[5vh] md:pt-[5vh] pb-36 md:pb-6 overflow-y-auto">
+					<div className="animate-fade-in-up flex flex-col items-center text-center">
+						<h1
+							className="text-6xl tracking-tight sm:text-7xl mb-4"
+							style={{ fontFamily: 'var(--font-logo)', color: 'var(--text-primary)' }}
+						>
+							Folio.
+						</h1>
+						<div className="mb-6 space-y-2" style={{ fontFamily: '"Outfit", sans-serif' }}>
+							<p className="text-[14px] text-[var(--text-muted)] tracking-wide">
+								{getMotivationalMessage(streak)}
+							</p>
+							<div className="flex items-center justify-center gap-6 text-[13px] text-[var(--text-secondary)]">
+								<div className="flex items-center gap-1.5">
+									<Icon
+										icon={FireIcon}
+										size={14}
+										strokeWidth={2}
+										className="text-[var(--warning)]"
+									/>
+									<span>{streak} day streak</span>
+								</div>
+								<div className="flex items-center gap-1.5">
+									<Icon
+										icon={FileText01Icon}
+										size={14}
+										strokeWidth={2}
+										className="text-[var(--accent)]"
+									/>
+									<span>{totalWords.toLocaleString()} words</span>
+								</div>
+							</div>
+						</div>
+					</div>
 
-  const createdAtLabel = formatCreatedAt(note.createdAt)
-  const wordCount = countBodyWords(note.content)
-  const readTime = estimateReadTime(note.content)
-  const sessionDelta = wordCount - (sessionBase ?? wordCount)
-  const saveBadgeMeta = getSaveBadgeMeta(saveStatus)
-  const saveLabel = saveStatus.label || 'Not saved'
-  const saveDetail = saveStatus.detail || 'Sign in to save your notes'
-  const saveError = saveStatus.error
-  const lastSavedLabel = formatRelativeSaveTime(lastSavedAt)
+					<div className="animate-fade-in-up-delay-2 mt-8 mb-2 flex items-center justify-center w-full max-w-md">
+						<div className="flex items-center gap-3 w-full justify-center px-4 sm:px-0">
+							<motion.button
+								onClick={() => onNewNote?.()}
+								whileHover={{ scale: 1.02 }}
+								whileTap={{ scale: 0.96 }}
+								className="neu-btn-primary group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] border border-transparent px-3 py-4 text-[14px] font-medium text-white shadow-[0_4px_20px_var(--accent)]/30 transition-all duration-300 hover:brightness-110 hover:shadow-[0_4px_24px_var(--accent)]/50 sm:px-6 sm:text-[15px]"
+								style={{ fontFamily: '"Outfit", sans-serif' }}
+							>
+								<Icon
+									icon={Add01Icon}
+									size={20}
+									strokeWidth={2.5}
+									className="shrink-0 transition-transform duration-300 group-hover:rotate-90"
+									style={{ filter: 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.6))' }}
+								/>
+								<span className="truncate tracking-wide">New Note</span>
+							</motion.button>
+							<motion.button
+								onClick={() => onCreateDailyNote?.()}
+								whileHover={{ scale: 1.02 }}
+								whileTap={{ scale: 0.96 }}
+								className="group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 px-3 py-4 text-[14px] font-medium text-[var(--accent)] transition-all duration-300 hover:bg-[var(--accent)]/15 hover:border-[var(--accent)]/30 hover:shadow-[0_2px_12px_var(--accent)]/20 sm:px-6 sm:text-[15px]"
+								style={{ fontFamily: '"Outfit", sans-serif' }}
+							>
+								<Icon
+									icon={Calendar01Icon}
+									size={20}
+									strokeWidth={2}
+									className="shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5"
+								/>
+								<span className="truncate tracking-wide">Daily Note</span>
+							</motion.button>
+						</div>
+					</div>
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+					{/* ── Mobile Tab View ─────────────────────────────────── */}
+					<div
+						className="animate-fade-in-up-delay-2 mt-8 w-full px-4 md:hidden"
+						style={{ fontFamily: '"Outfit", sans-serif' }}
+					>
+						{/* Tab bar */}
+						<div className="relative mb-6 flex border-b border-[var(--border-subtle)]">
+							<button
+								type="button"
+								onClick={() => setHomeTab('recent')}
+								className="relative flex flex-1 items-center justify-center gap-2 pb-3 pt-1 text-[14px] font-medium tracking-wide transition-colors duration-150"
+								style={{
+									color: homeTab === 'recent' ? 'var(--text-primary)' : 'var(--text-muted)'
+								}}
+							>
+								<Icon
+									icon={Clock01Icon}
+									size={17}
+									strokeWidth={2}
+									style={{
+										color: homeTab === 'recent' ? 'var(--accent)' : 'var(--text-muted)',
+										transition: 'color 150ms'
+									}}
+								/>
+								Recent
+								{homeTab === 'recent' && (
+									<motion.div
+										layoutId="home-tab-underline"
+										className="absolute bottom-0 left-1/2 h-[2px] w-16 -translate-x-1/2 rounded-full bg-[var(--accent)]"
+										transition={{ type: 'spring', duration: 0.4, bounce: 0.15 }}
+									/>
+								)}
+							</button>
+							<button
+								type="button"
+								onClick={() => setHomeTab('favorites')}
+								className="relative flex flex-1 items-center justify-center gap-2 pb-3 pt-1 text-[14px] font-medium tracking-wide transition-colors duration-150"
+								style={{
+									color: homeTab === 'favorites' ? 'var(--text-primary)' : 'var(--text-muted)'
+								}}
+							>
+								<Icon
+									icon={StarIcon}
+									size={17}
+									strokeWidth={2}
+									style={{
+										color: homeTab === 'favorites' ? 'var(--warning)' : 'var(--text-muted)',
+										transition: 'color 150ms'
+									}}
+								/>
+								Favorites
+								{homeTab === 'favorites' && (
+									<motion.div
+										layoutId="home-tab-underline"
+										className="absolute bottom-0 left-1/2 h-[2px] w-20 -translate-x-1/2 rounded-full bg-[var(--accent)]"
+										transition={{ type: 'spring', duration: 0.4, bounce: 0.15 }}
+									/>
+								)}
+							</button>
+						</div>
 
-  return (
-    <div
-      className="relative flex flex-1 min-h-0 min-w-0 w-full flex-col overflow-hidden rounded-2xl bg-[var(--bg-primary)] transition-[border-radius] duration-300 max-md:rounded-none"
-    >
-      {/* Subtle grainy gradient background for the banner area */}
-      <div
-        className="pointer-events-none absolute left-0 right-0 top-0 z-0 h-[35vh] opacity-100 transition-colors duration-700"
-        style={{
-          backgroundImage: getGradientForNote(note.id),
-          maskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
-        }}
-      />
+						{/* Tab content with AnimatePresence crossfade */}
+						<div className="relative overflow-hidden">
+							<AnimatePresence mode="wait" initial={false}>
+								{homeTab === 'recent' ? (
+									<motion.div
+										key="recent"
+										initial={{ opacity: 0, x: -16, filter: 'blur(4px)' }}
+										animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+										exit={{ opacity: 0, x: 16, filter: 'blur(4px)' }}
+										transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+									>
+										{recentNotes.length > 0 ? (
+											<div className="flex flex-col divide-y divide-[var(--border-subtle)]/50">
+												{recentNotes.map((n, i) => {
+													const isDaily = n.tags?.includes('daily');
+													const rawTitle = getNoteDisplayTitle(n);
+													const date = new Date(n.updatedAt || n.createdAt);
+													let displayTitle = rawTitle;
+													if (isDaily) {
+														const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+														if (parts) {
+															const [, dd, mm, yyyy] = parts;
+															const d = new Date(`${yyyy}-${mm}-${dd}`);
+															const readable = d.toLocaleDateString('en-GB', {
+																day: 'numeric',
+																month: 'short',
+																year: 'numeric'
+															});
+															displayTitle = `Daily \u2014 ${readable}`;
+														} else {
+															displayTitle = `Daily \u2014 ${rawTitle}`;
+														}
+													}
+													const freshness =
+														now - date.getTime() < 86400000
+															? { dot: 'var(--success)', opacity: 0.9 }
+															: now - date.getTime() < 604800000
+																? { dot: 'var(--accent)', opacity: 0.6 }
+																: { dot: 'var(--text-muted)', opacity: 0.35 };
+													return (
+														<motion.button
+															key={n.id}
+															type="button"
+															onClick={() => onSelectNote(n.id)}
+															className="group flex items-center gap-3 py-3 px-1 rounded-xl transition-[background-color,transform] duration-150 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.98]"
+															initial={{ opacity: 0, y: 6 }}
+															animate={{ opacity: 1, y: 0 }}
+															transition={{
+																duration: 0.25,
+																delay: i * 0.04,
+																ease: [0.23, 1, 0.32, 1]
+															}}
+															style={{ WebkitTapHighlightColor: 'transparent' }}
+														>
+															<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/60 text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
+																<Icon
+																	icon={isDaily ? Calendar01Icon : File01Icon}
+																	size={15}
+																	strokeWidth={1.5}
+																/>
+															</div>
+															<div className="flex min-w-0 flex-1 flex-col gap-0.5 text-left">
+																<span className="truncate text-[14px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
+																	{displayTitle}
+																</span>
+																<div className="flex items-center gap-1.5">
+																	<span
+																		className="h-1.5 w-1.5 shrink-0 rounded-full"
+																		style={{
+																			background: freshness.dot,
+																			opacity: freshness.opacity
+																		}}
+																	/>
+																	<span className="text-[11px] text-[var(--text-muted)] tabular-nums">
+																		{formatRelativeTime(date)}
+																	</span>
+																</div>
+															</div>
+														</motion.button>
+													);
+												})}
+											</div>
+										) : (
+											<div className="flex flex-col justify-center min-h-[260px]">
+												<FirstNotePrompt />
+											</div>
+										)}
+									</motion.div>
+								) : (
+									<motion.div
+										key="favorites"
+										initial={{ opacity: 0, x: 16, filter: 'blur(4px)' }}
+										animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+										exit={{ opacity: 0, x: -16, filter: 'blur(4px)' }}
+										transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+									>
+										{favoriteNotes.length > 0 ? (
+											<div className="grid grid-cols-2 gap-3">
+												{favoriteNotes.map((n, i) => {
+													const isDaily = n.tags?.includes('daily');
+													const rawTitle = getNoteDisplayTitle(n);
+													const date = new Date(n.updatedAt || n.createdAt);
+													let displayTitle = rawTitle;
+													if (isDaily) {
+														const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+														if (parts) {
+															const [, dd, mm, yyyy] = parts;
+															const d = new Date(`${yyyy}-${mm}-${dd}`);
+															const readable = d.toLocaleDateString('en-GB', {
+																day: 'numeric',
+																month: 'short',
+																year: 'numeric'
+															});
+															displayTitle = `Daily \u2014 ${readable}`;
+														} else {
+															displayTitle = `Daily \u2014 ${rawTitle}`;
+														}
+													}
+													return (
+														<motion.button
+															key={n.id}
+															type="button"
+															onClick={() => onSelectNote(n.id)}
+															initial={{ opacity: 0, scale: 0.95 }}
+															animate={{ opacity: 1, scale: 1 }}
+															transition={{
+																duration: 0.28,
+																delay: i * 0.06,
+																ease: [0.23, 1, 0.32, 1]
+															}}
+															className="group relative flex items-center gap-2.5 overflow-hidden rounded-xl border border-[var(--border-subtle)]/60 px-3 py-2.5 text-left transition-[transform,border-color] duration-150 ease-out hover:border-[var(--warning)]/40 active:scale-[0.97]"
+															style={{
+																background: getGradientForNote(n.id),
+																backgroundColor: 'var(--bg-surface)',
+																WebkitTapHighlightColor: 'transparent',
+																minHeight: '72px'
+															}}
+														>
+															<div className="pointer-events-none absolute inset-0 rounded-xl bg-[var(--bg-surface)]/70" />
+															<div className="relative z-10 shrink-0 flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--warning)]/10 text-[var(--warning)] border border-[var(--warning)]/15">
+																<Icon
+																	icon={isDaily ? Calendar01Icon : StarIcon}
+																	size={13}
+																	strokeWidth={1.8}
+																/>
+															</div>
+															<div className="relative z-10 flex-1 min-w-0">
+																<p className="truncate text-[13px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
+																	{displayTitle}
+																</p>
+															</div>
+															<span className="relative z-10 shrink-0 text-[10px] text-[var(--text-muted)] tabular-nums">
+																{formatRelativeTime(date)}
+															</span>
+														</motion.button>
+													);
+												})}
+											</div>
+										) : (
+											<div className="flex flex-col justify-center min-h-[260px]">
+												<FavoritesEmptyPrompt />
+											</div>
+										)}
+									</motion.div>
+								)}
+							</AnimatePresence>
+						</div>
+					</div>
 
-      <div className="relative z-20 flex items-center justify-between px-4 py-2 md:px-6">
-          <div className="flex items-center gap-2">
-            {/* Back button — Mobile only */}
-            <button
-              type="button"
-              onClick={() => onSelectNote(null)}
-              className="md:hidden relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] after:absolute after:-inset-2 active:scale-[0.97]"
-              title="Back to Home"
-            >
-              <Icon icon={ArrowLeft01Icon} size={22} strokeWidth={2} />
-            </button>
+					{/* ── Desktop Two-Column View ──────────────────────────── */}
+					<div
+						className="animate-fade-in-up-delay-2 mt-10 w-full max-w-[1200px] md:mt-16 hidden md:grid md:grid-cols-[4fr_5fr] lg:grid-cols-[4fr_6fr] gap-10 lg:gap-14 px-8"
+						style={{ fontFamily: '"Outfit", sans-serif' }}
+					>
+						{/* ── Recent Column — Sleek list ────────────────────────── */}
+						<div className="flex flex-col">
+							<div className="mb-5 flex items-center gap-3">
+								<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent)]/10 text-[var(--accent)]">
+									<Icon icon={Clock01Icon} size={17} strokeWidth={2} />
+								</div>
+								<h2 className="text-[15px] font-semibold tracking-wide text-[var(--text-primary)] letter-spacing-widest opacity-60">
+									Recent
+								</h2>
+							</div>
 
-            {sidebarCollapsed ? (
-              <button
-                type="button"
-                onClick={onToggleSidebar}
-                className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
-                title="Open sidebar (Cmd+B)"
-              >
-                <Icon icon={SidebarLeftIcon} size={22} strokeWidth={1.5} style={{ transform: 'scaleX(-1)' }} />
-              </button>
-            ) : (
-              <div className="hidden md:block w-10" />
-            )}
-          </div>
-          <div className="flex items-center gap-1">
-            {/* Home button — desktop only */}
-            <button
-              type="button"
-              onClick={() => onSelectNote(null)}
-              className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
-              title="Home"
-            >
-              <Icon icon={Home01Icon} size={20} strokeWidth={1.5} />
-            </button>
+							{recentNotes.length > 0 ? (
+								<div className="flex flex-col divide-y divide-[var(--border-subtle)]/50">
+									{recentNotes.map((n, i) => {
+										const isDaily = n.tags?.includes('daily');
+										const rawTitle = getNoteDisplayTitle(n);
+										const date = new Date(n.updatedAt || n.createdAt);
 
-            {note && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const currentTags = note.tags || []
-                    const isFav = currentTags.includes('favorite')
-                    const newTags = isFav ? currentTags.filter((t) => t !== 'favorite') : [...currentTags, 'favorite']
-                    onUpdateNote(note.id, { tags: newTags }, { skipTimestamp: true })
-                  }}
-                  className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
-                  style={{ color: (note.tags || []).includes('favorite') ? 'var(--warning)' : 'var(--text-muted)' }}
-                  title={(note.tags || []).includes('favorite') ? 'Remove from Favorites' : 'Add to Favorites'}
-                >
-                  <Icon icon={StarIcon} size={21} strokeWidth={1.5} className={(note.tags || []).includes('favorite') ? 'fill-current drop-shadow-sm' : ''} />
-                </button>
-              </>
-            )}
+										let displayTitle = rawTitle;
+										if (isDaily) {
+											const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+											if (parts) {
+												const [, dd, mm, yyyy] = parts;
+												const d = new Date(`${yyyy}-${mm}-${dd}`);
+												const readable = d.toLocaleDateString('en-GB', {
+													day: 'numeric',
+													month: 'short',
+													year: 'numeric'
+												});
+												displayTitle = `Daily \u2014 ${readable}`;
+											} else {
+												displayTitle = `Daily \u2014 ${rawTitle}`;
+											}
+										}
 
-            <SettingsMenu
-              theme={theme}
-              onToggleTheme={onToggleTheme}
-              accentId={accentId}
-              onAccentChange={onAccentChange}
-              syncing={syncing}
-              syncStatus={syncStatus}
-              onSync={onSync}
-              fontId={fontId}
-              onFontChange={onFontChange}
-            />
+										const freshness =
+											now - date.getTime() < 86400000
+												? { dot: 'var(--success)', opacity: 0.9 }
+												: now - date.getTime() < 604800000
+													? { dot: 'var(--accent)', opacity: 0.6 }
+													: { dot: 'var(--text-muted)', opacity: 0.35 };
 
-            {/* Export — direct top-bar button (desktop only) */}
-            {note && (
-              <button
-                type="button"
-                onClick={() => exportNoteAsMarkdown(note)}
-                className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
-                title="Export as Markdown"
-                aria-label="Export note as Markdown"
-              >
-                <Icon icon={Download01Icon} size={19} strokeWidth={1.8} />
-              </button>
-            )}
+										return (
+											<motion.button
+												key={n.id}
+												type="button"
+												onClick={() => onSelectNote(n.id)}
+												initial={{ opacity: 0, y: 8 }}
+												animate={{ opacity: 1, y: 0 }}
+												transition={{ duration: 0.28, delay: i * 0.04, ease: [0.23, 1, 0.32, 1] }}
+												className="group flex items-center gap-4 py-3.5 px-2 rounded-xl transition-[background-color,transform] duration-150 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.98]"
+												style={{ WebkitTapHighlightColor: 'transparent' }}
+											>
+												{/* Icon block */}
+												<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/60 text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
+													<Icon
+														icon={isDaily ? Calendar01Icon : File01Icon}
+														size={17}
+														strokeWidth={1.5}
+													/>
+												</div>
 
-            {/* Auth: show sign-in or user menu */}
-            {user ? (
-              <div className="relative group">
-                <button
-                  type="button"
-                  className="auth-pill auth-pill--signed-in group relative flex items-center gap-2"
-                  title={`Signed in as ${user.email}`}
-                >
-                  <span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
-                  <span className="auth-pill__dot" />
-                </button>
-                
-                {/* User dropdown */}
-                <div className="absolute right-0 top-12 z-50 w-48 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <div className="p-2">
-                    <div className="px-3 py-2 text-[12px] text-[var(--text-muted)] truncate border-b border-[var(--border-subtle)] mb-2">
-                      {user.email}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={signOut}
-                      className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-hover)]"
-                    >
-                      <Icon icon={Logout01Icon} size={16} strokeWidth={1.5} />
-                      <span>Sign out</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={onOpenAuthModal}
-                className="relative flex auth-pill auth-pill--signed-out h-10 px-4"
-                title="Sign in to sync your notes"
-              >
-                <Icon icon={CloudUploadIcon} size={18} strokeWidth={2} />
-                <span>Sign in</span>
-              </button>
-            )}
-          </div>
-        </div>
+												{/* Title + timestamp */}
+												<div className="flex min-w-0 flex-1 flex-col gap-0.5 text-left">
+													<span className="truncate text-[15px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
+														{displayTitle}
+													</span>
+													<div className="flex items-center gap-1.5">
+														<span
+															className="h-1.5 w-1.5 shrink-0 rounded-full transition-transform duration-150 group-hover:scale-125"
+															style={{ background: freshness.dot, opacity: freshness.opacity }}
+														/>
+														<span className="text-[12px] text-[var(--text-muted)] tabular-nums transition-colors duration-150 group-hover:text-[var(--text-secondary)]">
+															{formatRelativeTime(date)}
+														</span>
+													</div>
+												</div>
 
-      {/* Scrollable content */}
-      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
-        <div
-          className="mx-auto max-w-5xl px-4 pb-44 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0"
-        >
-          <input
-            type="text"
-            value={note.title}
-            onChange={(event) => onUpdateNote(note.id, { title: event.target.value })}
-            onKeyDown={handleTitleKeyDown}
-            className="note-title-input w-full bg-transparent text-3xl font-bold tracking-tight text-[var(--title-color)] outline-none placeholder:text-[var(--text-muted)] md:text-4xl"
-            style={{ fontFamily: 'var(--font-display)' }}
-            placeholder="Untitled"
-          />
+												{/* Chevron hint */}
+												<svg
+													className="shrink-0 opacity-0 group-hover:opacity-40 transition-opacity duration-150 -translate-x-1 group-hover:translate-x-0 transition-transform"
+													width="14"
+													height="14"
+													viewBox="0 0 14 14"
+													fill="none"
+													aria-hidden="true"
+												>
+													<path
+														d="M5 3l4 4-4 4"
+														stroke="currentColor"
+														strokeWidth="1.5"
+														strokeLinecap="round"
+														strokeLinejoin="round"
+													/>
+												</svg>
+											</motion.button>
+										);
+									})}
+								</div>
+							) : (
+								<div className="flex flex-1 flex-col justify-center min-h-[300px]">
+									<FirstNotePrompt />
+								</div>
+							)}
+						</div>
 
-          <div className="mt-3 text-[12px] text-[var(--text-muted)]">
-            <span className="inline-flex items-center gap-1.5">
-              <Icon icon={Calendar01Icon} size={14} strokeWidth={1.5} className="opacity-70" />
-              {createdAtLabel}
-            </span>
-          </div>
+						{/* ── Favorites Column — Bento card grid ───────────────── */}
+						<div className="flex flex-col">
+							<div className="mb-5 flex items-center gap-3">
+								<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--warning)]/10 text-[var(--warning)]">
+									<Icon icon={StarIcon} size={17} strokeWidth={2} />
+								</div>
+								<h2 className="text-[15px] font-semibold tracking-wide text-[var(--text-primary)] letter-spacing-widest opacity-60">
+									Favorites
+								</h2>
+							</div>
 
-          <div className="mt-3">
-            <TagInput
-              tags={note.tags || []}
-              onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
-            />
-          </div>
+							{favoriteNotes.length > 0 ? (
+								<div className="grid grid-cols-2 gap-3">
+									{favoriteNotes.map((n, i) => {
+										const isDaily = n.tags?.includes('daily');
+										const rawTitle = getNoteDisplayTitle(n);
+										const date = new Date(n.updatedAt || n.createdAt);
 
-          {note.tags?.includes('daily') && (
-            <div className="mt-6">
-              <DailyHeader note={note} />
-            </div>
-          )}
+										let displayTitle = rawTitle;
+										if (isDaily) {
+											const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+											if (parts) {
+												const [, dd, mm, yyyy] = parts;
+												const d = new Date(`${yyyy}-${mm}-${dd}`);
+												const readable = d.toLocaleDateString('en-GB', {
+													day: 'numeric',
+													month: 'short',
+													year: 'numeric'
+												});
+												displayTitle = `Daily \u2014 ${readable}`;
+											} else {
+												displayTitle = `Daily \u2014 ${rawTitle}`;
+											}
+										}
 
-          <div className="mt-8">
-            <Suspense fallback={<EditorFallback />}> 
-              <LiveMarkdownEditor
-                key={note.id}
-                value={note.content}
-                contentDoc={note.contentDoc}
-                notes={fileNotes}
-                currentNoteId={note.id}
-                currentNoteTitle={note.title}
-                onChange={(updates) => onUpdateNote(note.id, { ...updates })}
-                onRegisterEditorApi={handleRegisterEditorApi}
-              />
-            </Suspense>
-          </div>
-        </div>
-      </div>
+										return (
+											<motion.button
+												key={n.id}
+												type="button"
+												onClick={() => onSelectNote(n.id)}
+												initial={{ opacity: 0, scale: 0.95 }}
+												animate={{ opacity: 1, scale: 1 }}
+												transition={{ duration: 0.3, delay: i * 0.06, ease: [0.23, 1, 0.32, 1] }}
+												className="group relative flex items-center gap-3 overflow-hidden rounded-xl border border-[var(--border-subtle)]/60 px-3.5 py-3 text-left transition-[transform,box-shadow,border-color] duration-150 ease-out hover:border-[var(--warning)]/40 hover:shadow-[0_4px_20px_color-mix(in_srgb,var(--warning)_10%,transparent)] active:scale-[0.97]"
+												style={{
+													background: getGradientForNote(n.id),
+													backgroundColor: 'var(--bg-surface)',
+													WebkitTapHighlightColor: 'transparent',
+													minHeight: '84px'
+												}}
+											>
+												{/* Glass overlay */}
+												<div className="pointer-events-none absolute inset-0 rounded-xl bg-[var(--bg-surface)]/70 backdrop-blur-[2px]" />
 
-      {/* Stats bar — bottom right */}
-      <div
-        className="hidden md:flex absolute bottom-4 right-4 flex-col items-end gap-1.5 px-4 py-2.5 bg-[var(--bg-surface)]/80 backdrop-blur-lg rounded-xl border border-[var(--border-subtle)] transition-all duration-300 z-20"
-      >
-        <div className="flex items-center gap-2 text-[11px]">
-          <span
-            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium ${saveBadgeMeta.toneClassName}`}
-            title={saveError || saveDetail}
-          >
-            <Icon icon={saveBadgeMeta.icon} size={12} strokeWidth={1.8} className={saveBadgeMeta.spin ? 'sync-spin' : undefined} />
-            {saveLabel}
-          </span>
-          {(lastSavedLabel || saveStatus.state === 'offline') && (
-            <span className="text-[var(--text-muted)]" title={saveDetail}>
-              Last saved {lastSavedLabel || 'just now'}
-            </span>
-          )}
-          {saveStatus.canRetry && onRetrySync && (
-            <button
-              type="button"
-              onClick={onRetrySync}
-              className="rounded-full border border-[var(--border-subtle)] px-2 py-0.5 text-[10px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
-            >
-              Retry
-            </button>
-          )}
-        </div>
+												{/* Star icon */}
+												<div className="relative z-10 shrink-0 flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--warning)]/10 text-[var(--warning)] border border-[var(--warning)]/15 transition-colors duration-150 group-hover:bg-[var(--warning)]/15">
+													<Icon
+														icon={isDaily ? Calendar01Icon : StarIcon}
+														size={15}
+														strokeWidth={1.8}
+													/>
+												</div>
 
-        {/* Stats line */}
-        <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] tabular-nums select-none">
-          {/* Session delta */}
-          {sessionDelta > 0 && (
-            <>
-              <span style={{ color: 'var(--success)', fontWeight: 500 }}>
-                +{sessionDelta.toLocaleString()}
-              </span>
-              <span className="opacity-40">&middot;</span>
-            </>
-          )}
+												{/* Title */}
+												<div className="relative z-10 flex-1 min-w-0">
+													<p className="truncate text-[14px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
+														{displayTitle}
+													</p>
+												</div>
 
-          <span>{new Intl.NumberFormat().format(wordCount)} words</span>
+												{/* Date */}
+												<span className="relative z-10 shrink-0 text-[11px] text-[var(--text-muted)] tabular-nums">
+													{formatRelativeTime(date)}
+												</span>
+											</motion.button>
+										);
+									})}
+								</div>
+							) : (
+								<div className="flex flex-1 flex-col justify-center min-h-[300px]">
+									<FavoritesEmptyPrompt />
+								</div>
+							)}
 
-          {/* Reading time */}
-          {readTime && (
-            <>
-              <span className="opacity-40">&middot;</span>
-              <span>{readTime}</span>
-            </>
-          )}
-        </div>
-      </div>
+							{/* ── Writing Activity ─────────────────────────────── */}
+							<div className="mt-12 w-full">
+								<div className="mb-5 flex items-center gap-3">
+									<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--success)]/10 text-[var(--success)]">
+										<Icon icon={FireIcon} size={17} strokeWidth={2} />
+									</div>
+									<h2 className="text-[15px] font-semibold tracking-wide text-[var(--text-primary)] letter-spacing-widest opacity-60">
+										Activity
+									</h2>
+								</div>
+								<div ref={activityHeatmapRef} className="w-full">
+									<div className="mx-auto flex w-fit max-w-full flex-col gap-2">
+										<div className="flex gap-2">
+											{/* Day label column */}
+											<div
+												style={{
+													display: 'flex',
+													flexDirection: 'column',
+													gap: `${HEATMAP_CELL_GAP}px`,
+													paddingTop: '18px',
+													width: `${HEATMAP_DAY_LABEL_WIDTH}px`,
+													flexShrink: 0
+												}}
+											>
+												{(['', 'Mon', '', 'Wed', '', 'Fri', ''] as const).map((day, i) => (
+													<div
+														key={i}
+														style={{
+															height: `${HEATMAP_CELL_SIZE}px`,
+															fontSize: '9px',
+															lineHeight: `${HEATMAP_CELL_SIZE}px`,
+															color: 'var(--text-muted)',
+															textAlign: 'right',
+															opacity: 0.55
+														}}
+													>
+														{day}
+													</div>
+												))}
+											</div>
 
-      {/* Mobile editor toolbar — floating formatting pill */}
-      <MobileEditorToolbar editor={editorInstance} />
-    </div>
-  )
+											{/* Month labels + cell columns */}
+											<div
+												style={{
+													width: `${heatmapGridWidth}px`,
+													minWidth: `${heatmapGridWidth}px`
+												}}
+											>
+												<div
+													style={{
+														position: 'relative',
+														height: '14px',
+														marginBottom: '4px',
+														width: `${heatmapGridWidth}px`
+													}}
+												>
+													{monthMarkers.map((marker) => (
+														<div
+															key={`${marker.label}-${marker.weekIndex}`}
+															style={{
+																position: 'absolute',
+																left: `${marker.left}px`,
+																top: 0,
+																fontSize: '9px',
+																lineHeight: '14px',
+																color: 'var(--text-muted)',
+																whiteSpace: 'nowrap',
+																opacity: 0.65
+															}}
+														>
+															{marker.label}
+														</div>
+													))}
+												</div>
+
+												<div
+													style={{
+														display: 'flex',
+														gap: `${HEATMAP_CELL_GAP}px`
+													}}
+												>
+													{Array.from({ length: heatmapWeeks }, (_, w) => (
+														<div
+															key={w}
+															style={{
+																display: 'flex',
+																flexDirection: 'column',
+																gap: `${HEATMAP_CELL_GAP}px`
+															}}
+														>
+															{heatmapCells.slice(w * 7, w * 7 + 7).map((cell, d) => {
+																const lbl = cell.date.toLocaleDateString('en-US', {
+																	weekday: 'short',
+																	day: 'numeric',
+																	month: 'short',
+																	year: 'numeric'
+																});
+																const cellTitle =
+																	cell.words > 0
+																		? `${cell.words.toLocaleString()} words — ${lbl}`
+																		: lbl;
+																return (
+																	<div
+																		key={d}
+																		title={cellTitle}
+																		style={{
+																			width: `${HEATMAP_CELL_SIZE}px`,
+																			height: `${HEATMAP_CELL_SIZE}px`,
+																			borderRadius: '2px',
+																			border:
+																				cell.isFuture || cell.words === 0
+																					? '1px solid var(--border-subtle)'
+																					: 'none',
+																			background: cell.isFuture
+																				? 'transparent'
+																				: cell.words === 0
+																					? 'transparent'
+																					: cell.words < 200
+																						? 'color-mix(in srgb, var(--accent) 30%, transparent)'
+																						: cell.words < 500
+																							? 'color-mix(in srgb, var(--accent) 60%, transparent)'
+																							: 'var(--accent)',
+																			transition: 'background 150ms ease'
+																		}}
+																	/>
+																);
+															})}
+														</div>
+													))}
+												</div>
+											</div>
+										</div>
+
+										<div
+											className="mt-2 flex items-center text-[11px] text-[var(--text-muted)]"
+											style={{
+												paddingLeft: `${HEATMAP_DAY_LABEL_WIDTH + HEATMAP_SECTION_GAP}px`
+											}}
+										>
+											<div
+												className="flex items-center gap-1.5"
+												style={{ width: `${heatmapGridWidth}px` }}
+											>
+												<div className="ml-auto flex items-center gap-1.5 opacity-50">
+													<span>Less</span>
+													{([0, 30, 60, 100] as const).map((pct) => (
+														<div
+															key={pct}
+															style={{
+																width: `${HEATMAP_CELL_SIZE}px`,
+																height: `${HEATMAP_CELL_SIZE}px`,
+																borderRadius: '2px',
+																flexShrink: 0,
+																border: pct === 0 ? '1px solid var(--border-subtle)' : 'none',
+																background:
+																	pct === 0
+																		? 'transparent'
+																		: `color-mix(in srgb, var(--accent) ${pct}%, transparent)`
+															}}
+														/>
+													))}
+													<span>More</span>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				{/* Mobile action bar */}
+				<div
+					className="mobile-action-bar"
+					style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+				>
+					<div className="mobile-action-bar-inner">
+						<button type="button" onClick={onToggleSidebar}>
+							<Icon icon={SidebarLeftIcon} size={18} strokeWidth={1.5} />
+						</button>
+						<button type="button" onClick={() => onNewNote?.()}>
+							<Icon icon={Add01Icon} size={18} strokeWidth={1.5} />
+						</button>
+						{onOpenCommandPalette && (
+							<button type="button" onClick={onOpenCommandPalette}>
+								<Icon icon={CommandIcon} size={18} strokeWidth={1.5} />
+							</button>
+						)}
+						<AccentPicker
+							accentId={accentId}
+							onAccentChange={onAccentChange}
+							theme={theme}
+							mobile
+						/>
+						<button type="button" onClick={onToggleTheme}>
+							{theme === 'dark' ? (
+								<Icon icon={Sun01Icon} size={18} strokeWidth={1.5} />
+							) : (
+								<Icon icon={Moon01Icon} size={18} strokeWidth={1.5} />
+							)}
+						</button>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	// ── Derived state ───────────────────────────────────────────────────────────
+
+	const createdAtLabel = formatCreatedAt(note.createdAt);
+	const wordCount = countBodyWords(note.content);
+	const readTime = estimateReadTime(note.content);
+	const sessionDelta = wordCount - (sessionBase ?? wordCount);
+	const saveBadgeMeta = getSaveBadgeMeta(saveStatus);
+	const saveLabel = saveStatus.label || 'Not saved';
+	const saveDetail = saveStatus.detail || 'Sign in to save your notes';
+	const saveError = saveStatus.error;
+	const lastSavedLabel = formatRelativeSaveTime(lastSavedAt);
+
+	// ── Render ───────────────────────────────────────────────────────────────────
+
+	return (
+		<div className="relative flex flex-1 min-h-0 min-w-0 w-full flex-col overflow-hidden rounded-2xl bg-[var(--bg-primary)] transition-[border-radius] duration-300 max-md:rounded-none">
+			{/* Subtle grainy gradient background for the banner area */}
+			<div
+				className="pointer-events-none absolute left-0 right-0 top-0 z-0 h-[35vh] opacity-100 transition-colors duration-700"
+				style={{
+					backgroundImage: getGradientForNote(note.id),
+					maskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
+					WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)'
+				}}
+			/>
+
+			<div className="relative z-20 flex items-center justify-between px-4 py-2 md:px-6">
+				<div className="flex items-center gap-2">
+					{/* Back button — Mobile only */}
+					<button
+						type="button"
+						onClick={() => onSelectNote(null)}
+						className="md:hidden relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] after:absolute after:-inset-2 active:scale-[0.97]"
+						title="Back to Home"
+					>
+						<Icon icon={ArrowLeft01Icon} size={22} strokeWidth={2} />
+					</button>
+
+					{sidebarCollapsed ? (
+						<button
+							type="button"
+							onClick={onToggleSidebar}
+							className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+							title="Open sidebar (Cmd+B)"
+						>
+							<Icon
+								icon={SidebarLeftIcon}
+								size={22}
+								strokeWidth={1.5}
+								style={{ transform: 'scaleX(-1)' }}
+							/>
+						</button>
+					) : (
+						<div className="hidden md:block w-10" />
+					)}
+				</div>
+				<div className="flex items-center gap-1">
+					{/* Home button — desktop only */}
+					<button
+						type="button"
+						onClick={() => onSelectNote(null)}
+						className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+						title="Home"
+					>
+						<Icon icon={Home01Icon} size={20} strokeWidth={1.5} />
+					</button>
+
+					{note && (
+						<>
+							<button
+								type="button"
+								onClick={() => {
+									const currentTags = note.tags || [];
+									const isFav = currentTags.includes('favorite');
+									const newTags = isFav
+										? currentTags.filter((t) => t !== 'favorite')
+										: [...currentTags, 'favorite'];
+									onUpdateNote(note.id, { tags: newTags }, { skipTimestamp: true });
+								}}
+								className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+								style={{
+									color: (note.tags || []).includes('favorite')
+										? 'var(--warning)'
+										: 'var(--text-muted)'
+								}}
+								title={
+									(note.tags || []).includes('favorite')
+										? 'Remove from Favorites'
+										: 'Add to Favorites'
+								}
+							>
+								<Icon
+									icon={StarIcon}
+									size={21}
+									strokeWidth={1.5}
+									className={
+										(note.tags || []).includes('favorite') ? 'fill-current drop-shadow-sm' : ''
+									}
+								/>
+							</button>
+						</>
+					)}
+
+					<SettingsMenu
+						theme={theme}
+						onToggleTheme={onToggleTheme}
+						accentId={accentId}
+						onAccentChange={onAccentChange}
+						syncing={syncing}
+						syncStatus={syncStatus}
+						onSync={onSync}
+						fontId={fontId}
+						onFontChange={onFontChange}
+					/>
+
+					{/* Export — direct top-bar button (desktop only) */}
+					{note && (
+						<button
+							type="button"
+							onClick={() => exportNoteAsMarkdown(note)}
+							className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+							title="Export as Markdown"
+							aria-label="Export note as Markdown"
+						>
+							<Icon icon={Download01Icon} size={19} strokeWidth={1.8} />
+						</button>
+					)}
+
+					{/* Auth: show sign-in or user menu */}
+					{user ? (
+						<div className="relative group">
+							<button
+								type="button"
+								className="auth-pill auth-pill--signed-in group relative flex items-center gap-2"
+								title={`Signed in as ${user.email}`}
+							>
+								<span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
+								<span className="auth-pill__dot" />
+							</button>
+
+							{/* User dropdown */}
+							<div className="absolute right-0 top-12 z-50 w-48 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+								<div className="p-2">
+									<div className="px-3 py-2 text-[12px] text-[var(--text-muted)] truncate border-b border-[var(--border-subtle)] mb-2">
+										{user.email}
+									</div>
+									<button
+										type="button"
+										onClick={signOut}
+										className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-hover)]"
+									>
+										<Icon icon={Logout01Icon} size={16} strokeWidth={1.5} />
+										<span>Sign out</span>
+									</button>
+								</div>
+							</div>
+						</div>
+					) : (
+						<button
+							type="button"
+							onClick={onOpenAuthModal}
+							className="relative flex auth-pill auth-pill--signed-out h-10 px-4"
+							title="Sign in to sync your notes"
+						>
+							<Icon icon={CloudUploadIcon} size={18} strokeWidth={2} />
+							<span>Sign in</span>
+						</button>
+					)}
+				</div>
+			</div>
+
+			{/* Scrollable content */}
+			<div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
+				<div className="mx-auto max-w-5xl px-4 pb-44 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0">
+					<input
+						type="text"
+						value={note.title}
+						onChange={(event) => onUpdateNote(note.id, { title: event.target.value })}
+						onKeyDown={handleTitleKeyDown}
+						className="note-title-input w-full bg-transparent text-3xl font-bold tracking-tight text-[var(--title-color)] outline-none placeholder:text-[var(--text-muted)] md:text-4xl"
+						style={{ fontFamily: 'var(--font-display)' }}
+						placeholder="Untitled"
+					/>
+
+					<div className="mt-3 text-[12px] text-[var(--text-muted)]">
+						<span className="inline-flex items-center gap-1.5">
+							<Icon icon={Calendar01Icon} size={14} strokeWidth={1.5} className="opacity-70" />
+							{createdAtLabel}
+						</span>
+					</div>
+
+					<div className="mt-3">
+						<TagInput
+							tags={note.tags || []}
+							onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
+						/>
+					</div>
+
+					{note.tags?.includes('daily') && (
+						<div className="mt-6">
+							<DailyHeader note={note} />
+						</div>
+					)}
+
+					<div className="mt-8">
+						<Suspense fallback={<EditorFallback />}>
+							<LiveMarkdownEditor
+								key={note.id}
+								value={note.content}
+								contentDoc={note.contentDoc}
+								notes={fileNotes}
+								currentNoteId={note.id}
+								currentNoteTitle={note.title}
+								onChange={(updates) => onUpdateNote(note.id, { ...updates })}
+								onRegisterEditorApi={handleRegisterEditorApi}
+							/>
+						</Suspense>
+					</div>
+				</div>
+			</div>
+
+			{/* Stats bar — bottom right */}
+			<div className="hidden md:flex absolute bottom-4 right-4 flex-col items-end gap-1.5 px-4 py-2.5 bg-[var(--bg-surface)]/80 backdrop-blur-lg rounded-xl border border-[var(--border-subtle)] transition-all duration-300 z-20">
+				<div className="flex items-center gap-2 text-[11px]">
+					<span
+						className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium ${saveBadgeMeta.toneClassName}`}
+						title={saveError || saveDetail}
+					>
+						<Icon
+							icon={saveBadgeMeta.icon}
+							size={12}
+							strokeWidth={1.8}
+							className={saveBadgeMeta.spin ? 'sync-spin' : undefined}
+						/>
+						{saveLabel}
+					</span>
+					{(lastSavedLabel || saveStatus.state === 'offline') && (
+						<span className="text-[var(--text-muted)]" title={saveDetail}>
+							Last saved {lastSavedLabel || 'just now'}
+						</span>
+					)}
+					{saveStatus.canRetry && onRetrySync && (
+						<button
+							type="button"
+							onClick={onRetrySync}
+							className="rounded-full border border-[var(--border-subtle)] px-2 py-0.5 text-[10px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+						>
+							Retry
+						</button>
+					)}
+				</div>
+
+				{/* Stats line */}
+				<div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] tabular-nums select-none">
+					{/* Session delta */}
+					{sessionDelta > 0 && (
+						<>
+							<span style={{ color: 'var(--success)', fontWeight: 500 }}>
+								+{sessionDelta.toLocaleString()}
+							</span>
+							<span className="opacity-40">&middot;</span>
+						</>
+					)}
+
+					<span>{new Intl.NumberFormat().format(wordCount)} words</span>
+
+					{/* Reading time */}
+					{readTime && (
+						<>
+							<span className="opacity-40">&middot;</span>
+							<span>{readTime}</span>
+						</>
+					)}
+				</div>
+			</div>
+
+			{/* Mobile editor toolbar — floating formatting pill */}
+			<MobileEditorToolbar editor={editorInstance} />
+		</div>
+	);
 }
