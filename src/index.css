@@ -143,12 +143,14 @@
   @keyframes ctx-fade-in {
     from {
       opacity: 0;
-      transform: scale(0.98) translateY(-4px);
+      transform: scale(0.94) translateY(-6px);
+      filter: blur(4px);
     }
 
     to {
       opacity: 1;
       transform: scale(1) translateY(0);
+      filter: blur(0);
     }
   }
 
@@ -2321,8 +2323,12 @@ body {
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
   padding: 4px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15);
-  animation: ctx-fade-in 0.15s var(--ease-out-quart);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    0 8px 16px rgba(0, 0, 0, 0.08),
+    0 16px 32px rgba(0, 0, 0, 0.12);
+  animation: ctx-fade-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
 }
 
 .ctx-menu button {
@@ -2338,24 +2344,36 @@ body {
   font-size: 13px;
   font-family: "Outfit", var(--body-font);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  min-height: auto;
+  transition: background 0.12s ease-out, color 0.12s ease-out, transform 0.12s ease-out;
+  min-height: 40px;
   min-width: auto;
   box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.ctx-menu button:hover,
-.ctx-menu button:active {
+.ctx-menu button:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
   transform: none;
   box-shadow: none;
 }
 
-.ctx-menu button.ctx-danger:hover,
-.ctx-menu button.ctx-danger:active {
+.ctx-menu button:active {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  transform: scale(0.96);
+  box-shadow: none;
+}
+
+.ctx-menu button.ctx-danger:hover {
   background: color-mix(in srgb, var(--danger) 12%, transparent);
   color: var(--danger);
+}
+
+.ctx-menu button.ctx-danger:active {
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+  color: var(--danger);
+  transform: scale(0.96);
 }
 
 .ctx-divider {

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 
 import {
   Search01Icon,
@@ -304,12 +305,16 @@ function TreeNodeComponent({
         )}
       </div>
 
-      {/* Context menu (⋯ button / long-press) */}
-      {contextMenu && (
+      {/* Context menu (⋯ button / long-press) - rendered via portal to escape sidebar overflow */}
+      {contextMenu && createPortal(
         <div className="ctx-menu-overlay" onClick={() => setContextMenu(null)}>
           <div
             className="ctx-menu animate-ctx-fade-in"
-            style={{ top: contextMenu.y, left: contextMenu.x, transformOrigin: 'top center' }}
+            style={{
+              top: contextMenu.y,
+              left: Math.min(contextMenu.x, window.innerWidth - 172),
+              transformOrigin: 'top center',
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             {isFolder ? (
@@ -361,7 +366,8 @@ function TreeNodeComponent({
               <span>Delete</span>
             </button>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
       {isFolder && isOpen && (
