@@ -131,24 +131,26 @@ export default function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
         className="mobile-action-bar mobile-action-bar--editor"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        <div className="mobile-editor-toolbar-inner">
-          {enabledActions.map((action) => (
-            <button
-              key={action.id}
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault()
-                action.command(editor)
-              }}
-              disabled={!action.enabled}
-              className={`mobile-editor-toolbar-btn min-w-[5.5rem] rounded-full px-3 text-[11px] font-medium ${
-                action.danger ? 'text-[var(--danger)]' : 'text-[var(--text-secondary)]'
-              } disabled:opacity-45`}
-              title={action.label}
-            >
-              {action.label}
-            </button>
-          ))}
+        <div className="mobile-bar-inner">
+          <div className="mobile-editor-toolbar-inner">
+            {enabledActions.map((action) => (
+              <button
+                key={action.id}
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  action.command(editor)
+                }}
+                disabled={!action.enabled}
+                className={`mobile-editor-toolbar-btn min-w-[5.5rem] rounded-full px-3 text-[11px] font-medium ${
+                  action.danger ? 'text-[var(--danger)]' : 'text-[var(--text-secondary)]'
+                } disabled:opacity-45`}
+                title={action.label}
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     )

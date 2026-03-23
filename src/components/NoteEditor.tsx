@@ -1688,6 +1688,7 @@ export default function NoteEditor({
 					className="mobile-action-bar"
 					style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
 				>
+					<div className="mobile-bar-inner">
 					<div className="mobile-action-bar-inner">
 						<button type="button" onClick={onToggleSidebar}>
 							<Icon icon={SidebarLeftIcon} size={18} strokeWidth={1.5} />
@@ -1739,6 +1740,7 @@ export default function NoteEditor({
 								</motion.span>
 							</span>
 						</button>
+					</div>
 					</div>
 				</div>
 			</div>

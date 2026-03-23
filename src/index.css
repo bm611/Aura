@@ -2997,7 +2997,16 @@ body {
     transition: bottom 100ms cubic-bezier(0.23, 1, 0.32, 1);
   }
 
+  .mobile-action-bar--editor .mobile-bar-inner {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 20px;
+    padding: 0;
+  }
+
   .mobile-editor-toolbar-inner {
+    display: flex;
+    align-items: center;
     gap: 2px;
     width: 100%;
     padding: 6px 8px;

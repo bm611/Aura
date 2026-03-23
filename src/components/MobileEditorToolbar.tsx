@@ -187,6 +187,7 @@ export default function MobileEditorToolbar({ editor }: MobileEditorToolbarProps
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
     >
+      <div className="mobile-bar-inner">
       <div className="mobile-action-bar-inner mobile-editor-toolbar-inner">
         {TOOLBAR_ACTIONS.map((item) => (
           <button
@@ -203,6 +204,7 @@ export default function MobileEditorToolbar({ editor }: MobileEditorToolbarProps
             <Icon icon={item.icon} size={18} strokeWidth={1.5} />
           </button>
         ))}
+      </div>
       </div>
     </div>
   )
