@@ -396,6 +396,7 @@ function TreeNodeComponent({
                 onSelect={onSelect}
                 onDelete={onDelete}
                 onRename={onRename}
+                onMove={onMove}
                 expanded={expanded}
                 toggleExpand={toggleExpand}
                 creatingIn={creatingIn}
