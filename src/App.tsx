@@ -449,6 +449,7 @@ function AppInner() {
   const [commandPaletteQuery, setCommandPaletteQuery] = useState('')
   const [theme, setTheme] = useState(() => localStorage.getItem('canvas-theme') || 'dark')
   const [fontId, setFontId] = useState(() => localStorage.getItem('canvas-font') || 'outfit')
+  const [wideMode, setWideMode] = useState(() => localStorage.getItem('canvas-wide-mode') === 'true')
   const [accentId, setAccentId] = useState(() => localStorage.getItem('canvas-accent') || 'rose')
   const [editorReady, setEditorReady] = useState(false)
   const [deletedNote, setDeletedNote] = useState<DeletedNoteState | null>(null)
@@ -905,6 +906,10 @@ function AppInner() {
     }
     localStorage.setItem('canvas-font', fontId)
   }, [fontId])
+
+  useEffect(() => {
+    localStorage.setItem('canvas-wide-mode', String(wideMode))
+  }, [wideMode])
 
   useEffect(() => {
     const palette = ACCENT_COLORS.find((a) => a.id === accentId)
@@ -1660,6 +1665,8 @@ function AppInner() {
             }}
             fontId={fontId}
             onFontChange={setFontId}
+            wideMode={wideMode}
+            onWideModeChange={setWideMode}
           />
         </div>
       </div>

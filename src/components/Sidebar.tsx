@@ -709,6 +709,7 @@ export default function Sidebar({
                       <span className={`sb-section-chevron${foldersOpen ? ' open' : ''}`}>
                         <SidebarIcon n="chevR" s={12} />
                       </span>
+                      <SidebarIcon n="folder" s={13} />
                       <span>Folders</span>
                     </button>
                     <button className="sb-section-add" title="New Folder" onClick={() => handleRootCreate('folder')}>
@@ -756,6 +757,7 @@ export default function Sidebar({
                       <span className={`sb-section-chevron${filesOpen ? ' open' : ''}`}>
                         <SidebarIcon n="chevR" s={12} />
                       </span>
+                      <SidebarIcon n="file" s={13} />
                       <span>Files</span>
                     </button>
                     <button className="sb-section-add" title="New File" onClick={() => handleRootCreate('file')}>

@@ -27,6 +27,7 @@ interface LiveMarkdownEditorProps {
   notes?: NoteFile[]
   currentNoteId?: string
   currentNoteTitle?: string
+  wideMode?: boolean
   onChange: (payload: EditorPayload) => void
   onRegisterEditorApi?: (api: EditorApi | null) => void
 }
@@ -45,6 +46,7 @@ export default function LiveMarkdownEditor({
   notes,
   currentNoteId,
   currentNoteTitle,
+  wideMode,
   onChange,
   onRegisterEditorApi,
 }: LiveMarkdownEditorProps) {
@@ -164,7 +166,7 @@ export default function LiveMarkdownEditor({
   }
 
   return (
-    <div className="aura-editor">
+    <div className={`aura-editor${wideMode ? ' aura-editor--wide' : ''}`}>
       <EditorContent editor={editor} />
       <TableBubbleMenu editor={editor} />
     </div>

@@ -514,6 +514,10 @@ body {
   max-width: 60rem;
 }
 
+.aura-editor.aura-editor--wide {
+  max-width: 100%;
+}
+
 .aura-editor .ProseMirror {
   min-height: 45vh;
   outline: none;
@@ -2050,6 +2054,15 @@ body {
 
 .sb-section-chevron.open {
   transform: rotate(90deg);
+}
+
+.sb-section-toggle > svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.sb-section-toggle > .sb-section-chevron + svg {
+  margin-left: 2px;
 }
 
 .sb-section-add {

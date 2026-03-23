@@ -102,6 +102,8 @@ interface NoteEditorProps {
 	onSync: () => void;
 	fontId: string;
 	onFontChange: (id: string) => void;
+	wideMode: boolean;
+	onWideModeChange: (wide: boolean) => void;
 }
 
 interface SaveBadgeMeta {
@@ -744,7 +746,9 @@ export default function NoteEditor({
 	syncStatus,
 	onSync,
 	fontId,
-	onFontChange
+	onFontChange,
+	wideMode,
+	onWideModeChange
 }: NoteEditorProps) {
 	const { user, signOut } = useAuth();
 	const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -1860,6 +1864,8 @@ export default function NoteEditor({
 						onSync={onSync}
 						fontId={fontId}
 						onFontChange={onFontChange}
+						wideMode={wideMode}
+						onWideModeChange={onWideModeChange}
 					/>
 
 					{/* Export — direct top-bar button (desktop only) */}
@@ -1950,7 +1956,7 @@ export default function NoteEditor({
 
 			{/* Scrollable content */}
 			<div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
-				<div className="mx-auto max-w-5xl px-4 pb-44 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0">
+				<div className={wideMode ? 'w-full px-4 pb-44 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0' : 'mx-auto max-w-5xl px-4 pb-44 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0'}>
 					<input
 						type="text"
 						value={note.title}
@@ -1990,6 +1996,7 @@ export default function NoteEditor({
 								notes={fileNotes}
 								currentNoteId={note.id}
 								currentNoteTitle={note.title}
+								wideMode={wideMode}
 								onChange={(updates) => onUpdateNote(note.id, { ...updates })}
 								onRegisterEditorApi={handleRegisterEditorApi}
 							/>

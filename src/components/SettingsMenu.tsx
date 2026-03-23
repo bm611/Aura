@@ -12,6 +12,7 @@ import {
   TextFontIcon,
   ArrowRight01Icon,
   Tick01Icon,
+  ExpandIcon,
 } from '@hugeicons/core-free-icons'
 import type { IconSvgElement } from '@hugeicons/react'
 
@@ -36,6 +37,8 @@ interface SettingsMenuProps {
   onSync: () => void
   fontId: string
   onFontChange: (id: string) => void
+  wideMode?: boolean
+  onWideModeChange?: (wide: boolean) => void
   className?: string
 }
 
@@ -176,6 +179,8 @@ export default function SettingsMenu({
   onSync,
   fontId,
   onFontChange,
+  wideMode,
+  onWideModeChange,
   className = '',
 }: SettingsMenuProps) {
   const [open, setOpen] = useState(false)
@@ -336,8 +341,36 @@ export default function SettingsMenu({
               <Icon icon={ArrowRight01Icon} size={14} strokeWidth={1.8} className="shrink-0 text-[var(--text-muted)]" />
             </button>
 
-            {/* ── Divider ──────────────────────────────────── */}
-            <div className="settings-divider" />
+            {wideMode !== undefined && onWideModeChange && (
+              <>
+                {/* ── Wide Mode ────────────────────────────────── */}
+                <button
+                  type="button"
+                  onClick={() => onWideModeChange(!wideMode)}
+                  className="settings-item"
+                >
+                  <span className={ICON_WRAP}>
+                    <Icon icon={ExpandIcon} size={18} strokeWidth={1.8} />
+                  </span>
+                  <span className="settings-item-label">Wide Mode</span>
+                  <span className="ml-auto flex h-[18px] w-[32px] items-center rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-0.5 transition-colors duration-200"
+                    style={{
+                      backgroundColor: wideMode ? 'var(--accent)' : 'transparent',
+                      borderColor: wideMode ? 'var(--accent)' : 'var(--border-subtle)',
+                    }}
+                  >
+                    <motion.span
+                      className="h-[12px] w-[12px] rounded-full bg-white shadow-sm"
+                      animate={{ x: wideMode ? 14 : 0 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    />
+                  </span>
+                </button>
+
+                {/* ── Divider ──────────────────────────────────── */}
+                <div className="settings-divider" />
+              </>
+            )}
 
             {/* ── Sync ─────────────────────────────────────── */}
             <button
