@@ -16,6 +16,7 @@ import { CalloutNode } from '../extensions/CalloutNode'
 import { SlashCommand } from '../extensions/SlashCommand'
 import { MarkdownPaste } from '../extensions/MarkdownPaste'
 import { AiPromptBlock } from '../extensions/AiPromptBlock'
+import { MathInline, MathBlock } from '../extensions/MathNode'
 import TableView from '../extensions/TableView'
 
 const lowlight = createLowlight(all)
@@ -88,5 +89,7 @@ export function createFolioEditorExtensions(): Extensions {
     SlashCommand,
     MarkdownPaste,
     AiPromptBlock,
+    MathInline,
+    MathBlock,
   ]
 }

@@ -148,6 +148,18 @@ export const EDITOR_COMMANDS: EditorCommand[] = [
     },
   },
   {
+    id: 'math-inline',
+    title: 'Inline math',
+    trigger: 'math',
+    keywords: ['latex', 'equation', 'formula', 'katex'],
+  },
+  {
+    id: 'math-block',
+    title: 'Math block',
+    trigger: 'equation',
+    keywords: ['latex', 'math', 'formula', 'katex', 'display'],
+  },
+  {
     id: 'ai',
     title: 'Ask AI',
     trigger: 'ai',
