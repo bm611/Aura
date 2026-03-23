@@ -1422,7 +1422,7 @@ function AppInner() {
     const node = nodeMapRef.current.get(activeNoteId)
     if (!node || node.type !== 'file') return null
     return node as NoteFile
-  }, [activeNoteId])
+  }, [activeNoteId, tree])
 
   const activeNoteSyncFailed = activeNote
     ? failedSyncNoteIds.includes(activeNote.id)
