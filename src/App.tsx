@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef, useState } from 'react'
+import { useEffect, useCallback, useRef, useState, useMemo } from 'react'
 
 import {
   ComputerTerminalIcon,
@@ -375,6 +375,20 @@ function buildTreeFromCloudAndPending(
   return ensureDailyFolder(rebuildTreeFromFlat(Array.from(resolvedById.values()) as unknown as FlatNode[]))
 }
 
+function buildNodeMap(tree: TreeNode[]): Map<string, TreeNode> {
+  const map = new Map<string, TreeNode>()
+  const traverse = (nodes: TreeNode[]) => {
+    for (const node of nodes) {
+      map.set(node.id, node)
+      if (node.type === 'folder' && node.children) {
+        traverse(node.children)
+      }
+    }
+  }
+  traverse(tree)
+  return map
+}
+
 // ─── Root component ───────────────────────────────────────────────────────────
 
 export default function App() {
@@ -452,6 +466,7 @@ function AppInner() {
   const [sbWidth, setSbWidth] = useState(280)
   const editorApiRef = useRef<EditorApi | null>(null)
   const treeRef = useRef(tree)
+  const nodeMapRef = useRef<Map<string, TreeNode>>(buildNodeMap(tree))
   const lastUserIdRef = useRef<string | null>(null)
   const pendingUpsertsRef = useRef<Record<string, TreeNode>>({})
   const pendingDeleteIdsRef = useRef<string[]>([])
@@ -561,7 +576,7 @@ function AppInner() {
     }
 
     try {
-      const parentId = getPersistedParentId(note, getParentId(treeRef.current, note.id))
+      const parentId = getPersistedParentId(note, fastGetParentId(note.id))
       await upsertNote({ ...note, parentId } as unknown as Parameters<typeof upsertNote>[0], user.id)
       const syncedAt = new Date().toISOString()
       setSyncError(null)
@@ -592,6 +607,7 @@ function AppInner() {
 
   useEffect(() => {
     treeRef.current = tree
+    nodeMapRef.current = buildNodeMap(tree)
   }, [tree])
 
   useEffect(() => {
@@ -630,6 +646,19 @@ function AppInner() {
       window.removeEventListener('online', handleConnectivityChange)
       window.removeEventListener('offline', handleConnectivityChange)
     }
+  }, [])
+
+  const fastFindNode = useCallback((id: string): TreeNode | null => {
+    return nodeMapRef.current.get(id) ?? null
+  }, [])
+
+  const fastGetParentId = useCallback((nodeId: string): string | null => {
+    for (const [id, node] of nodeMapRef.current) {
+      if (node.type === 'folder' && node.children?.some((c) => c.id === nodeId)) {
+        return id
+      }
+    }
+    return null
   }, [])
 
   const flushPendingDeletes = useCallback(async (idsOverride?: string[]): Promise<boolean> => {
@@ -925,7 +954,7 @@ function AppInner() {
 
   const handleRenameNode = useCallback((id: string, name: string) => {
     const now = new Date().toISOString()
-    const existingNode = findNode(treeRef.current, id)
+    const existingNode = fastFindNode(id)
 
     if (!existingNode) {
       return
@@ -937,7 +966,7 @@ function AppInner() {
       updatedAt: now,
       localCheckpointAt: now,
     }
-    const updatedNode = normalizeNote({ ...existingNode, ...updates, parentId: getParentId(treeRef.current, id) } as TreeNode & { parentId: string | null })
+    const updatedNode = normalizeNote({ ...existingNode, ...updates, parentId: fastGetParentId(id) } as TreeNode & { parentId: string | null })
 
     setTree((previousTree) => renameNode(previousTree, id, name))
 
@@ -970,7 +999,7 @@ function AppInner() {
 
   const handleMoveNode = useCallback(
     (id: string, newParentId: string | null) => {
-      const existingNode = findNode(treeRef.current, id)
+      const existingNode = fastFindNode(id)
       if (!existingNode) return
 
       setTree((previousTree) => moveNode(previousTree, id, newParentId))
@@ -1269,12 +1298,12 @@ function AppInner() {
     if (!isOnline) {
       const message = 'Offline — changes are saved and will retry when online.'
       setSyncError(message)
-      const currentNode = findNode(treeRef.current, id)
+      const currentNode = fastFindNode(id)
       if (currentNode) {
         queuePendingUpsert({
           ...currentNode,
           ...updatedValues,
-          parentId: getParentId(treeRef.current, id),
+          parentId: fastGetParentId(id),
         } as TreeNode & { parentId: string | null })
       }
       setFailedSyncNoteIds((currentIds) => (
@@ -1285,12 +1314,12 @@ function AppInner() {
     }
 
     // Debounced cloud save (1.5s after last keystroke)
-    const currentNode = findNode(treeRef.current, id)
+    const currentNode = fastFindNode(id)
     if (currentNode) {
       queuePendingUpsert({
         ...currentNode,
         ...updatedValues,
-        parentId: getParentId(treeRef.current, id),
+        parentId: fastGetParentId(id),
       } as TreeNode & { parentId: string | null })
     }
     setSyncing(true)
@@ -1383,7 +1412,13 @@ function AppInner() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleNewNote, openCommandPalette])
 
-  const activeNote = (notes.find((note) => note.id === activeNoteId) as NoteFile | undefined) || null
+  const activeNote = useMemo((): NoteFile | null => {
+    if (!activeNoteId) return null
+    const node = nodeMapRef.current.get(activeNoteId)
+    if (!node || node.type !== 'file') return null
+    return node as NoteFile
+  }, [activeNoteId])
+
   const activeNoteSyncFailed = activeNote
     ? failedSyncNoteIds.includes(activeNote.id)
     : failedSyncNoteIds.length > 0
