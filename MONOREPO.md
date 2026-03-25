@@ -186,20 +186,27 @@ The Rust backend lives in `apps/web/src-tauri/src/` and currently provides two T
 
 **Cargo dependencies** (`Cargo.toml`):
 
-| Crate                          | Purpose                            |
-| ------------------------------ | ---------------------------------- |
-| `tauri` v2                     | Core framework                     |
-| `tauri-plugin-opener` v2       | Open URLs/files natively           |
-| `serde` + `serde_json`         | JSON serialization                 |
-| `reqwest` v0.12 (json, stream) | HTTP client for OpenRouter API     |
-| `tokio` v1 (full)              | Async runtime                      |
-| `futures-util` v0.3            | Stream combinators for SSE parsing |
+| Crate                              | Purpose                                      |
+| ---------------------------------- | -------------------------------------------- |
+| `tauri` v2                         | Core framework                               |
+| `tauri-plugin-opener` v2           | Open URLs/files natively                     |
+| `tauri-plugin-window-state`        | Persist window size/position across sessions |
+| `tauri-plugin-dialog`              | Native OS save/open file dialogs             |
+| `tauri-plugin-fs`                  | Read/write files on the local filesystem     |
+| `tauri-plugin-global-shortcut`     | System-wide keyboard shortcuts               |
+| `tauri-plugin-store`               | Persistent key-value store (settings, keys)  |
+| `tauri-plugin-updater`             | In-app auto-updates from GitHub Releases     |
+| `tauri-plugin-process`             | Relaunch app after update install            |
+| `serde` + `serde_json`            | JSON serialization                           |
+| `reqwest` v0.12 (json, stream)     | HTTP client for OpenRouter API               |
+| `tokio` v1 (full)                  | Async runtime                                |
+| `futures-util` v0.3               | Stream combinators for SSE parsing           |
 
 ### AI chat proxy (desktop)
 
 The `chat_stream` command in `src/chat.rs` replaces the Netlify function for desktop builds:
 
-1. Reads `OPENROUTER_API_KEY` from the environment variable
+1. Reads `OPENROUTER_API_KEY` from the Tauri store (`settings.json`) first, then falls back to the environment variable
 2. Builds the same system prompt as the Netlify function (with optional note context)
 3. POSTs to `https://openrouter.ai/api/v1/chat/completions` with `stream: true`
 4. Parses the SSE response and emits `chat-stream` events to the frontend with payloads:
@@ -211,6 +218,16 @@ The frontend (`src/utils/aiChat.ts`) auto-detects the runtime:
 
 - **Tauri** (detected via `window.__TAURI_INTERNALS__`): Uses `invoke('chat_stream')` + `listen('chat-stream')`
 - **Web**: Uses the existing `fetch`-based SSE path to `/.netlify/functions/chat`
+
+### Desktop-native features
+
+| Feature                    | Plugin                           | Frontend hook / file                       | Behaviour                                                                 |
+| -------------------------- | -------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------- |
+| Window state persistence   | `tauri-plugin-window-state`      | —  (automatic)                             | Remembers window size, position & maximized state across sessions         |
+| Native file export         | `tauri-plugin-dialog` + `fs`     | `src/utils/exportNote.ts`                  | OS save dialog → writes `.md` to disk (falls back to Blob download on web) |
+| Global quick-capture       | `tauri-plugin-global-shortcut`   | `src/hooks/useTauriGlobalShortcut.ts`      | `Cmd/Ctrl+Shift+N` — creates a new note from anywhere, even when minimized |
+| Secure API key store       | `tauri-plugin-store`             | `src-tauri/src/chat.rs`                    | Reads `openrouter_api_key` from `settings.json` store, falls back to env var |
+| Auto-updater               | `tauri-plugin-updater`           | `src/hooks/useTauriUpdater.ts`             | Checks GitHub Releases for updates on launch, downloads & relaunches      |
 
 ---
 
@@ -257,15 +274,17 @@ These files in `apps/web/src/` are **already platform-agnostic** and should be m
 
 ## Environment Variables
 
-| Variable                 | Where                             | Purpose                |
-| ------------------------ | --------------------------------- | ---------------------- |
-| `VITE_SUPABASE_URL`      | `apps/web/.env`                   | Supabase project URL   |
-| `VITE_SUPABASE_ANON_KEY` | `apps/web/.env`                   | Supabase anonymous key |
-| `OPENROUTER_API_KEY`     | Netlify env / shell env for Tauri | AI chat proxy API key  |
+| Variable                       | Where                                         | Purpose                           |
+| ------------------------------ | --------------------------------------------- | --------------------------------- |
+| `VITE_SUPABASE_URL`            | `apps/web/.env`                               | Supabase project URL              |
+| `VITE_SUPABASE_ANON_KEY`       | `apps/web/.env`                               | Supabase anonymous key            |
+| `OPENROUTER_API_KEY`           | Netlify env / shell env / Tauri store          | AI chat proxy API key             |
+| `TAURI_SIGNING_PRIVATE_KEY`    | CI env (GitHub Actions)                        | Signs update bundles for updater  |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | CI env (GitHub Actions)                  | Password for the signing key      |
 
 Never commit `.env` files. See `.env.example` for required variables.
 
-For Tauri desktop, export the API key before launching:
+For Tauri desktop, the API key can be set via the Tauri store (`settings.json → openrouter_api_key`) or exported as an env var:
 
 ```bash
 export OPENROUTER_API_KEY="sk-or-..."
@@ -289,5 +308,67 @@ npm run tauri:dev
 - [x] AI chat proxy implemented as Rust Tauri command (`chat_stream`)
 - [x] Frontend auto-detects Tauri vs web and routes AI requests accordingly
 - [x] `tauri:dev` / `tauri:build` scripts at both workspace and root level
+- [x] Window state persistence (`tauri-plugin-window-state`)
+- [x] Native file export with OS save dialog (`tauri-plugin-dialog` + `tauri-plugin-fs`)
+- [x] Global shortcut `Cmd/Ctrl+Shift+N` for quick note capture (`tauri-plugin-global-shortcut`)
+- [x] Secure API key store — chat proxy reads from Tauri store, falls back to env var (`tauri-plugin-store`)
+- [x] Auto-updater plugin wired up with `useTauriUpdater` hook (`tauri-plugin-updater`)
+- [x] PWA support for web (`vite-plugin-pwa` with manifest, service worker, offline caching)
 - [x] Mobile app scaffold (Expo, placeholder)
 - [x] Shared package scaffold (`@folio/shared`, empty)
+
+### TODO — Auto-updater & GitHub Releases
+
+The updater plugin and CI workflow (`.github/workflows/release-desktop.yml`) are set up. Follow these steps to activate:
+
+#### One-time setup
+
+1. **Generate a signing keypair** (run once, keep the private key safe):
+   ```bash
+   npx tauri signer generate -w ~/.tauri/folio.key
+   ```
+   This outputs a **public key** to the terminal — copy it.
+
+2. **Set the public key** in `apps/web/src-tauri/tauri.conf.json`:
+   ```json
+   "updater": {
+     "endpoints": ["https://github.com/bm611/folio/releases/latest/download/latest.json"],
+     "pubkey": "PASTE_YOUR_PUBLIC_KEY_HERE"
+   }
+   ```
+
+3. **Add CI secrets** — go to GitHub → repo Settings → Secrets and variables → Actions → New repository secret:
+   - `TAURI_SIGNING_PRIVATE_KEY` — paste the full contents of `~/.tauri/folio.key`
+   - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` — the password you chose when generating
+
+#### Releasing a new version
+
+Every time you want to ship a desktop update:
+
+1. **Bump the version** in `apps/web/src-tauri/tauri.conf.json`:
+   ```json
+   "version": "0.2.0"
+   ```
+
+2. **Commit and push** the version bump:
+   ```bash
+   git add apps/web/src-tauri/tauri.conf.json
+   git commit -m "release: v0.2.0"
+   git push
+   ```
+
+3. **Create and push a git tag** matching the version:
+   ```bash
+   git tag v0.2.0
+   git push origin v0.2.0
+   ```
+
+4. **GitHub Actions runs automatically** — the workflow builds for macOS (ARM + Intel), Linux, and Windows, then creates a **draft Release** with all installers attached.
+
+5. **Publish the release** — go to GitHub → Releases → find the draft → review the assets → click **Publish release**.
+
+That's it. Existing Folio desktop users will see an update notification on next launch (via the `useTauriUpdater` hook).
+
+#### Wire update UI (remaining)
+
+- Hook `useTauriUpdater` into the UI — render an update banner or toast when `available` is `true`, with a button that calls `installUpdate()`

@@ -1,6 +1,7 @@
 use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use tauri::Emitter;
+use tauri_plugin_store::StoreExt;
 
 const OPENROUTER_BASE_URL: &str = "https://openrouter.ai/api/v1/chat/completions";
 const DEFAULT_MODEL: &str = "x-ai/grok-4.1-fast";
@@ -48,6 +49,14 @@ struct OaiChunk {
     choices: Option<Vec<OaiChoice>>,
 }
 
+// ── Store helper ──────────────────────────────────────────────────────
+
+fn get_api_key_from_store(app: &tauri::AppHandle) -> Option<String> {
+    let store = app.store("settings.json").ok()?;
+    let value = store.get("openrouter_api_key")?;
+    value.as_str().map(|s| s.to_string()).filter(|s| !s.is_empty())
+}
+
 // ── Tauri command ─────────────────────────────────────────────────────
 
 #[tauri::command]
@@ -55,11 +64,14 @@ pub async fn chat_stream(
     app: tauri::AppHandle,
     request: ChatRequest,
 ) -> Result<(), String> {
-    let api_key = std::env::var("OPENROUTER_API_KEY").map_err(|_| {
-        "OPENROUTER_API_KEY environment variable is not set. \
-         Set it in your shell profile or launch Folio from a terminal with the variable exported."
-            .to_string()
-    })?;
+    // Try reading from Tauri store first, then fall back to env var
+    let api_key = get_api_key_from_store(&app)
+        .or_else(|| std::env::var("OPENROUTER_API_KEY").ok())
+        .ok_or_else(|| {
+            "OPENROUTER_API_KEY is not set. \
+             Configure it in Settings or export it as an environment variable."
+                .to_string()
+        })?;
 
     // Build system prompt (same logic as the Netlify function)
     let context_block: String = request

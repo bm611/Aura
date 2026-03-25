@@ -41,5 +41,24 @@
       "minimumSystemVersion": "10.15"
     }
   },
-  "plugins": {}
+  "plugins": {
+    "window-state": {
+      "all": true
+    },
+    "dialog": {
+      "all": true
+    },
+    "fs": {
+      "all": true
+    },
+    "store": {
+      "all": true
+    },
+    "updater": {
+      "endpoints": [
+        "https://github.com/bm611/folio/releases/latest/download/latest.json"
+      ],
+      "pubkey": ""
+    }
+  }
 }
