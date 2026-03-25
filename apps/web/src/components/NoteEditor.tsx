@@ -1011,7 +1011,7 @@ export default function NoteEditor({
 					<div className="animate-fade-in-up flex flex-col items-center text-center">
 						<h1
 							className="text-6xl tracking-tight sm:text-7xl mb-4"
-							style={{ fontFamily: 'var(--font-logo)', color: 'var(--text-primary)' }}
+							style={{ fontFamily: 'var(--font-logo)', color: 'var(--text-primary)', textWrap: 'balance' }}
 						>
 							Folio.
 						</h1>
@@ -1147,7 +1147,7 @@ export default function NoteEditor({
 										key="recent"
 										initial={{ opacity: 0, x: -16, filter: 'blur(4px)' }}
 										animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-										exit={{ opacity: 0, x: 16, filter: 'blur(4px)' }}
+										exit={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
 										transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
 									>
 										{recentNotes.length > 0 ? (
@@ -1226,7 +1226,7 @@ export default function NoteEditor({
 												<button
 													type="button"
 													onClick={() => setRecentExpanded((v) => !v)}
-													className="mt-2 w-full rounded-xl py-2 text-[12px] font-medium text-[var(--text-muted)] transition-colors duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] active:scale-[0.97]"
+													className="mt-2 w-full rounded-xl py-2 text-[12px] font-medium text-[var(--text-muted)] transition-colors duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] active:scale-[0.96]"
 													style={{ WebkitTapHighlightColor: 'transparent' }}
 												>
 													{recentExpanded ? 'Show less' : `Show more (${recentNotes.length - 4})`}
@@ -1323,7 +1323,7 @@ export default function NoteEditor({
 												<button
 													type="button"
 													onClick={() => setFavExpanded((v) => !v)}
-													className="mt-2 w-full rounded-xl py-2 text-[12px] font-medium text-[var(--text-muted)] transition-colors duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] active:scale-[0.97]"
+													className="mt-2 w-full rounded-xl py-2 text-[12px] font-medium text-[var(--text-muted)] transition-colors duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] active:scale-[0.96]"
 													style={{ WebkitTapHighlightColor: 'transparent' }}
 												>
 													{favExpanded ? 'Show less' : `Show more (${favoriteNotes.length - 4})`}

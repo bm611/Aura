@@ -87,6 +87,7 @@ export default function LiveMarkdownEditor({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const storage = editor.storage as any
     if (storage.aiPromptBlock) {
+      /* eslint-disable react-hooks/immutability */
       storage.aiPromptBlock.notes = (notes ?? []).map((n) => ({
         id: n.id,
         title: n.title || 'Untitled',
@@ -94,6 +95,7 @@ export default function LiveMarkdownEditor({
       }))
       storage.aiPromptBlock.currentNoteId = currentNoteId ?? ''
       storage.aiPromptBlock.currentNoteTitle = currentNoteTitle ?? ''
+      /* eslint-enable react-hooks/immutability */
     }
   }, [editor, notes, currentNoteId, currentNoteTitle])
 
