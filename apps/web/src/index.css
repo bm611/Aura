@@ -145,13 +145,11 @@
     from {
       opacity: 0;
       transform: scale(0.94) translateY(-6px);
-      filter: blur(4px);
     }
 
     to {
       opacity: 1;
       transform: scale(1) translateY(0);
-      filter: blur(0);
     }
   }
 
@@ -2398,8 +2396,9 @@ body {
     0 2px 4px rgba(0, 0, 0, 0.04),
     0 8px 16px rgba(0, 0, 0, 0.08),
     0 16px 32px rgba(0, 0, 0, 0.12);
-  animation: ctx-fade-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: ctx-fade-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: transform, opacity;
+  backdrop-filter: none;
 }
 
 .ctx-menu button {
