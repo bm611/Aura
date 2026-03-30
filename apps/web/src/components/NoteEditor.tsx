@@ -1,7 +1,7 @@
 import { lazy, Suspense, useRef, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+
 import type { Editor } from '@tiptap/react';
 import type { IconSvgElement } from '@hugeicons/react';
 import { useAuth } from '../contexts/AuthContext';
@@ -37,9 +37,7 @@ import {
 	formatCreatedAt,
 	getNoteDisplayTitle
 } from '../utils/noteMeta';
-import {
-	getLast30DaysData
-} from '../utils/activityHeatmap';
+
 import { exportNoteAsMarkdown } from '../utils/exportNote';
 import TagInput from './TagInput';
 import DailyHeader from './DailyHeader';
@@ -822,16 +820,6 @@ export default function NoteEditor({
 		return { streak, totalWords };
 	}, [fileNotes]);
 
-	// Generate last 30 days activity data for bar chart
-	const last30DaysData = useMemo(() => {
-		const entries = fileNotes.map((note) => ({
-			date: new Date(note.updatedAt || note.createdAt),
-			words: countBodyWords(note.content)
-		}));
-
-		return getLast30DaysData(entries);
-	}, [fileNotes]);
-
 	// Generate motivational message based on streak and recent activity
 	const getMotivationalMessage = (streak: number) => {
 		if (streak === 0) return 'Ready to start your writing journey?';
@@ -1482,53 +1470,7 @@ export default function NoteEditor({
 								</div>
 							)}
 
-							{/* ── Writing Activity ─────────────────────────────── */}
-							<div className="mt-12 w-full">
-								<div className="mb-5 flex items-center gap-3">
-									<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--success)]/10 text-[var(--success)]">
-										<Icon icon={FireIcon} size={17} strokeWidth={2} />
-									</div>
-									<h2 className="text-[15px] font-semibold tracking-wide text-[var(--text-primary)] letter-spacing-widest opacity-60">
-										Activity
-									</h2>
-								</div>
-								<div className="w-full">
-									<ResponsiveContainer width="100%" height={180}>
-										<BarChart
-											data={last30DaysData}
-											margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
-										>
-											<XAxis
-												dataKey="date"
-												tick={{ fill: 'var(--text-muted)', fontSize: 9 }}
-												axisLine={{ stroke: 'var(--border-subtle)' }}
-												tickLine={false}
-												interval={4}
-											/>
-											<YAxis hide domain={[0, 'dataMax']} />
-											<Tooltip
-												contentStyle={{
-													background: 'var(--bg-surface)',
-													border: '1px solid var(--border-subtle)',
-													borderRadius: '6px',
-													color: 'var(--text-primary)',
-													fontSize: '11px'
-												}}
-												labelStyle={{ color: 'var(--text-primary)', fontWeight: 500 }}
-												formatter={(value) => [`${Number(value).toLocaleString()} words`, 'Words']}
-												labelFormatter={(_, payload) => payload?.[0]?.payload?.fullDate || ''}
-											/>
-											<Bar
-												dataKey="words"
-												fill="var(--accent)"
-												radius={[3, 3, 0, 0]}
-												maxBarSize={14}
-											/>
-										</BarChart>
-									</ResponsiveContainer>
-								</div>
 							</div>
-						</div>
 					</div>
 				</div>
 				{/* Mobile action bar */}
