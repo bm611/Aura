@@ -1452,7 +1452,7 @@ function AppInner() {
 
   const activeNote = useMemo((): NoteFile | null => {
     if (!activeNoteId) return null
-    const node = nodeMapRef.current.get(activeNoteId)
+    const node = findNode(tree, activeNoteId)
     if (!node || node.type !== 'file') return null
     return node as NoteFile
   }, [activeNoteId, tree])
