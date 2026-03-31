@@ -25,6 +25,7 @@ import {
   updateFileNode,
 } from './utils/tree'
 import NoteEditor from './components/NoteEditor'
+import AiChatPage from './components/AiChatPage'
 import CommandPalette from './components/CommandPalette'
 import type { PaletteItem } from './components/CommandPalette'
 import LandingPage from './components/LandingPage'
@@ -442,6 +443,7 @@ function AppInner() {
   const notes = flattenTree(tree)
 
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null)
+  const [activeView, setActiveView] = useState<'notes' | 'chat'>('notes')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     // Start collapsed on mobile
     return window.innerWidth < 768
@@ -1641,7 +1643,10 @@ function AppInner() {
         <Sidebar
           tree={tree}
           activeNoteId={activeNoteId}
-          onSelectNote={setActiveNoteId}
+          onSelectNote={(id) => {
+            setActiveView('notes')
+            setActiveNoteId(id)
+          }}
           onNewNote={createNote}
           onNewFolder={createFolder}
           onDeleteNote={handleDeleteNote}
@@ -1656,50 +1661,66 @@ function AppInner() {
           width={sbWidth}
           onResizeStart={onResizeStart}
           onOpenTemplateGallery={() => setTemplateGalleryOpen(true)}
+          activeView={activeView}
+          onViewChange={(view) => {
+            setActiveView(view)
+            if (view === 'notes') setActiveNoteId(null)
+          }}
         />
 
         <div className="flex flex-1 min-w-0 transition-[padding] duration-300 p-0 md:p-2 md:pl-0">
-          <NoteEditor
-            note={activeNote}
-            notes={notes}
-            onNewNote={handleNewNote}
-            onCreateDailyNote={handleCreateDailyNote}
-            onUpdateNote={handleUpdateNote}
-            onSelectNote={setActiveNoteId}
-            onRegisterEditorApi={(api) => {
-              editorApiRef.current = api
-              setEditorReady(Boolean(api))
-            }}
-            theme={theme}
-            onToggleTheme={toggleTheme}
-            accentId={accentId}
-            onAccentChange={setAccentId}
-            sidebarCollapsed={sidebarCollapsed}
-            onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
-            onOpenCommandPalette={openCommandPalette}
-            onOpenAuthModal={() => setAuthModalOpen(true)}
-            saveStatus={saveStatus}
-            lastSavedAt={activeNoteLastSavedAt ?? null}
-            onRetrySync={retryFailedSyncs}
-            syncing={syncing}
-            syncStatus={sidebarSyncStatus}
-            onSync={async () => {
-              if (!navigator.onLine) {
-                showSyncToast('Offline — changes saved locally', 'info')
-                return
-              }
-              try {
-                await reconcileWithCloud()
-                showSyncToast('Synced to cloud', 'success')
-              } catch {
-                showSyncToast('Sync failed — check your connection', 'error')
-              }
-            }}
-            fontId={fontId}
-            onFontChange={setFontId}
-            wideMode={wideMode}
-            onWideModeChange={setWideMode}
-          />
+          {activeView === 'chat' ? (
+            <AiChatPage
+              notes={notes.filter((n): n is NoteFile => n.type === 'file' && !n.deletedAt)}
+              sidebarCollapsed={sidebarCollapsed}
+              onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
+            />
+          ) : (
+            <NoteEditor
+              note={activeNote}
+              notes={notes}
+              onNewNote={handleNewNote}
+              onCreateDailyNote={handleCreateDailyNote}
+              onUpdateNote={handleUpdateNote}
+              onSelectNote={(id) => {
+                setActiveView('notes')
+                setActiveNoteId(id)
+              }}
+              onRegisterEditorApi={(api) => {
+                editorApiRef.current = api
+                setEditorReady(Boolean(api))
+              }}
+              theme={theme}
+              onToggleTheme={toggleTheme}
+              accentId={accentId}
+              onAccentChange={setAccentId}
+              sidebarCollapsed={sidebarCollapsed}
+              onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
+              onOpenCommandPalette={openCommandPalette}
+              onOpenAuthModal={() => setAuthModalOpen(true)}
+              saveStatus={saveStatus}
+              lastSavedAt={activeNoteLastSavedAt ?? null}
+              onRetrySync={retryFailedSyncs}
+              syncing={syncing}
+              syncStatus={sidebarSyncStatus}
+              onSync={async () => {
+                if (!navigator.onLine) {
+                  showSyncToast('Offline — changes saved locally', 'info')
+                  return
+                }
+                try {
+                  await reconcileWithCloud()
+                  showSyncToast('Synced to cloud', 'success')
+                } catch {
+                  showSyncToast('Sync failed — check your connection', 'error')
+                }
+              }}
+              fontId={fontId}
+              onFontChange={setFontId}
+              wideMode={wideMode}
+              onWideModeChange={setWideMode}
+            />
+          )}
         </div>
       </div>
 

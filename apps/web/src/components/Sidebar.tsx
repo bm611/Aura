@@ -21,6 +21,7 @@ import {
   CloudUploadIcon,
   Loading01Icon,
   StickyNoteIcon,
+  SparklesIcon,
 } from '@hugeicons/core-free-icons'
 
 import type { IconSvgElement } from '@hugeicons/react'
@@ -61,6 +62,8 @@ interface SidebarProps {
   syncing?: boolean
   syncStatus?: SyncStatus
   onOpenTemplateGallery?: () => void
+  activeView?: 'notes' | 'chat'
+  onViewChange?: (view: 'notes' | 'chat') => void
 }
 
 interface SyncIndicatorProps {
@@ -463,6 +466,8 @@ export default function Sidebar({
   width = 280,
   onResizeStart,
   onOpenTemplateGallery,
+  activeView = 'notes',
+  onViewChange,
 }: SidebarProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['1']))
   const [creatingIn, setCreatingIn] = useState<CreatingState | null>(null)
@@ -616,8 +621,9 @@ export default function Sidebar({
           <div className="sb-nav-items">
             {/* Home */}
             <button
-              className={`sb-nav-item${activeNoteId === null ? ' is-active' : ''}`}
+              className={`sb-nav-item${activeNoteId === null && activeView === 'notes' ? ' is-active' : ''}`}
               onClick={() => {
+                onViewChange?.('notes')
                 onSelectNote(null)
                 if (window.innerWidth < 768) onToggleCollapse()
               }}
@@ -637,6 +643,20 @@ export default function Sidebar({
                 <Icon icon={StickyNoteIcon} size={19} stroke={1.5} />
               </span>
               <span className="sb-nav-label">Templates</span>
+            </button>
+
+            {/* Chat */}
+            <button
+              className={`sb-nav-item${activeView === 'chat' ? ' is-active' : ''}`}
+              onClick={() => {
+                onViewChange?.('chat')
+                if (window.innerWidth < 768) onToggleCollapse()
+              }}
+            >
+              <span className="sb-nav-icon">
+                <Icon icon={SparklesIcon} size={19} stroke={1.5} />
+              </span>
+              <span className="sb-nav-label">Chat</span>
             </button>
 
             {/* Search — expands inline on click */}
