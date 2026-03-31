@@ -462,13 +462,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
     [mentionQuery, notes, mentionedNotes]
   )
 
-  // ── Recent notes ─────────────────────────────────────────────────────────
-  const recentNotes = useMemo(() => {
-    return [...notes]
-      .filter((n) => !n.deletedAt && !mentionedNotes.find((m) => m.id === n.id))
-      .sort((a, b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime())
-      .slice(0, 4)
-  }, [notes, mentionedNotes])
+
 
   // ── Input change handler ─────────────────────────────────────────────────
   const handleInputChange = useCallback(
@@ -510,15 +504,6 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
 
   const removeMention = useCallback((id: string) => {
     setMentionedNotes((prev) => prev.filter((n) => n.id !== id))
-  }, [])
-
-  const addMentionedNote = useCallback((note: NoteFile) => {
-    setMentionedNotes((prev) => {
-      if (prev.some((mentionedNote) => mentionedNote.id === note.id)) return prev
-      return [...prev, note]
-    })
-
-    setTimeout(() => textareaRef.current?.focus(), 0)
   }, [])
 
   // ── Send message ─────────────────────────────────────────────────────────
@@ -712,27 +697,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
             disabled={isStreaming}
             autoFocus
           />
-          <div className="mt-3 flex items-end justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              {!hasMessages && recentNotes.length > 0 && (
-                <div className="mt-2 hidden md:block">
-                  <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-                    {recentNotes.map((note) => (
-                      <button
-                        key={note.id}
-                        type="button"
-                        onClick={() => addMentionedNote(note)}
-                        className="flex shrink-0 items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--border-subtle)_82%,transparent)] bg-[color-mix(in_srgb,var(--bg-primary)_58%,var(--bg-elevated))] px-3.5 py-2 text-left text-[13px] font-medium text-[var(--text-secondary)] transition-[border-color,background-color,color,transform] duration-150 hover:border-[var(--border-default)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)] active:scale-[0.99]"
-                      >
-                        <Icon icon={File01Icon} size={12} strokeWidth={2} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-                        <span className="max-w-[11rem] truncate">{note.title || note.name || 'Untitled'}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
+          <div className="mt-3 flex justify-end">
             <button
               type="button"
               onClick={() => sendMessage()}
