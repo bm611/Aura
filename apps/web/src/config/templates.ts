@@ -14,24 +14,57 @@ export const TEMPLATES: Template[] = [
     description: 'Structured agenda, attendees, and action items',
     icon: 'Meeting',
     tags: ['meeting'],
-    content: `## Meeting Notes
+    content: `# Meeting Notes
 
-### Date
+**Date:** 
+**Location / Link:** 
 
-### Attendees
--
+---
 
-### Agenda
--
+> [!info] Context
+> Add any background or purpose for this meeting.
 
-### Discussion
+---
 
+## Attendees
 
-### Action Items
-- [ ]
+| Name | Role |
+|------|------|
+|      |      |
+|      |      |
 
-### Next Steps
+## Agenda
 
+1. 
+2. 
+3. 
+
+---
+
+## Discussion
+
+### 
+
+### 
+
+---
+
+> [!todo] Action Items
+> 
+> - [ ] 
+> - [ ] 
+> - [ ] 
+
+---
+
+## Decisions Made
+
+- 
+
+## Next Meeting
+
+**Date:** 
+**Topics:** 
 `,
   },
   {
@@ -40,38 +73,77 @@ export const TEMPLATES: Template[] = [
     description: 'Company research, questions, and STAR stories',
     icon: 'Briefcase',
     tags: ['interview', 'career'],
-    content: `## Interview Preparation
+    content: `# Interview Preparation
 
-### Company
-- **Industry:**
-- **Size:**
-- **Mission:**
+**Company:** 
+**Role:** 
+**Date:** 
 
-### Role Research
-- **Key Responsibilities:**
-- **Required Skills:**
+---
 
-### My Questions
-1.
-2.
-3.
+> [!info] Company Overview
+> 
+> - **Industry:** 
+> - **Size:** 
+> - **Mission:** 
+> - **Recent News:** 
 
-### STAR Stories
+---
 
-#### Situation 1:
-- **Situation:**
-- **Task:**
-- **Action:**
-- **Result:**
+## Role Research
 
-#### Situation 2:
-- **Situation:**
-- **Task:**
-- **Action:**
-- **Result:**
+- **Key Responsibilities:** 
+- **Required Skills:** 
+- **Nice-to-haves:** 
 
-### Notes
+---
 
+> [!tip] Key Talking Points
+> 
+> Note 2–3 things that make you the strongest fit for this role.
+> 
+> 1. 
+> 2. 
+> 3. 
+
+---
+
+## STAR Stories
+
+### Story 1 — 
+
+- **Situation:** 
+- **Task:** 
+- **Action:** 
+- **Result:** 
+
+### Story 2 — 
+
+- **Situation:** 
+- **Task:** 
+- **Action:** 
+- **Result:** 
+
+---
+
+> [!question] Questions to Ask
+> 
+> 1. 
+> 2. 
+> 3. 
+> 4. 
+
+---
+
+> [!warning]- Potential Red Flags
+> Note anything to address proactively.
+> 
+> - 
+
+## Post-Interview Notes
+
+- **Feeling:** 
+- **Follow-up sent:** 
 `,
   },
   {
@@ -80,18 +152,49 @@ export const TEMPLATES: Template[] = [
     description: 'Weekly habit tracking with checkboxes',
     icon: 'Checkbox',
     tags: ['habit', 'health'],
-    content: `## Habit Tracker
+    content: `# Habit Tracker
 
-### Week of
+**Week of:** 
 
-| Habit | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
-|-------|-----|-----|-----|-----|-----|-----|-----|
-|       |  ☐  |  ☐  |  ☐  |  ☐  |  ☐  |  ☐  |  ☐  |
+---
 
-### Goals This Week
+## Habits
 
-### Reflections
+| Habit | Mon | Tue | Wed | Thu | Fri | Sat | Sun | Total |
+|-------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:-----:|
+|       |  ☐  |  ☐  |  ☐  |  ☐  |  ☐  |  ☐  |  ☐  |  0/7  |
+|       |  ☐  |  ☐  |  ☐  |  ☐  |  ☐  |  ☐  |  ☐  |  0/7  |
+|       |  ☐  |  ☐  |  ☐  |  ☐  |  ☐  |  ☐  |  ☐  |  0/7  |
 
+---
+
+## Goals This Week
+
+- [ ] 
+- [ ] 
+- [ ] 
+
+---
+
+> [!success] Wins
+> What went well this week?
+> 
+> - 
+
+> [!warning]- Challenges
+> What got in the way? How will you handle it next week?
+> 
+> - 
+
+---
+
+## Weekly Reflection
+
+> [!quote] Reflection
+> 
+
+**Score this week (1–10):** 
+**One thing to improve next week:** 
 `,
   },
   {
@@ -100,31 +203,67 @@ export const TEMPLATES: Template[] = [
     description: 'Overview, milestones, tasks, and timeline',
     icon: 'Folder',
     tags: ['project', 'planning'],
-    content: `## Project Name
+    content: `# Project Name
 
-### Overview
-- **Description:**
-- **Objective:**
-- **Stakeholders:**
+> [!abstract] Overview
+> 
+> - **Description:** 
+> - **Objective:** 
+> - **Owner:** 
+> - **Stakeholders:** 
+> - **Target Date:** 
 
-### Milestones
-- [ ]
+---
 
-### Tasks
+## Milestones
 
-#### Phase 1:
-- [ ]
+| Milestone | Due Date | Status |
+|-----------|----------|--------|
+|           |          | 🔲 Not started |
+|           |          | 🔲 Not started |
+|           |          | 🔲 Not started |
 
-#### Phase 2:
-- [ ]
+---
 
-### Timeline
+## Tasks
 
-### Resources
+### Phase 1 — 
 
-### Risks & Mitigation
+- [ ] 
+- [ ] 
 
-### Notes
+### Phase 2 — 
+
+- [ ] 
+- [ ] 
+
+### Phase 3 — 
+
+- [ ] 
+- [ ] 
+
+---
+
+## Resources
+
+- 
+
+---
+
+> [!warning]- Risks & Mitigation
+> 
+> | Risk | Likelihood | Impact | Mitigation |
+> |------|-----------|--------|------------|
+> |      | Low / Med / High | Low / Med / High |  |
+
+> [!important]- Decisions Log
+> Record key decisions and the rationale behind them.
+> 
+> - **[Date]** — 
+
+---
+
+## Notes
 
 `,
   },
@@ -134,21 +273,146 @@ export const TEMPLATES: Template[] = [
     description: 'Journal, todos, and ideas for today',
     icon: 'Calendar',
     tags: ['daily'],
-    content: `## Daily Note
+    content: `# Daily Note
 
-### Date
+**Date:** Tuesday, March 31, 2026
 
-### Journal
--
+---
 
-### To-Dos
-- [ ]
+> [!quote] Intention for Today
+> What do you want to focus on or feel by the end of the day?
+> 
 
-### Ideas & Notes
--
+---
 
-### Grateful for
+## To-Dos
 
+- [ ] 
+- [ ] 
+- [ ] 
+
+---
+
+## Journal
+
+### Morning
+
+### Evening
+
+---
+
+> [!success] Wins
+> What went well today?
+> 
+> - 
+
+> [!tip]- Ideas & Notes
+> Capture any ideas or random thoughts.
+> 
+> - 
+
+---
+
+## Grateful for
+
+1. 
+2. 
+3. 
+`,
+  },
+  {
+    id: 'dev-log',
+    name: 'Dev Log',
+    description: 'Bug reports, code snippets, and dev notes',
+    icon: 'SourceCode',
+    tags: ['dev', 'engineering'],
+    content: `# Dev Log
+
+**Date:** 
+**Project:** 
+**Branch / PR:** 
+
+---
+
+## Summary
+
+> [!abstract] What I worked on
+> Brief description of the feature, fix, or investigation.
+
+---
+
+## Problem
+
+### Description
+
+### Steps to Reproduce
+
+1. 
+2. 
+3. 
+
+### Expected vs Actual
+
+- **Expected:** 
+- **Actual:** 
+
+---
+
+> [!bug]- Error / Stack Trace
+> 
+\`\`\`
+paste error here
+\`\`\`
+
+---
+
+## Investigation
+
+### Findings
+
+- 
+
+### Relevant Code
+
+\`\`\`typescript
+// paste relevant code snippet
+\`\`\`
+
+---
+
+## Solution
+
+### Approach
+
+> [!tip] Why this approach?
+> Explain the reasoning or trade-offs.
+
+### Changes Made
+
+- [ ] 
+- [ ] 
+- [ ] 
+
+### Code After Fix
+
+\`\`\`typescript
+// paste updated code
+\`\`\`
+
+---
+
+> [!important]- Breaking Changes
+> Note anything that could affect other parts of the codebase.
+> 
+> - 
+
+---
+
+## Follow-up
+
+- [ ] Write tests
+- [ ] Update docs
+- [ ] Open PR
 `,
   },
   {
@@ -157,7 +421,7 @@ export const TEMPLATES: Template[] = [
     description: 'Simple blank note for fast capture',
     icon: 'File',
     tags: [],
-    content: `## 
+    content: `# 
 
 `,
   },

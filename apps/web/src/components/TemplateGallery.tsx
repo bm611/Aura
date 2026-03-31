@@ -6,6 +6,7 @@ import {
   File01Icon,
   FolderOpenIcon,
   MeetingRoomIcon,
+  SourceCodeIcon,
   StickyNoteIcon,
 } from '@hugeicons/core-free-icons'
 import Icon from './Icon'
@@ -19,6 +20,7 @@ const TEMPLATE_ICON_MAP: Record<string, IconSvgElement> = {
   Folder: FolderOpenIcon,
   Calendar: CalendarIcon,
   File: File01Icon,
+  SourceCode: SourceCodeIcon,
 }
 
 function TemplateCard({
