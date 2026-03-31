@@ -1674,6 +1674,7 @@ function AppInner() {
               notes={notes.filter((n): n is NoteFile => n.type === 'file' && !n.deletedAt)}
               sidebarCollapsed={sidebarCollapsed}
               onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
+              onCloseChat={() => setActiveView('notes')}
             />
           ) : (
             <NoteEditor

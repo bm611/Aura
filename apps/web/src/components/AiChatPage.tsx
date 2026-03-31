@@ -1,16 +1,14 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 
 import {
-  SparklesIcon,
   ArrowUp02Icon,
   Add01Icon,
   Cancel01Icon,
   File01Icon,
   SidebarLeftIcon,
-  Time01Icon,
-  ArrowRight01Icon,
   Copy01Icon,
   Tick01Icon,
+  ArrowLeft01Icon,
 } from '@hugeicons/core-free-icons'
 import { motion, AnimatePresence } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
@@ -19,7 +17,6 @@ import rehypeHighlight from 'rehype-highlight'
 
 import Icon from './Icon'
 import { streamAiChat } from '../utils/aiChat'
-import { formatCreatedAt } from '../utils/noteMeta'
 import type { NoteFile } from '../types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -35,6 +32,7 @@ interface AiChatPageProps {
   notes: NoteFile[]
   sidebarCollapsed?: boolean
   onToggleSidebar?: () => void
+  onCloseChat?: () => void
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -110,21 +108,13 @@ function MessageBubble({ message }: { message: Message }) {
       initial={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
       transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
-      className={`flex ${isUser ? 'justify-end' : 'justify-start'} group ${!isUser ? 'mb-8' : ''}`}
+      className={`group ${isUser ? 'flex justify-end' : 'w-full'} ${!isUser ? 'mb-8 mt-2' : ''}`}
     >
-      {!isUser && (
-        <div
-          className="mr-2 mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
-          style={{ background: 'color-mix(in srgb, var(--accent) 15%, transparent)', color: 'var(--accent)' }}
-        >
-          <Icon icon={SparklesIcon} size={12} strokeWidth={1.8} />
-        </div>
-      )}
       <div
-        className={`relative max-w-[85%] md:max-w-[75%] rounded-2xl px-3.5 py-2 text-[14.5px] leading-relaxed [text-wrap:pretty] ${
+        className={`relative px-3.5 py-2 text-[14.5px] leading-relaxed [text-wrap:pretty] ${
           isUser
-            ? 'rounded-tr-sm text-white'
-            : 'rounded-tl-sm text-[var(--text-primary)]'
+            ? 'max-w-[88%] rounded-2xl rounded-tr-sm text-white md:max-w-[82%]'
+            : 'w-full px-0 py-0 text-[var(--text-primary)]'
         }`}
         style={
           isUser
@@ -132,9 +122,7 @@ function MessageBubble({ message }: { message: Message }) {
                 background: 'var(--accent)',
                 boxShadow: '0 2px 8px color-mix(in srgb, var(--accent) 25%, transparent)',
               }
-            : {
-                background: 'transparent',
-              }
+            : undefined
         }
       >
         {isUser ? (
@@ -204,14 +192,14 @@ function MentionPill({
       animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
       exit={{ opacity: 0, scale: 0.88, filter: 'blur(4px)' }}
       transition={{ duration: 0.14, ease: [0.2, 0, 0, 1] }}
-      className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-default)] bg-[var(--bg-elevated)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)]"
+      className="inline-flex items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--border-default)_80%,transparent)] bg-[color-mix(in_srgb,var(--bg-primary)_70%,var(--bg-elevated))] px-2.5 py-1 text-[11px] font-medium tracking-[0.02em] text-[var(--text-secondary)] shadow-[0_6px_18px_-16px_rgba(0,0,0,0.8)]"
     >
       <Icon icon={File01Icon} size={11} strokeWidth={2} style={{ color: 'var(--accent)', flexShrink: 0 }} />
       <span className="max-w-[120px] truncate">{note.title || note.name || 'Untitled'}</span>
       <button
         type="button"
         onClick={() => onRemove(note.id)}
-        className="relative ml-0.5 flex h-4 w-4 items-center justify-center rounded-full opacity-50 transition-[opacity,transform] hover:opacity-100 active:scale-[0.96] after:absolute after:-inset-2"
+        className="relative ml-0.5 flex h-4 w-4 items-center justify-center rounded-full opacity-45 transition-[opacity,transform,color] hover:opacity-100 hover:text-[var(--text-primary)] active:scale-[0.96] after:absolute after:-inset-2"
         aria-label={`Remove ${note.title}`}
       >
         <Icon icon={Cancel01Icon} size={9} strokeWidth={2.5} />
@@ -222,8 +210,8 @@ function MentionPill({
 
 function AiChatEmptyPrompt() {
   return (
-    <div className="flex flex-col items-center justify-center pt-2 pb-2 px-4 select-none">
-      <div className="relative w-48 h-44">
+    <div className="flex select-none flex-col items-center justify-center px-4 pb-1 pt-1 md:pb-2 md:pt-2">
+      <div className="relative h-32 w-36 md:h-44 md:w-48">
         <svg
           viewBox="0 0 192 176"
           fill="none"
@@ -427,7 +415,7 @@ function AiChatEmptyPrompt() {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar }: AiChatPageProps) {
+export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, onCloseChat }: AiChatPageProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
   const [mentionedNotes, setMentionedNotes] = useState<NoteFile[]>([])
@@ -453,7 +441,9 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar }:
     const ta = textareaRef.current
     if (!ta) return
     ta.style.height = 'auto'
-    ta.style.height = `${Math.min(ta.scrollHeight, 160)}px`
+    const nextHeight = Math.min(Math.max(ta.scrollHeight, 32), 160)
+    ta.style.height = `${nextHeight}px`
+    ta.style.overflowY = ta.scrollHeight > 160 ? 'auto' : 'hidden'
   }, [inputValue])
 
   // ── Mention filtering ────────────────────────────────────────────────────
@@ -520,6 +510,15 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar }:
 
   const removeMention = useCallback((id: string) => {
     setMentionedNotes((prev) => prev.filter((n) => n.id !== id))
+  }, [])
+
+  const addMentionedNote = useCallback((note: NoteFile) => {
+    setMentionedNotes((prev) => {
+      if (prev.some((mentionedNote) => mentionedNote.id === note.id)) return prev
+      return [...prev, note]
+    })
+
+    setTimeout(() => textareaRef.current?.focus(), 0)
   }, [])
 
   // ── Send message ─────────────────────────────────────────────────────────
@@ -627,6 +626,22 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar }:
   // ─── Shared input box ─────────────────────────────────────────────────────
   const inputBox = (
     <div className="relative w-full">
+      <AnimatePresence initial={false}>
+        {mentionedNotes.length > 0 && !hasMessages && (
+          <motion.div
+            initial={{ opacity: 0, y: 4, scale: 0.98, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: 4, scale: 0.98, filter: 'blur(4px)' }}
+            transition={{ duration: 0.16, ease: [0.2, 0, 0, 1] }}
+            className="mb-3 flex flex-wrap gap-1.5"
+          >
+            {mentionedNotes.map((note) => (
+              <MentionPill key={note.id} note={note} onRemove={removeMention} />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* @ mention dropdown */}
       <AnimatePresence>
         {mentionQuery !== null && filteredMentions.length > 0 && (
@@ -635,11 +650,11 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar }:
               animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
               exit={{ opacity: 0, y: 4, scale: 0.98, filter: 'blur(4px)' }}
               transition={{ duration: 0.13, ease: [0.2, 0, 0, 1] }}
-              className="absolute bottom-full left-0 right-0 mb-2 overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-elevated)] py-1.5"
-              style={{ boxShadow: 'var(--dialog-shadow)' }}
+              className="absolute bottom-full left-0 right-0 mb-2 overflow-hidden rounded-[22px] border border-[color-mix(in_srgb,var(--border-default)_80%,transparent)] bg-[color-mix(in_srgb,var(--bg-primary)_12%,var(--bg-elevated))] py-1.5 backdrop-blur-sm"
+              style={{ boxShadow: '0 24px 48px -32px rgba(0,0,0,0.55), 0 10px 24px -18px color-mix(in srgb, var(--accent) 20%, transparent)' }}
             >
-            <div className="px-3 pb-1 pt-0.5">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+            <div className="px-3 pb-1 pt-1">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">
                 Notes
               </span>
             </div>
@@ -654,8 +669,8 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar }:
                 onMouseEnter={() => setHighlightedMention(idx)}
                 className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors duration-100 ${
                   idx === highlightedMention
-                    ? 'bg-[var(--bg-hover)] text-[var(--text-primary)]'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]'
+                    ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--text-primary)]'
+                    : 'text-[var(--text-secondary)] hover:bg-[color-mix(in_srgb,var(--accent)_6%,transparent)] hover:text-[var(--text-primary)]'
                 }`}
               >
                 <Icon icon={File01Icon} size={13} strokeWidth={2} style={{ color: 'var(--accent)', flexShrink: 0 }} />
@@ -666,27 +681,25 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar }:
         )}
       </AnimatePresence>
 
-      {/* Mention pills inside the box */}
       <div
-        className="rounded-[18px] bg-[var(--bg-elevated)] transition-[box-shadow] duration-200 shadow-[0_0_0_1px_var(--border-subtle),0_8px_32px_color-mix(in_srgb,var(--border-subtle)_40%,transparent)] focus-within:shadow-[0_0_0_1.5px_var(--accent),0_0_20px_color-mix(in_srgb,var(--accent)_25%,transparent)]"
+        className="relative overflow-hidden rounded-[24px] border border-[color-mix(in_srgb,var(--border-default)_76%,transparent)] bg-[color-mix(in_srgb,var(--bg-primary)_16%,var(--bg-elevated))] shadow-[0_30px_90px_-48px_color-mix(in_srgb,var(--accent)_24%,transparent),0_20px_48px_-34px_rgba(0,0,0,0.55)] transition-[border-color,box-shadow,background-color] duration-200 focus-within:border-[color-mix(in_srgb,var(--accent)_34%,var(--border-default))] focus-within:bg-[color-mix(in_srgb,var(--bg-primary)_10%,var(--bg-surface))] focus-within:shadow-[0_0_0_1px_color-mix(in_srgb,var(--accent)_22%,transparent),0_34px_90px_-48px_color-mix(in_srgb,var(--accent)_30%,transparent),0_22px_48px_-30px_rgba(0,0,0,0.58)]"
       >
-        <AnimatePresence>
-          {mentionedNotes.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.16, ease: [0.2, 0, 0, 1] }}
-              className="flex flex-wrap gap-1.5 overflow-hidden px-4 pt-3"
-            >
-              {mentionedNotes.map((note) => (
-                <MentionPill key={note.id} note={note} onRemove={removeMention} />
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(180deg, color-mix(in srgb, white 10%, transparent), transparent 32%, color-mix(in srgb, var(--accent) 3%, transparent) 100%)',
+          }}
+        />
 
-        <div className="flex items-end gap-3 px-4 py-3.5">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-8 top-0 h-px"
+          style={{ background: 'linear-gradient(90deg, transparent, color-mix(in srgb, white 32%, transparent), transparent)' }}
+        />
+
+        <div className="relative z-10 px-4 py-4 md:px-6 md:py-5">
           <textarea
             ref={textareaRef}
             value={inputValue}
@@ -694,28 +707,54 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar }:
             onKeyDown={handleKeyDown}
             placeholder="Ask anything..."
             rows={1}
-            className="flex-1 resize-none bg-transparent text-[15px] leading-[30px] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]"
-            style={{ maxHeight: '160px', overflowY: 'auto' }}
+            className="m-0 min-h-[32px] w-full resize-none bg-transparent py-0 text-[15px] leading-8 text-[var(--text-primary)] outline-none placeholder:text-[color-mix(in_srgb,var(--text-muted)_92%,transparent)] font-mono tracking-[0.015em] md:text-[17px]"
+            style={{ maxHeight: '160px', overflowY: 'hidden' }}
             disabled={isStreaming}
             autoFocus
           />
-          <button
-            type="button"
-            onClick={() => sendMessage()}
-            disabled={!inputValue.trim() || isStreaming}
-            className="relative mb-[3px] flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-[transform,opacity,background,box-shadow,color] duration-150 active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-35 after:absolute after:-inset-2"
-            style={{
-              background: inputValue.trim() && !isStreaming ? 'var(--accent)' : 'var(--bg-hover)',
-              color: inputValue.trim() && !isStreaming ? 'white' : 'var(--text-muted)',
-              boxShadow:
-                inputValue.trim() && !isStreaming
-                  ? '0 2px 8px color-mix(in srgb, var(--accent) 32%, transparent)'
-                  : 'none',
-            }}
-            aria-label="Send message"
-          >
-            <Icon icon={ArrowUp02Icon} size={16} strokeWidth={2} />
-          </button>
+          <div className="mt-3 flex items-end justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              {!hasMessages && recentNotes.length > 0 && (
+                <div className="mt-2 hidden md:block">
+                  <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+                    {recentNotes.map((note) => (
+                      <button
+                        key={note.id}
+                        type="button"
+                        onClick={() => addMentionedNote(note)}
+                        className="flex shrink-0 items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--border-subtle)_82%,transparent)] bg-[color-mix(in_srgb,var(--bg-primary)_58%,var(--bg-elevated))] px-3.5 py-2 text-left text-[13px] font-medium text-[var(--text-secondary)] transition-[border-color,background-color,color,transform] duration-150 hover:border-[var(--border-default)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)] active:scale-[0.99]"
+                      >
+                        <Icon icon={File01Icon} size={12} strokeWidth={2} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                        <span className="max-w-[11rem] truncate">{note.title || note.name || 'Untitled'}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => sendMessage()}
+              disabled={!inputValue.trim() || isStreaming}
+              className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] border border-transparent transition-[transform,opacity,background,box-shadow,color,border-color] duration-150 active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-45 after:absolute after:-inset-2 md:h-11 md:w-11 md:rounded-[15px]"
+              style={{
+                background: inputValue.trim() && !isStreaming ? 'var(--accent)' : 'color-mix(in srgb, var(--bg-primary) 28%, var(--bg-hover))',
+                color: inputValue.trim() && !isStreaming ? 'white' : 'var(--text-muted)',
+                borderColor:
+                  inputValue.trim() && !isStreaming
+                    ? 'color-mix(in srgb, white 18%, var(--accent))'
+                    : 'color-mix(in srgb, var(--border-default) 84%, transparent)',
+                boxShadow:
+                  inputValue.trim() && !isStreaming
+                    ? '0 14px 24px -16px color-mix(in srgb, var(--accent) 58%, transparent), inset 0 1px 0 color-mix(in srgb, white 22%, transparent)'
+                    : 'inset 0 1px 0 color-mix(in srgb, white 8%, transparent)',
+              }}
+              aria-label="Send message"
+            >
+              <Icon icon={ArrowUp02Icon} size={18} strokeWidth={2} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -735,19 +774,30 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar }:
 
         {/* ── Persistent top bar ───────────────────────────────────────────── */}
         <div className="flex shrink-0 items-center justify-between px-4 py-2 md:px-5">
-          {/* Sidebar toggle — mirrors NoteEditor's pattern exactly */}
-          {sidebarCollapsed ? (
+          {/* Left section: Sidebar toggle (desktop) & Back button (mobile) */}
+          <div className="flex items-center">
+            {sidebarCollapsed ? (
+              <button
+                type="button"
+                onClick={onToggleSidebar}
+                className="relative hidden md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.96]"
+                title="Open sidebar (Cmd+B)"
+              >
+                <Icon icon={SidebarLeftIcon} size={22} strokeWidth={1.5} style={{ transform: 'scaleX(-1)' }} />
+              </button>
+            ) : (
+              <div className="hidden md:block h-10 w-10" />
+            )}
+            
             <button
               type="button"
-              onClick={onToggleSidebar}
-              className="relative hidden md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.96]"
-              title="Open sidebar (Cmd+B)"
+              onClick={onCloseChat}
+              className="relative flex md:hidden h-10 w-10 items-center justify-center -ml-2 rounded-lg text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] active:scale-[0.96]"
+              title="Back to notes"
             >
-              <Icon icon={SidebarLeftIcon} size={22} strokeWidth={1.5} style={{ transform: 'scaleX(-1)' }} />
+              <Icon icon={ArrowLeft01Icon} size={24} strokeWidth={1.8} />
             </button>
-          ) : (
-            <div className="h-10 w-10" />
-          )}
+          </div>
 
           {/* New Chat — only when conversation is active */}
           <AnimatePresence>
@@ -777,10 +827,10 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar }:
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
-              className="absolute inset-0 flex flex-col items-center pt-24 md:pt-[15vh] px-6 pointer-events-none overflow-y-auto"
+              className="absolute inset-0 flex flex-col items-center overflow-y-auto px-5 pt-16 pointer-events-none md:px-6 md:pt-[15vh]"
               style={{ zIndex: 1 }}
             >
-              <div className="w-full max-w-xl pointer-events-auto antialiased pb-12">
+              <div className="w-full max-w-[56rem] pb-12 antialiased pointer-events-auto">
                 <AiChatEmptyPrompt />
                 
                 {/* Greeting */}
@@ -788,15 +838,15 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar }:
                   initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
-                  className="mb-6 text-center"
+                  className="mb-5 text-center font-mono md:mb-8"
                 >
                   <h2 
-                    className="text-2xl font-semibold tracking-tight mb-1.5"
+                    className="mb-2 text-[1.7rem] font-bold tracking-tight md:text-3xl"
                     style={{ color: 'var(--text-primary)' }}
                   >
                     Ask about your notes
                   </h2>
-                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  <p className="mx-auto max-w-[18rem] text-[13px] tracking-[0.18em] text-[var(--text-muted)] md:max-w-none md:text-[14px] md:tracking-wide">
                     Search across all your knowledge instantly
                   </p>
                 </motion.div>
@@ -806,53 +856,10 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar }:
                   initial={{ opacity: 0, y: 16, filter: 'blur(4px)' }}
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   transition={{ duration: 0.35, delay: 0.07, ease: [0.2, 0, 0, 1] }}
-                  className="mb-8"
+                  className="mb-2"
                 >
                   {inputBox}
                 </motion.div>
-
-                {/* Recent Notes */}
-                {recentNotes.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
-                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    transition={{ duration: 0.35, delay: 0.14, ease: [0.2, 0, 0, 1] }}
-                    className="mt-6"
-                  >
-                    <div className="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-                      <Icon icon={Time01Icon} size={14} strokeWidth={2} />
-                      <span>Recent Notes</span>
-                    </div>
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      {recentNotes.map((note) => (
-                        <button
-                          key={note.id}
-                          type="button"
-                          onClick={() => {
-                            setMentionedNotes((prev) => [...prev, note])
-                            setTimeout(() => textareaRef.current?.focus(), 0)
-                          }}
-                          className="group relative flex w-full flex-col items-start gap-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3 text-left transition-[transform,border-color,box-shadow] duration-200 hover:border-[var(--border-default)] hover:shadow-[0_4px_12px_color-mix(in_srgb,var(--border-default)_50%,transparent)] active:scale-[0.98] after:absolute after:-inset-2"
-                        >
-                          <div className="flex w-full items-center justify-between gap-2">
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <Icon icon={File01Icon} size={14} strokeWidth={2} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-                              <span className="truncate text-sm font-medium text-[var(--text-primary)]">
-                                {note.title || note.name || 'Untitled'}
-                              </span>
-                            </div>
-                            <div className="flex h-5 w-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-[var(--bg-hover)] text-[var(--text-muted)] opacity-0 transition-[transform,opacity,background-color] duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-hover:bg-[var(--accent)] group-hover:text-white">
-                              <Icon icon={ArrowRight01Icon} size={12} strokeWidth={2.5} />
-                            </div>
-                          </div>
-                          <span className="text-xs text-[var(--text-muted)] [font-variant-numeric:tabular-nums]">
-                            {formatCreatedAt(note.updatedAt || note.createdAt)}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
               </div>
             </motion.div>
           )}
@@ -870,9 +877,9 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar }:
             >
               {/* Messages */}
               <div className="flex-1 overflow-y-auto px-5 py-5 md:px-6">
-                <div 
+              <div 
                   className="mx-auto flex flex-col gap-3"
-                  style={{ maxWidth: '640px' }}
+                  style={{ maxWidth: '860px' }}
                 >
                   {/* Fade blur at bottom */}
                   <div 
@@ -896,7 +903,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar }:
               <div className="shrink-0 px-4 pt-3 pb-4 md:px-6 md:pt-4 md:pb-5">
                 <div 
                   className="mx-auto"
-                  style={{ maxWidth: '720px' }}
+                  style={{ maxWidth: '860px' }}
                 >
                   {inputBox}
                 </div>
