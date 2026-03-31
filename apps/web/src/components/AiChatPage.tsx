@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo, type ComponentPropsWithoutRef, type ReactNode } from 'react'
 
 import {
   ArrowUp02Icon,
   Add01Icon,
   Cancel01Icon,
-  File01Icon,
+  StickyNoteIcon,
   SidebarLeftIcon,
   Copy01Icon,
   Tick01Icon,
@@ -35,9 +35,142 @@ interface AiChatPageProps {
   onCloseChat?: () => void
 }
 
+const MENTION_SELECTOR = '[data-mention-id]'
+const MULTILINE_TAGS = new Set(['DIV', 'P', 'LI'])
+
+function getNoteTitle(note: Pick<NoteFile, 'title' | 'name'>) {
+  return note.title || note.name || 'Untitled'
+}
+
+function serializeComposerNode(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return (node.textContent || '').replace(/\u00a0/g, ' ')
+  }
+
+  if (!(node instanceof HTMLElement)) {
+    return ''
+  }
+
+  if (node.dataset.mentionId) {
+    const label = node.dataset.mentionLabel?.trim() || node.textContent?.trim() || 'Untitled'
+    return `@${label}`
+  }
+
+  if (node.tagName === 'BR') {
+    return '\n'
+  }
+
+  const content = Array.from(node.childNodes).map(serializeComposerNode).join('')
+
+  if (MULTILINE_TAGS.has(node.tagName) && node.nextSibling) {
+    return `${content}\n`
+  }
+
+  return content
+}
+
+function serializeComposer(editor: HTMLElement) {
+  return Array.from(editor.childNodes)
+    .map(serializeComposerNode)
+    .join('')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+}
+
+function getLastTextNode(node: Node | null): Text | null {
+  if (!node) return null
+
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node as Text
+  }
+
+  const children = Array.from(node.childNodes)
+  for (let i = children.length - 1; i >= 0; i -= 1) {
+    const child = children[i]
+    if (!child) continue
+
+    const found = getLastTextNode(child)
+    if (found) return found
+  }
+
+  return null
+}
+
+function getActiveMentionContext(editor: HTMLElement) {
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0 || !selection.isCollapsed) {
+    return null
+  }
+
+  const anchorNode = selection.anchorNode
+  if (!anchorNode || !editor.contains(anchorNode)) {
+    return null
+  }
+
+  let textNode: Text | null = null
+  let cursorOffset = 0
+
+  if (anchorNode.nodeType === Node.TEXT_NODE) {
+    textNode = anchorNode as Text
+    cursorOffset = selection.anchorOffset
+  } else if (anchorNode instanceof HTMLElement) {
+    const nodeBeforeCursor = anchorNode.childNodes[selection.anchorOffset - 1] ?? null
+    textNode = getLastTextNode(nodeBeforeCursor)
+    cursorOffset = textNode?.textContent?.length ?? 0
+  }
+
+  if (!textNode) {
+    return null
+  }
+
+  const textBeforeCursor = textNode.textContent?.slice(0, cursorOffset) ?? ''
+  const match = textBeforeCursor.match(/(^|\s)@([^\s@]*)$/)
+  if (!match) {
+    return null
+  }
+
+  const startOffset = (match.index ?? 0) + (match[1]?.length ?? 0)
+  const range = document.createRange()
+  range.setStart(textNode, startOffset)
+  range.setEnd(textNode, cursorOffset)
+
+  return {
+    query: match[2] ?? '',
+    range,
+  }
+}
+
+function focusComposerEnd(editor: HTMLElement) {
+  editor.focus()
+
+  const selection = window.getSelection()
+  if (!selection) return
+
+  const range = document.createRange()
+  range.selectNodeContents(editor)
+  range.collapse(false)
+  selection.removeAllRanges()
+  selection.addRange(range)
+}
+
+function createMentionIconMarkup() {
+  return `
+    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M7 4.75h10a2.25 2.25 0 0 1 2.25 2.25v10A2.25 2.25 0 0 1 17 19.25H7A2.25 2.25 0 0 1 4.75 17V7A2.25 2.25 0 0 1 7 4.75Z"/>
+      <path d="M8.5 9.25h7"/>
+      <path d="M8.5 12h5.5"/>
+      <path d="M8.5 14.75h4"/>
+    </svg>
+  `
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function CodeBlock({ node, className, children, ...props }: any) {
+type CodeBlockProps = ComponentPropsWithoutRef<'code'> & {
+  children?: ReactNode
+}
+
+function CodeBlock({ className, children, ...props }: CodeBlockProps) {
   const match = /language-(\w+)/.exec(className || '')
   const language = match ? match[1] : ''
   const isBlock = !!match || (className || '').includes('hljs')
@@ -176,35 +309,6 @@ function MessageBubble({ message }: { message: Message }) {
         )}
       </div>
     </motion.div>
-  )
-}
-
-function MentionPill({
-  note,
-  onRemove,
-}: {
-  note: NoteFile
-  onRemove: (id: string) => void
-}) {
-  return (
-    <motion.span
-      initial={{ opacity: 0, scale: 0.88, filter: 'blur(4px)' }}
-      animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-      exit={{ opacity: 0, scale: 0.88, filter: 'blur(4px)' }}
-      transition={{ duration: 0.14, ease: [0.2, 0, 0, 1] }}
-      className="inline-flex items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--border-default)_80%,transparent)] bg-[color-mix(in_srgb,var(--bg-primary)_70%,var(--bg-elevated))] px-2.5 py-1 text-[11px] font-medium tracking-[0.02em] text-[var(--text-secondary)] shadow-[0_6px_18px_-16px_rgba(0,0,0,0.8)]"
-    >
-      <Icon icon={File01Icon} size={11} strokeWidth={2} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-      <span className="max-w-[120px] truncate">{note.title || note.name || 'Untitled'}</span>
-      <button
-        type="button"
-        onClick={() => onRemove(note.id)}
-        className="relative ml-0.5 flex h-4 w-4 items-center justify-center rounded-full opacity-45 transition-[opacity,transform,color] hover:opacity-100 hover:text-[var(--text-primary)] active:scale-[0.96] after:absolute after:-inset-2"
-        aria-label={`Remove ${note.title}`}
-      >
-        <Icon icon={Cancel01Icon} size={9} strokeWidth={2.5} />
-      </button>
-    </motion.span>
   )
 }
 
@@ -420,31 +524,69 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
   const [inputValue, setInputValue] = useState('')
   const [mentionedNotes, setMentionedNotes] = useState<NoteFile[]>([])
   const [mentionQuery, setMentionQuery] = useState<string | null>(null)
-  const [mentionAnchorIndex, setMentionAnchorIndex] = useState<number>(-1)
   const [highlightedMention, setHighlightedMention] = useState(0)
   const [isStreaming, setIsStreaming] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const abortRef = useRef<AbortController | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const editorRef = useRef<HTMLDivElement>(null)
+  const composerRef = useRef<HTMLDivElement>(null)
+  const activeMentionRangeRef = useRef<Range | null>(null)
 
   const hasMessages = messages.length > 0
+
+  const closeMentionPicker = useCallback(() => {
+    activeMentionRangeRef.current = null
+    setMentionQuery(null)
+    setHighlightedMention(0)
+  }, [])
+
+  const syncComposerState = useCallback(() => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    setInputValue(serializeComposer(editor))
+
+    const activeMention = getActiveMentionContext(editor)
+    if (!activeMention) {
+      closeMentionPicker()
+      return
+    }
+
+    activeMentionRangeRef.current = activeMention.range.cloneRange()
+    setMentionQuery(activeMention.query)
+    setHighlightedMention(0)
+  }, [closeMentionPicker])
 
   // ── Auto-scroll ──────────────────────────────────────────────────────────
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // ── Auto-resize textarea ─────────────────────────────────────────────────
+  // ── Auto-resize editor ──────────────────────────────────────────────────
   useEffect(() => {
-    const ta = textareaRef.current
-    if (!ta) return
-    ta.style.height = 'auto'
-    const nextHeight = Math.min(Math.max(ta.scrollHeight, 32), 160)
-    ta.style.height = `${nextHeight}px`
-    ta.style.overflowY = ta.scrollHeight > 160 ? 'auto' : 'hidden'
-  }, [inputValue])
+    const editor = editorRef.current
+    if (!editor) return
+    editor.style.height = 'auto'
+    const nextHeight = Math.min(Math.max(editor.scrollHeight, 32), 160)
+    editor.style.height = `${nextHeight}px`
+    editor.style.overflowY = editor.scrollHeight > 160 ? 'auto' : 'hidden'
+  }, [inputValue, mentionedNotes])
+
+  useEffect(() => {
+    if (mentionQuery === null) return
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node
+      if (!composerRef.current?.contains(target)) {
+        closeMentionPicker()
+      }
+    }
+
+    document.addEventListener('mousedown', handlePointerDown)
+    return () => document.removeEventListener('mousedown', handlePointerDown)
+  }, [mentionQuery, closeMentionPicker])
 
   // ── Mention filtering ────────────────────────────────────────────────────
   const filteredMentions = useMemo(
@@ -453,7 +595,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
         ? notes
             .filter((n) => !n.deletedAt)
             .filter((n) => {
-              const title = (n.title || n.name || '').toLowerCase()
+              const title = getNoteTitle(n).toLowerCase()
               return title.includes(mentionQuery.toLowerCase())
             })
             .filter((n) => !mentionedNotes.find((m) => m.id === n.id))
@@ -462,55 +604,125 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
     [mentionQuery, notes, mentionedNotes]
   )
 
+  // ── Handle input in contenteditable ─────────────────────────────────────
+  const handleEditorInput = useCallback(() => {
+    syncComposerState()
+  }, [syncComposerState])
 
+  // ── Remove mention ───────────────────────────────────────────────────────
+  const removeMention = useCallback((id: string) => {
+    const editor = editorRef.current
+    if (!editor) return
 
-  // ── Input change handler ─────────────────────────────────────────────────
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const val = e.target.value
-      setInputValue(val)
+    const mentionSpan = Array.from(editor.querySelectorAll<HTMLElement>(MENTION_SELECTOR)).find(
+      (node) => node.dataset.mentionId === id
+    )
 
-      const cursor = e.target.selectionStart ?? val.length
-      const textBefore = val.slice(0, cursor)
-      const atMatch = textBefore.match(/@([^@\s]*)$/)
-
-      if (atMatch) {
-        setMentionQuery(atMatch[1] ?? '')
-        setMentionAnchorIndex(textBefore.lastIndexOf('@'))
-        setHighlightedMention(0)
-      } else {
-        setMentionQuery(null)
-        setMentionAnchorIndex(-1)
-        setHighlightedMention(0)
+    if (mentionSpan) {
+      const nextSibling = mentionSpan.nextSibling
+      if (nextSibling?.nodeType === Node.TEXT_NODE) {
+        const nextText = nextSibling.textContent || ''
+        if (nextText.startsWith(' ')) {
+          nextSibling.textContent = nextText.slice(1)
+        }
+        if (!nextSibling.textContent) {
+          nextSibling.parentNode?.removeChild(nextSibling)
+        }
       }
-    },
-    []
-  )
+
+      mentionSpan.remove()
+      editor.normalize()
+    }
+
+    setMentionedNotes((prev) => prev.filter((n) => n.id !== id))
+    syncComposerState()
+    focusComposerEnd(editor)
+  }, [syncComposerState])
 
   // ── Select a mentioned note ──────────────────────────────────────────────
   const selectMention = useCallback(
     (note: NoteFile) => {
-      if (mentionAnchorIndex === -1) return
-      const before = inputValue.slice(0, mentionAnchorIndex)
-      const after = inputValue.slice(mentionAnchorIndex + 1 + (mentionQuery?.length ?? 0))
-      setInputValue(before + after)
-      setMentionedNotes((prev) => [...prev, note])
-      setMentionQuery(null)
-      setMentionAnchorIndex(-1)
-      setTimeout(() => textareaRef.current?.focus(), 0)
-    },
-    [inputValue, mentionAnchorIndex, mentionQuery]
-  )
+      const editor = editorRef.current
+      const range = activeMentionRangeRef.current
+      if (!editor || !range) return
 
-  const removeMention = useCallback((id: string) => {
-    setMentionedNotes((prev) => prev.filter((n) => n.id !== id))
-  }, [])
+      range.deleteContents()
+
+      const mentionSpan = document.createElement('span')
+      mentionSpan.className = 'mx-1 inline-flex max-w-full select-none items-center gap-2 rounded-full border px-2.5 py-1 align-middle text-[13px] font-semibold leading-none text-[var(--accent)] shadow-[inset_0_1px_0_color-mix(in_srgb,white_28%,transparent)]'
+      mentionSpan.dataset.mentionId = note.id
+      mentionSpan.dataset.mentionLabel = getNoteTitle(note)
+      mentionSpan.contentEditable = 'false'
+      mentionSpan.style.background =
+        'color-mix(in srgb, var(--accent) 13%, var(--bg-surface))'
+      mentionSpan.style.borderColor =
+        'color-mix(in srgb, var(--accent) 24%, var(--border-default))'
+      mentionSpan.style.boxShadow =
+        '0 8px 20px -18px color-mix(in srgb, var(--accent) 55%, transparent), inset 0 1px 0 color-mix(in srgb, white 24%, transparent)'
+
+      const iconSpan = document.createElement('span')
+      iconSpan.className = 'flex h-4 w-4 items-center justify-center rounded-full'
+      iconSpan.style.background = 'color-mix(in srgb, var(--accent) 15%, transparent)'
+      iconSpan.innerHTML = createMentionIconMarkup()
+
+      const labelSpan = document.createElement('span')
+      labelSpan.className = 'max-w-[14rem] truncate'
+      labelSpan.textContent = getNoteTitle(note)
+
+      const removeBtn = document.createElement('button')
+      removeBtn.type = 'button'
+      removeBtn.className = 'flex h-4 w-4 items-center justify-center rounded-full opacity-60 transition-[opacity,transform,background-color] duration-150 hover:opacity-100 active:scale-[0.92]'
+      removeBtn.dataset.mentionRemove = 'true'
+      removeBtn.ariaLabel = `Remove ${getNoteTitle(note)} mention`
+      removeBtn.style.background = 'color-mix(in srgb, var(--accent) 0%, transparent)'
+      removeBtn.onmouseenter = () => {
+        removeBtn.style.background = 'color-mix(in srgb, var(--accent) 18%, transparent)'
+      }
+      removeBtn.onmouseleave = () => {
+        removeBtn.style.background = 'color-mix(in srgb, var(--accent) 0%, transparent)'
+      }
+      removeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
+      removeBtn.onclick = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        removeMention(note.id)
+      }
+
+      mentionSpan.appendChild(iconSpan)
+      mentionSpan.appendChild(labelSpan)
+      mentionSpan.appendChild(removeBtn)
+
+      const trailingSpace = document.createTextNode(' ')
+      const fragment = document.createDocumentFragment()
+      fragment.appendChild(mentionSpan)
+      fragment.appendChild(trailingSpace)
+
+      range.insertNode(fragment)
+
+      const selection = window.getSelection()
+      if (!selection) return
+
+      const caretRange = document.createRange()
+      caretRange.setStart(trailingSpace, trailingSpace.textContent?.length ?? 1)
+      caretRange.collapse(true)
+      selection.removeAllRanges()
+      selection.addRange(caretRange)
+
+      setMentionedNotes((prev) => [...prev, note])
+      syncComposerState()
+      editor.focus()
+    },
+    [removeMention, syncComposerState]
+  )
 
   // ── Send message ─────────────────────────────────────────────────────────
   const sendMessage = useCallback(
     async (overrideText?: string) => {
-      const question = (overrideText ?? inputValue).trim()
+      const editor = editorRef.current
+      const question = (overrideText ?? (editor ? serializeComposer(editor) : inputValue)).trim()
       if (!question || isStreaming) return
+
+      const selectedNotes = mentionedNotes
 
       setError(null)
       const userMsg: Message = { id: crypto.randomUUID(), role: 'user', content: question }
@@ -519,8 +731,12 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
 
       setMessages((prev) => [...prev, userMsg, assistantMsg])
       setInputValue('')
-      setMentionQuery(null)
+      setMentionedNotes([])
+      closeMentionPicker()
       setIsStreaming(true)
+      if (editor) {
+        editor.innerHTML = ''
+      }
 
       const abort = new AbortController()
       abortRef.current = abort
@@ -528,8 +744,8 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
       await streamAiChat(
         {
           question,
-          noteContents: mentionedNotes.map((n) => ({
-            title: n.title || n.name || 'Untitled',
+          noteContents: selectedNotes.map((n) => ({
+            title: getNoteTitle(n),
             content: n.content,
           })),
         },
@@ -558,7 +774,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
         abort.signal
       )
     },
-    [inputValue, isStreaming, mentionedNotes]
+    [closeMentionPicker, inputValue, isStreaming, mentionedNotes]
   )
 
   // ── New chat ──────────────────────────────────────────────────────────────
@@ -568,15 +784,16 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
     setMessages([])
     setMentionedNotes([])
     setInputValue('')
-    setMentionQuery(null)
+    closeMentionPicker()
     setError(null)
     setIsStreaming(false)
-    setTimeout(() => textareaRef.current?.focus(), 50)
-  }, [])
+    if (editorRef.current) editorRef.current.innerHTML = ''
+    setTimeout(() => editorRef.current?.focus(), 50)
+  }, [closeMentionPicker])
 
   // ── Keyboard handler ──────────────────────────────────────────────────────
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (mentionQuery !== null && filteredMentions.length > 0) {
         if (e.key === 'ArrowDown') {
           e.preventDefault()
@@ -595,7 +812,8 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
           return
         }
         if (e.key === 'Escape') {
-          setMentionQuery(null)
+          e.preventDefault()
+          closeMentionPicker()
           return
         }
       }
@@ -605,63 +823,99 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
         sendMessage()
       }
     },
-    [mentionQuery, filteredMentions, highlightedMention, selectMention, sendMessage]
+    [closeMentionPicker, mentionQuery, filteredMentions, highlightedMention, selectMention, sendMessage]
   )
 
   // ─── Shared input box ─────────────────────────────────────────────────────
   const inputBox = (
-    <div className="relative w-full">
-      <AnimatePresence initial={false}>
-        {mentionedNotes.length > 0 && !hasMessages && (
-          <motion.div
-            initial={{ opacity: 0, y: 4, scale: 0.98, filter: 'blur(4px)' }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: 4, scale: 0.98, filter: 'blur(4px)' }}
-            transition={{ duration: 0.16, ease: [0.2, 0, 0, 1] }}
-            className="mb-3 flex flex-wrap gap-1.5"
-          >
-            {mentionedNotes.map((note) => (
-              <MentionPill key={note.id} note={note} onRemove={removeMention} />
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+    <div ref={composerRef} className="relative w-full">
       {/* @ mention dropdown */}
       <AnimatePresence>
-        {mentionQuery !== null && filteredMentions.length > 0 && (
+        {mentionQuery !== null && (
             <motion.div
               initial={{ opacity: 0, y: 4, scale: 0.98, filter: 'blur(4px)' }}
               animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
               exit={{ opacity: 0, y: 4, scale: 0.98, filter: 'blur(4px)' }}
               transition={{ duration: 0.13, ease: [0.2, 0, 0, 1] }}
-              className="absolute bottom-full left-0 right-0 mb-2 overflow-hidden rounded-[22px] border border-[color-mix(in_srgb,var(--border-default)_80%,transparent)] bg-[color-mix(in_srgb,var(--bg-primary)_12%,var(--bg-elevated))] py-1.5 backdrop-blur-sm"
-              style={{ boxShadow: '0 24px 48px -32px rgba(0,0,0,0.55), 0 10px 24px -18px color-mix(in srgb, var(--accent) 20%, transparent)' }}
+              className="absolute bottom-full left-0 right-0 z-20 mb-3 overflow-hidden rounded-[24px] border border-[color-mix(in_srgb,var(--border-default)_80%,transparent)] bg-[color-mix(in_srgb,var(--bg-primary)_8%,var(--bg-elevated))] py-1.5 backdrop-blur-md"
+              style={{ boxShadow: '0 26px 54px -34px rgba(0,0,0,0.58), 0 14px 32px -24px color-mix(in srgb, var(--accent) 24%, transparent)' }}
+              data-mention-picker
+              role="listbox"
+              aria-label="Mentioned notes"
             >
-            <div className="px-3 pb-1 pt-1">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">
-                Notes
-              </span>
-            </div>
-            {filteredMentions.map((note, idx) => (
-              <button
-                key={note.id}
-                type="button"
-                onMouseDown={(e) => {
-                  e.preventDefault()
-                  selectMention(note)
-                }}
-                onMouseEnter={() => setHighlightedMention(idx)}
-                className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors duration-100 ${
-                  idx === highlightedMention
-                    ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--text-primary)]'
-                    : 'text-[var(--text-secondary)] hover:bg-[color-mix(in_srgb,var(--accent)_6%,transparent)] hover:text-[var(--text-primary)]'
-                }`}
-              >
-                <Icon icon={File01Icon} size={13} strokeWidth={2} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-                <span className="truncate">{note.title || note.name || 'Untitled'}</span>
-              </button>
-            ))}
+              <div className="flex items-center justify-between gap-3 px-4 pb-2 pt-2">
+                <div>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">
+                    Notes
+                  </span>
+                  <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                    Attach a note as focused context
+                  </p>
+                </div>
+                <span
+                  className="rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--accent)]"
+                  style={{
+                    background: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+                    borderColor: 'color-mix(in srgb, var(--accent) 18%, transparent)',
+                  }}
+                >
+                  @{mentionQuery || '…'}
+                </span>
+              </div>
+
+              {filteredMentions.length === 0 ? (
+                <div className="px-4 pb-3 pt-2 text-sm text-[var(--text-secondary)]">
+                  <div className="flex items-center gap-2.5 rounded-[18px] border border-dashed border-[color-mix(in_srgb,var(--border-default)_75%,transparent)] px-3 py-3">
+                    <div
+                      className="flex h-9 w-9 items-center justify-center rounded-2xl"
+                      style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)' }}
+                    >
+                      <Icon icon={StickyNoteIcon} size={16} strokeWidth={1.8} style={{ color: 'var(--accent)' }} />
+                    </div>
+                    <div>
+                      <p className="font-medium text-[var(--text-primary)]">No notes found</p>
+                      <p className="text-xs text-[var(--text-muted)]">Try a different title or note name.</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                filteredMentions.map((note, idx) => (
+                  <button
+                    key={note.id}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      selectMention(note)
+                    }}
+                    onMouseEnter={() => setHighlightedMention(idx)}
+                    className={`mx-1.5 flex w-[calc(100%-0.75rem)] items-center gap-3 rounded-[18px] px-3.5 py-2.5 text-left text-sm transition-[background-color,color,transform] duration-100 ${
+                      idx === highlightedMention
+                        ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--text-primary)]'
+                        : 'text-[var(--text-secondary)] hover:bg-[color-mix(in_srgb,var(--accent)_6%,transparent)] hover:text-[var(--text-primary)]'
+                    }`}
+                    role="option"
+                    aria-selected={idx === highlightedMention}
+                  >
+                    <div
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl"
+                      style={{
+                        background:
+                          idx === highlightedMention
+                            ? 'color-mix(in srgb, var(--accent) 14%, transparent)'
+                            : 'color-mix(in srgb, var(--accent) 8%, transparent)',
+                      }}
+                    >
+                      <Icon icon={StickyNoteIcon} size={16} strokeWidth={1.8} style={{ color: 'var(--accent)' }} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="block truncate font-medium">{getNoteTitle(note)}</span>
+                      <span className="block truncate text-xs text-[var(--text-muted)]">
+                        Mention this note in your prompt
+                      </span>
+                    </div>
+                  </button>
+                ))
+              )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -685,16 +939,25 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
         />
 
         <div className="relative z-10 px-4 py-4 md:px-6 md:py-5">
-          <textarea
-            ref={textareaRef}
-            value={inputValue}
-            onChange={handleInputChange}
+          <div
+            ref={editorRef}
+            contentEditable
+            suppressContentEditableWarning
+            onInput={handleEditorInput}
+            onKeyUp={handleEditorInput}
+            onMouseUp={handleEditorInput}
+            onBlur={() => {
+              window.setTimeout(() => {
+                const activeElement = document.activeElement
+                if (!composerRef.current?.contains(activeElement)) {
+                  closeMentionPicker()
+                }
+              }, 0)
+            }}
             onKeyDown={handleKeyDown}
-            placeholder="Ask anything..."
-            rows={1}
-            className="m-0 min-h-[32px] w-full resize-none bg-transparent py-0 text-[15px] leading-8 text-[var(--text-primary)] outline-none placeholder:text-[color-mix(in_srgb,var(--text-muted)_92%,transparent)] font-mono tracking-[0.015em] md:text-[17px]"
-            style={{ maxHeight: '160px', overflowY: 'hidden' }}
-            disabled={isStreaming}
+            data-placeholder="Ask anything..."
+            className="m-0 min-h-[32px] w-full resize-none bg-transparent py-0 text-[15px] leading-8 text-[var(--text-primary)] outline-none font-mono tracking-[0.015em] md:text-[17px] empty:before:content-[attr(data-placeholder)] empty:before:text-[color-mix(in_srgb,var(--text-muted)_92%,transparent)] empty:before:pointer-events-none"
+            style={{ maxHeight: '160px', overflowY: 'hidden', opacity: isStreaming ? 0.6 : 1 }}
             autoFocus
           />
           <div className="mt-3 flex justify-end">
