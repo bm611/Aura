@@ -1143,18 +1143,9 @@ export default function NoteEditor({
 																<span className="truncate text-[14px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
 																	{displayTitle}
 																</span>
-																<div className="flex items-center gap-1.5">
-																	<span
-																		className="h-1.5 w-1.5 shrink-0 rounded-full"
-																		style={{
-																			background: freshness.dot,
-																			opacity: freshness.opacity
-																		}}
-																	/>
-																	<span className="text-[11px] text-[var(--text-muted)] tabular-nums">
-																		{formatRelativeTime(date)}
-																	</span>
-																</div>
+																<span className="text-[11px] text-[var(--text-muted)] tabular-nums">
+																	{formatRelativeTime(date)}
+																</span>
 															</div>
 														</motion.button>
 													);
@@ -1240,18 +1231,9 @@ export default function NoteEditor({
 																<span className="truncate text-[14px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
 																	{displayTitle}
 																</span>
-																<div className="flex items-center gap-1.5">
-																	<span
-																		className="h-1.5 w-1.5 shrink-0 rounded-full"
-																		style={{
-																			background: freshness.dot,
-																			opacity: freshness.opacity
-																		}}
-																	/>
-																	<span className="text-[11px] text-[var(--text-muted)] tabular-nums">
-																		{formatRelativeTime(date)}
-																	</span>
-																</div>
+																<span className="text-[11px] text-[var(--text-muted)] tabular-nums">
+																	{formatRelativeTime(date)}
+																</span>
 															</div>
 														</motion.button>
 													);
@@ -1351,15 +1333,9 @@ export default function NoteEditor({
 													<span className="truncate text-[15px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
 														{displayTitle}
 													</span>
-													<div className="flex items-center gap-1.5">
-														<span
-															className="h-1.5 w-1.5 shrink-0 rounded-full transition-transform duration-150 group-hover:scale-125"
-															style={{ background: freshness.dot, opacity: freshness.opacity }}
-														/>
-														<span className="text-[12px] text-[var(--text-muted)] tabular-nums transition-colors duration-150 group-hover:text-[var(--text-secondary)]">
-															{formatRelativeTime(date)}
-														</span>
-													</div>
+													<span className="text-[12px] text-[var(--text-muted)] tabular-nums transition-colors duration-150 group-hover:text-[var(--text-secondary)]">
+														{formatRelativeTime(date)}
+													</span>
 												</div>
 
 												{/* Chevron hint */}
