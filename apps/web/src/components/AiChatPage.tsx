@@ -954,7 +954,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
   )
 
   const inputBox = (
-    <div ref={composerRef} className="relative w-full">
+    <div ref={composerRef} className="relative w-full group/composer">
       {/* @ mention dropdown */}
       <AnimatePresence>
         {mentionQuery !== null && (
@@ -1016,6 +1016,14 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Decorative Glow */}
+      <div 
+        className="absolute -inset-[3px] rounded-[2.1rem] opacity-0 transition-[opacity,transform] duration-500 blur-xl pointer-events-none md:rounded-[2.2rem] group-focus-within/composer:opacity-100 group-focus-within/composer:scale-[1.01]"
+        style={{
+          background: 'linear-gradient(to right, color-mix(in srgb, var(--accent) 15%, transparent), color-mix(in srgb, var(--accent) 30%, transparent), color-mix(in srgb, var(--accent) 15%, transparent))'
+        }}
+      />
 
       <div
         className="relative overflow-hidden rounded-[1.9rem] border transition-[border-color,box-shadow,transform] duration-200 focus-within:border-[var(--accent)] md:rounded-[2rem]"
