@@ -172,7 +172,7 @@ function createCollapsedRangeAtComposerEnd(editor: HTMLElement) {
 
 function createMentionIconMarkup() {
   return `
-    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M7 4.75h10a2.25 2.25 0 0 1 2.25 2.25v10A2.25 2.25 0 0 1 17 19.25H7A2.25 2.25 0 0 1 4.75 17V7A2.25 2.25 0 0 1 7 4.75Z"/>
       <path d="M8.5 9.25h7"/>
       <path d="M8.5 12h5.5"/>
@@ -729,7 +729,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
       range.deleteContents()
 
       const mentionSpan = document.createElement('span')
-      mentionSpan.className = 'mx-1 inline-flex max-w-full select-none items-center gap-2 rounded-full border px-2.5 py-1 align-middle text-[13px] font-semibold leading-none text-[var(--accent)] shadow-[inset_0_1px_0_color-mix(in_srgb,white_28%,transparent)]'
+      mentionSpan.className = 'mx-0.5 inline-flex max-w-full select-none items-center gap-1 rounded-full border px-1.5 py-0.5 align-middle text-[12px] font-semibold leading-none text-[var(--accent)] shadow-[inset_0_1px_0_color-mix(in_srgb,white_28%,transparent)]'
       mentionSpan.dataset.mentionId = note.id
       mentionSpan.dataset.mentionLabel = getNoteTitle(note)
       mentionSpan.contentEditable = 'false'
@@ -741,17 +741,17 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
         '0 8px 20px -18px color-mix(in srgb, var(--accent) 55%, transparent), inset 0 1px 0 color-mix(in srgb, white 24%, transparent)'
 
       const iconSpan = document.createElement('span')
-      iconSpan.className = 'flex h-4 w-4 items-center justify-center rounded-full'
+      iconSpan.className = 'flex h-3.5 w-3.5 items-center justify-center rounded-full'
       iconSpan.style.background = 'color-mix(in srgb, var(--accent) 15%, transparent)'
       iconSpan.innerHTML = createMentionIconMarkup()
 
       const labelSpan = document.createElement('span')
-      labelSpan.className = 'max-w-[14rem] truncate'
+      labelSpan.className = 'max-w-[10rem] truncate'
       labelSpan.textContent = getNoteTitle(note)
 
       const removeBtn = document.createElement('button')
       removeBtn.type = 'button'
-      removeBtn.className = 'flex h-4 w-4 items-center justify-center rounded-full opacity-60 transition-[opacity,transform,background-color] duration-150 hover:opacity-100 active:scale-[0.92]'
+      removeBtn.className = 'flex h-3.5 w-3.5 items-center justify-center rounded-full opacity-60 transition-[opacity,transform,background-color] duration-150 hover:opacity-100 active:scale-[0.92]'
       removeBtn.dataset.mentionRemove = 'true'
       removeBtn.ariaLabel = `Remove ${getNoteTitle(note)} mention`
       removeBtn.style.background = 'color-mix(in srgb, var(--accent) 0%, transparent)'
@@ -1104,6 +1104,20 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
         @keyframes chat-cursor-blink {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
+        }
+        @media (max-width: 767px) {
+          [data-mention-id] {
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 0.125rem !important;
+            gap: 0.2rem !important;
+            font-size: 13px !important;
+          }
+          [data-mention-id] button[data-mention-remove] {
+            display: none !important;
+          }
         }
       `}</style>
 
