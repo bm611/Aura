@@ -70,7 +70,7 @@ const server = createServer(async (req, res) => {
     return
   }
 
-  const { question, noteContents } = body
+  const { question, noteContents, mode } = body
 
   if (!question || typeof question !== 'string') {
     res.writeHead(400, { 'Content-Type': 'application/json' })
@@ -82,9 +82,13 @@ const server = createServer(async (req, res) => {
     .map((n, i) => `--- Note ${i + 1}: "${n.title}" ---\n${n.content}`)
     .join('\n\n')
 
+  const inlineRule = `\n\nIMPORTANT: Output ONLY the requested content in markdown. Do NOT add any preamble, introduction, explanation, or closing remarks. For example, if asked for a shopping todo list, output only the list — no "Here's your list:" or "Let me know if you need anything else." Your output will be inserted directly into the user's note.`
+
+  const isInline = mode === 'inline'
+
   const systemPrompt = contextBlock
-    ? `You are Folio AI, a helpful assistant embedded in a note-taking app. The user has referenced the following notes as context for their question. Use these notes to provide an accurate, well-grounded answer. If the notes don't contain enough information to fully answer, say so.\n\n${contextBlock}`
-    : `You are Folio AI, a helpful assistant embedded in a note-taking app. Answer the user's question concisely and helpfully.`
+    ? `You are Folio AI, a helpful assistant embedded in a note-taking app. The user has referenced the following notes as context for their question. Use these notes to provide an accurate, well-grounded answer. If the notes don't contain enough information to fully answer, say so.${isInline ? inlineRule : ''}\n\n${contextBlock}`
+    : `You are Folio AI, a helpful assistant embedded in a note-taking app. Answer the user's question concisely and helpfully.${isInline ? inlineRule : ''}`
 
   // Call OpenRouter
   let upstream

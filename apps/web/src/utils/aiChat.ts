@@ -1,6 +1,7 @@
 export interface AiChatRequest {
   question: string
   noteContents: { title: string; content: string }[]
+  mode?: 'chat' | 'inline'
 }
 
 export interface AiStreamCallbacks {

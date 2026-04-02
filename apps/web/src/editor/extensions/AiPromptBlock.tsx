@@ -193,6 +193,7 @@ function AiPromptView({ node, editor, getPos, deleteNode }: NodeViewProps) {
       {
         question: query.trim() || 'Summarize the referenced notes.',
         noteContents,
+        mode: 'inline',
       },
       {
         onToken(token) {
