@@ -2061,65 +2061,17 @@ body {
   flex-shrink: 0;
 }
 
-/* ── Section headers (Folders / Files) ── */
+/* ── Tree toolbar (New File / New Folder) ── */
 
-.sb-section {
-  margin-bottom: 2px;
-}
-
-.sb-section-header {
+.sb-tree-actions {
   display: flex;
   align-items: center;
-  padding: 8px 8px 2px;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: 0 0 4px;
 }
 
-.sb-section-toggle {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  flex: 1;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  font-family: "Outfit", var(--body-font);
-  padding: 3px 6px;
-  border-radius: 5px;
-  text-align: left;
-  transition: color 0.15s ease;
-}
-
-.sb-section-toggle:hover {
-  color: var(--text-primary);
-}
-
-.sb-section-chevron {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
-  transition: transform 0.2s var(--ease-out-quart);
-  flex-shrink: 0;
-}
-
-.sb-section-chevron.open {
-  transform: rotate(90deg);
-}
-
-.sb-section-toggle > svg {
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-.sb-section-toggle > .sb-section-chevron + svg {
-  margin-left: 2px;
-}
-
-.sb-section-add {
+.sb-tree-action-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2134,14 +2086,9 @@ body {
   flex-shrink: 0;
 }
 
-.sb-section-add:hover {
+.sb-tree-action-btn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
-}
-
-/* Section body — slides in when mounted */
-.sb-section-body {
-  animation: slide-down 0.18s var(--ease-out-quart);
 }
 
 .tn-actions button {

@@ -472,8 +472,6 @@ export default function Sidebar({
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['1']))
   const [creatingIn, setCreatingIn] = useState<CreatingState | null>(null)
   const [searchFocused, setSearchFocused] = useState(false)
-  const [foldersOpen, setFoldersOpen] = useState(true)
-  const [filesOpen, setFilesOpen] = useState(true)
   const [moveToNode, setMoveToNode] = useState<string | null>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
@@ -537,8 +535,7 @@ export default function Sidebar({
     return sortNodes(filterNodes(tree))
   }, [tree, searchQuery])
 
-  const visibleFolders = useMemo(() => visibleTree.filter((n) => n.type === 'folder'), [visibleTree])
-  const visibleFiles = useMemo(() => visibleTree.filter((n) => n.type === 'file'), [visibleTree])
+  
   const searchExpanded = searchFocused || searchQuery.length > 0
 
   useEffect(() => {
@@ -709,140 +706,46 @@ export default function Sidebar({
 
           {/* Tree list */}
           <div className="sb-tree">
-            {searchQuery.trim() ? (
-              /* Search mode — flat filtered results */
-              <>
-                {visibleTree.map((node) => (
-                  <TreeNodeComponent
-                    key={node.id}
-                    node={node}
-                    depth={0}
-                    activeId={activeNoteId}
-                    onSelect={(id) => {
-                      onSelectNote(id)
-                      if (window.innerWidth < 768) onToggleCollapse()
-                    }}
-                    onDelete={(id) => onDeleteNote(id)}
-                    onRename={handleRename}
-                    onMove={(id) => setMoveToNode(id)}
-                    expanded={expanded}
-                    toggleExpand={toggleExpand}
-                    creatingIn={creatingIn}
-                    setCreatingIn={setCreatingIn}
-                    onCreateConfirm={handleCreateConfirm}
-                  />
-                ))}
-                {creatingIn?.parentId === null && (
-                  <InlineCreator
-                    depth={0}
-                    type={creatingIn.type}
-                    onConfirm={(name) => handleCreateConfirm(name, null, creatingIn.type)}
-                    onCancel={() => setCreatingIn(null)}
-                  />
-                )}
-                {visibleTree.length === 0 && (
-                  <div className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">No results found</div>
-                )}
-              </>
-            ) : (
-              /* Normal mode — Folders + Files sections */
-              <>
-                {/* Folders section */}
-                <div className="sb-section">
-                  <div className="sb-section-header">
-                    <button className="sb-section-toggle" onClick={() => setFoldersOpen((p) => !p)}>
-                      <span className={`sb-section-chevron${foldersOpen ? ' open' : ''}`}>
-                        <SidebarIcon n="chevR" s={12} />
-                      </span>
-                      <SidebarIcon n="folder" s={13} />
-                      <span>Folders</span>
-                    </button>
-                    <button className="sb-section-add" title="New Folder" onClick={() => handleRootCreate('folder')}>
-                      <SidebarIcon n="newFolder" s={15} />
-                    </button>
-                  </div>
-                  {foldersOpen && (
-                    <div className="sb-section-body">
-                      {visibleFolders.map((node) => (
-                        <TreeNodeComponent
-                          key={node.id}
-                          node={node}
-                          depth={0}
-                          activeId={activeNoteId}
-                          onSelect={(id) => {
-                            onSelectNote(id)
-                            if (window.innerWidth < 768) onToggleCollapse()
-                          }}
-                          onDelete={(id) => onDeleteNote(id)}
-                          onRename={handleRename}
-                          onMove={(id) => setMoveToNode(id)}
-                          expanded={expanded}
-                          toggleExpand={toggleExpand}
-                          creatingIn={creatingIn}
-                          setCreatingIn={setCreatingIn}
-                          onCreateConfirm={handleCreateConfirm}
-                        />
-                      ))}
-                      {creatingIn?.parentId === null && creatingIn.type === 'folder' && (
-                        <InlineCreator
-                          depth={0}
-                          type="folder"
-                          onConfirm={(name) => handleCreateConfirm(name, null, 'folder')}
-                          onCancel={() => setCreatingIn(null)}
-                        />
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Files section */}
-                <div className="sb-section">
-                  <div className="sb-section-header">
-                    <button className="sb-section-toggle" onClick={() => setFilesOpen((p) => !p)}>
-                      <span className={`sb-section-chevron${filesOpen ? ' open' : ''}`}>
-                        <SidebarIcon n="chevR" s={12} />
-                      </span>
-                      <SidebarIcon n="file" s={13} />
-                      <span>Files</span>
-                    </button>
-                    <button className="sb-section-add" title="New File" onClick={() => handleRootCreate('file')}>
-                      <SidebarIcon n="newFile" s={15} />
-                    </button>
-                  </div>
-                  {filesOpen && (
-                    <div className="sb-section-body">
-                      {visibleFiles.map((node) => (
-                        <TreeNodeComponent
-                          key={node.id}
-                          node={node}
-                          depth={0}
-                          activeId={activeNoteId}
-                          onSelect={(id) => {
-                            onSelectNote(id)
-                            if (window.innerWidth < 768) onToggleCollapse()
-                          }}
-                          onDelete={(id) => onDeleteNote(id)}
-                          onRename={handleRename}
-                          onMove={(id) => setMoveToNode(id)}
-                          expanded={expanded}
-                          toggleExpand={toggleExpand}
-                          creatingIn={creatingIn}
-                          setCreatingIn={setCreatingIn}
-                          onCreateConfirm={handleCreateConfirm}
-                        />
-                      ))}
-                      {creatingIn?.parentId === null && creatingIn.type === 'file' && (
-                        <InlineCreator
-                          depth={0}
-                          type="file"
-                          onConfirm={(name) => handleCreateConfirm(name, null, 'file')}
-                          onCancel={() => setCreatingIn(null)}
-                        />
-                      )}
-                    </div>
-                  )}
-                </div>
-              </>
+            {!searchQuery.trim() && (
+              <div className="sb-tree-actions">
+                <button className="sb-tree-action-btn" title="New File" onClick={() => handleRootCreate('file')}>
+                  <SidebarIcon n="newFile" s={15} />
+                </button>
+                <button className="sb-tree-action-btn" title="New Folder" onClick={() => handleRootCreate('folder')}>
+                  <SidebarIcon n="newFolder" s={15} />
+                </button>
+              </div>
+            )}
+            {visibleTree.map((node) => (
+              <TreeNodeComponent
+                key={node.id}
+                node={node}
+                depth={0}
+                activeId={activeNoteId}
+                onSelect={(id) => {
+                  onSelectNote(id)
+                  if (window.innerWidth < 768) onToggleCollapse()
+                }}
+                onDelete={(id) => onDeleteNote(id)}
+                onRename={handleRename}
+                onMove={(id) => setMoveToNode(id)}
+                expanded={expanded}
+                toggleExpand={toggleExpand}
+                creatingIn={creatingIn}
+                setCreatingIn={setCreatingIn}
+                onCreateConfirm={handleCreateConfirm}
+              />
+            ))}
+            {creatingIn?.parentId === null && (
+              <InlineCreator
+                depth={0}
+                type={creatingIn.type}
+                onConfirm={(name) => handleCreateConfirm(name, null, creatingIn.type)}
+                onCancel={() => setCreatingIn(null)}
+              />
+            )}
+            {searchQuery.trim() && visibleTree.length === 0 && (
+              <div className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">No results found</div>
             )}
           </div>
         </div>
