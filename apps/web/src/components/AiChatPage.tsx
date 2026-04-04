@@ -39,10 +39,10 @@ interface AiChatPageProps {
 }
 
 const EMPTY_STATE_PROMPTS = [
-  { id: 'summarize', label: 'Summarize the note I’m looking at', icon: StickyNoteIcon },
-  { id: 'search', label: 'Find notes about a topic', icon: Search01Icon },
-  { id: 'draft', label: 'Turn rough notes into a draft', icon: PencilEdit01Icon },
-  { id: 'brainstorm', label: 'Brainstorm next steps from my notes', icon: SparklesIcon },
+  { id: 'summarize', short: 'Summarize', label: 'Summarize the note I’m looking at', icon: StickyNoteIcon },
+  { id: 'search', short: 'Search', label: 'Find notes about a topic', icon: Search01Icon },
+  { id: 'draft', short: 'Draft', label: 'Turn rough notes into a draft', icon: PencilEdit01Icon },
+  { id: 'brainstorm', short: 'Brainstorm', label: 'Brainstorm next steps from my notes', icon: SparklesIcon },
 ] as const
 
 const MENTION_SELECTOR = '[data-mention-id]'
@@ -1218,34 +1218,6 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
                       Ask about your notes
                     </h2>
                   </motion.div>
-
-                  {/* Suggested prompts — horizontal scroll on mobile, vertical on desktop */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: 0.14, ease: [0.2, 0, 0, 1] }}
-                    className="order-4 mt-6 flex overflow-x-auto gap-2 pb-2 -mx-5 px-5 scrollbar-none md:mx-0 md:px-0 md:overflow-x-visible md:flex-col md:items-start md:pl-5 md:pb-0"
-                  >
-                    {EMPTY_STATE_PROMPTS.map((prompt) => (
-                      <button
-                        key={prompt.id}
-                        type="button"
-                        onClick={() => applyPromptText(prompt.label)}
-                        className="group flex shrink-0 w-fit max-w-full items-center gap-2.5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-3.5 py-2.5 text-left text-[13px] font-medium text-[var(--text-secondary)] transition-[transform,color,border-color] duration-150 hover:text-[var(--text-primary)] hover:border-[var(--border-default)] active:scale-[0.97] md:border-0 md:bg-transparent md:px-0 md:py-1.5 md:pr-2 md:text-[15px] md:gap-3"
-                      >
-                        <span
-                          className="flex h-7 w-7 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-full transition-[background,color] duration-150"
-                          style={{
-                            background: 'color-mix(in srgb, var(--bg-hover) 54%, transparent)',
-                            color: 'var(--accent)',
-                          }}
-                        >
-                          <Icon icon={prompt.icon} size={14} strokeWidth={1.9} className="md:!w-[15px] md:!h-[15px]" />
-                        </span>
-                        <span className="whitespace-nowrap md:whitespace-normal md:truncate">{prompt.label}</span>
-                      </button>
-                    ))}
-                  </motion.div>
                 </div>
               </div>
             </motion.div>
@@ -1295,6 +1267,26 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
             className="mx-auto"
             style={{ maxWidth: '40rem' }}
           >
+            {/* Suggested prompts — scrollable pills */}
+            {!hasMessages && (
+              <div className="flex gap-2 overflow-x-auto pb-3 mb-2 -mx-1 px-1 scrollbar-hide">
+                {EMPTY_STATE_PROMPTS.map((prompt) => (
+                  <button
+                    key={prompt.id}
+                    type="button"
+                    onClick={() => applyPromptText(prompt.label)}
+                    className="flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-left transition-all duration-150 active:scale-95"
+                    style={{
+                      background: 'color-mix(in srgb, var(--accent) 12%, var(--bg-elevated))',
+                      border: '1px solid color-mix(in srgb, var(--accent) 22%, transparent)',
+                    }}
+                  >
+                    <Icon icon={prompt.icon} size={13} strokeWidth={2} style={{ color: 'var(--accent)' }} />
+                    <span className="text-[12px] font-medium whitespace-nowrap text-[var(--text-secondary)]">{prompt.short}</span>
+                  </button>
+                ))}
+              </div>
+            )}
             {inputBox}
           </div>
         </div>
