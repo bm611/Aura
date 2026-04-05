@@ -696,13 +696,28 @@ function AppInner() {
 
     setSyncing(true)
     let successCount = 0
+    let currentIndex = 0
+    const CONCURRENCY_LIMIT = 5
 
-    for (const note of pendingNotes) {
-      const didSync = await syncNoteToCloud(note)
-      if (didSync) {
-        successCount += 1
+    const worker = async () => {
+      while (currentIndex < pendingNotes.length) {
+        const index = currentIndex++
+        const note = pendingNotes[index]
+        if (!note) continue
+
+        try {
+          const didSync = await syncNoteToCloud(note)
+          if (didSync) {
+            successCount += 1
+          }
+        } catch (err) {
+          console.error('Failed to sync note concurrently', err)
+        }
       }
     }
+
+    const workers = Array.from({ length: Math.min(CONCURRENCY_LIMIT, pendingNotes.length) }, worker)
+    await Promise.all(workers)
 
     finishSyncingIfIdle()
     return { attempted: pendingNotes.length, succeeded: successCount }
