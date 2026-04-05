@@ -1,6 +1,6 @@
-# Folio - Aura Note-taking App
+# Folio Note-taking App
 
-Folio (Aura) is a local-first, Tiptap-based rich-text/markdown note-taking application. Notes are stored locally in `localStorage` with optional Supabase cloud sync. The project is structured as an npm workspaces monorepo targeting Web, Desktop, and Mobile platforms.
+Folio is a local-first, Tiptap-based rich-text/markdown note-taking application. Notes are stored locally in `localStorage` with optional Supabase cloud sync. The project is structured as an npm workspaces monorepo targeting Web, Desktop, and Mobile platforms.
 
 ## Overview
 
