@@ -109,6 +109,123 @@ const POPOVER_VARIANTS = {
 	exit: { opacity: 0, y: -6, filter: 'blur(2px)', scale: 0.985 }
 } as const;
 
+// ─── Favorite Button Component ────────────────────────────────────────────────
+
+interface FavoriteButtonProps {
+	note: NoteFile;
+	onUpdateNote: (
+		id: string,
+		updates: Record<string, unknown>,
+		options?: { skipTimestamp?: boolean }
+	) => void;
+}
+
+function FavoriteButton({ note, onUpdateNote }: FavoriteButtonProps) {
+	const [isAnimating, setIsAnimating] = useState(false);
+	const isFavorite = (note.tags || []).includes('favorite');
+	
+	// Generate sparkle positions
+	const sparkles = useMemo(() => {
+		return Array.from({ length: 6 }, (_, i) => ({
+			id: i,
+			angle: (i * 60) + Math.random() * 20 - 10,
+			distance: 24 + Math.random() * 8,
+			size: 2 + Math.random() * 2,
+			delay: i * 0.02,
+		}));
+	}, []);
+
+	const handleClick = () => {
+		const currentTags = note.tags || [];
+		const wasFavorite = currentTags.includes('favorite');
+		const newTags = wasFavorite
+			? currentTags.filter((t) => t !== 'favorite')
+			: [...currentTags, 'favorite'];
+		
+		onUpdateNote(note.id, { tags: newTags }, { skipTimestamp: true });
+		
+		// Trigger animation when favoriting (not unfavoriting)
+		if (!wasFavorite) {
+			setIsAnimating(true);
+			setTimeout(() => setIsAnimating(false), 600);
+		}
+	};
+
+	return (
+		<motion.button
+			type="button"
+			onClick={handleClick}
+			className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent transition-colors duration-150 ease-out hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2"
+			style={{ color: isFavorite ? 'var(--warning)' : 'var(--text-muted)' }}
+			title={isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+			whileTap={{ scale: 0.85 }}
+			animate={isAnimating ? {
+				scale: [1, 1.35, 0.95, 1.08, 1],
+				rotate: [0, -15, 12, -8, 4, 0],
+			} : {}}
+			transition={{
+				duration: 0.5,
+				ease: [0.25, 1, 0.5, 1],
+			}}
+		>
+			{/* Sparkle burst effect */}
+			<AnimatePresence>
+				{isAnimating && sparkles.map((sparkle) => (
+					<motion.span
+						key={sparkle.id}
+						className="absolute pointer-events-none rounded-full"
+						style={{
+							width: sparkle.size,
+							height: sparkle.size,
+							backgroundColor: 'var(--warning)',
+							boxShadow: '0 0 4px var(--warning), 0 0 8px var(--warning)',
+						}}
+						initial={{ 
+							opacity: 1, 
+							scale: 0,
+							x: 0, 
+							y: 0 
+						}}
+						animate={{ 
+							opacity: 0, 
+							scale: [0, 1.5, 0],
+							x: Math.cos((sparkle.angle * Math.PI) / 180) * sparkle.distance,
+							y: Math.sin((sparkle.angle * Math.PI) / 180) * sparkle.distance,
+						}}
+						exit={{ opacity: 0 }}
+						transition={{
+							duration: 0.5,
+							delay: sparkle.delay,
+							ease: [0.25, 1, 0.5, 1],
+						}}
+					/>
+				))}
+			</AnimatePresence>
+			
+			{/* Star icon with fill animation */}
+			<motion.span
+				className="relative"
+				animate={isAnimating ? {
+					filter: [
+						'drop-shadow(0 0 0px var(--warning))',
+						'drop-shadow(0 0 8px var(--warning))',
+						'drop-shadow(0 0 4px var(--warning))',
+						'drop-shadow(0 0 0px var(--warning))'
+					]
+				} : {}}
+				transition={{ duration: 0.5 }}
+			>
+				<Icon
+					icon={StarIcon}
+					size={21}
+					strokeWidth={1.5}
+					className={isFavorite ? 'fill-current' : ''}
+				/>
+			</motion.span>
+		</motion.button>
+	);
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatRelativeTime(date: Date): string {
@@ -1571,37 +1688,7 @@ export default function NoteEditor({
 
 					{note && (
 						<>
-							<button
-								type="button"
-								onClick={() => {
-									const currentTags = note.tags || [];
-									const isFav = currentTags.includes('favorite');
-									const newTags = isFav
-										? currentTags.filter((t) => t !== 'favorite')
-										: [...currentTags, 'favorite'];
-									onUpdateNote(note.id, { tags: newTags }, { skipTimestamp: true });
-								}}
-								className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.96]"
-								style={{
-									color: (note.tags || []).includes('favorite')
-										? 'var(--warning)'
-										: 'var(--text-muted)'
-								}}
-								title={
-									(note.tags || []).includes('favorite')
-										? 'Remove from Favorites'
-										: 'Add to Favorites'
-								}
-							>
-								<Icon
-									icon={StarIcon}
-									size={21}
-									strokeWidth={1.5}
-									className={
-										(note.tags || []).includes('favorite') ? 'fill-current drop-shadow-sm' : ''
-									}
-								/>
-							</button>
+							<FavoriteButton note={note} onUpdateNote={onUpdateNote} />
 						</>
 					)}
 
