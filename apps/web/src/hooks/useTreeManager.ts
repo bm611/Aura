@@ -17,18 +17,23 @@ export interface TreeManagerResult {
   flattenNodesForSync: () => FlatNode[]
 }
 
-function buildNodeMap(tree: TreeNode[]): Map<string, TreeNode> {
-  const map = new Map<string, TreeNode>()
-  const traverse = (nodes: TreeNode[]) => {
+function buildMaps(tree: TreeNode[]): { nodeMap: Map<string, TreeNode>; parentMap: Map<string, string> } {
+  const nodeMap = new Map<string, TreeNode>()
+  const parentMap = new Map<string, string>()
+
+  const traverse = (nodes: TreeNode[], parentId: string | null) => {
     for (const node of nodes) {
-      map.set(node.id, node)
+      nodeMap.set(node.id, node)
+      if (parentId !== null) {
+        parentMap.set(node.id, parentId)
+      }
       if (node.type === 'folder' && node.children) {
-        traverse(node.children)
+        traverse(node.children, node.id)
       }
     }
   }
-  traverse(tree)
-  return map
+  traverse(tree, null)
+  return { nodeMap, parentMap }
 }
 
 function buildFlatNodes(tree: TreeNode[], parentId: string | null = null): FlatNode[] {
@@ -47,13 +52,8 @@ function doFindNode(nodeMap: Map<string, TreeNode>, id: string): TreeNode | null
   return nodeMap.get(id) ?? null
 }
 
-function doGetParentId(nodeMap: Map<string, TreeNode>, nodeId: string): string | null {
-  for (const [id, node] of nodeMap) {
-    if (node.type === 'folder' && node.children?.some((c) => c.id === nodeId)) {
-      return id
-    }
-  }
-  return null
+function doGetParentId(parentMap: Map<string, string>, nodeId: string): string | null {
+  return parentMap.get(nodeId) ?? null
 }
 
 function doInsertNode(tree: TreeNode[], parentId: string | null, newNode: TreeNode): TreeNode[] {
@@ -140,20 +140,26 @@ function doMoveNode(
 export function useTreeManager(initialTree: TreeNode[] = []): TreeManagerResult {
   const [tree, setTreeState] = useState<TreeNode[]>(initialTree)
 
-  const nodeMap = useMemo(() => buildNodeMap(tree), [tree])
+  const { nodeMap, parentMap } = useMemo(() => buildMaps(tree), [tree])
   const flatNodes = useMemo(() => buildFlatNodes(tree), [tree])
 
   const setTree = useCallback((newTree: TreeNode[]) => {
     setTreeState(newTree)
   }, [])
 
-  const findNode = useCallback((id: string): TreeNode | null => {
-    return doFindNode(nodeMap, id)
-  }, [nodeMap])
+  const findNode = useCallback(
+    (id: string): TreeNode | null => {
+      return doFindNode(nodeMap, id)
+    },
+    [nodeMap]
+  )
 
-  const getParentId = useCallback((nodeId: string): string | null => {
-    return doGetParentId(nodeMap, nodeId)
-  }, [nodeMap])
+  const getParentId = useCallback(
+    (nodeId: string): string | null => {
+      return doGetParentId(parentMap, nodeId)
+    },
+    [parentMap]
+  )
 
   const insertNode = useCallback((parentId: string | null, newNode: TreeNode) => {
     setTreeState((prev) => doInsertNode(prev, parentId, newNode))
@@ -176,14 +182,17 @@ export function useTreeManager(initialTree: TreeNode[] = []): TreeManagerResult 
 
   const moveNode = useCallback((nodeId: string, newParentId: string | null) => {
     setTreeState((prev) => {
-      const nodeMapSnapshot = buildNodeMap(prev)
+      const { nodeMap: nodeMapSnapshot } = buildMaps(prev)
       return doMoveNode(prev, nodeMapSnapshot, nodeId, newParentId)
     })
   }, [])
 
-  const collectSubtreeIds = useCallback((id: string): string[] => {
-    return doCollectSubtreeIds(nodeMap, id)
-  }, [nodeMap])
+  const collectSubtreeIds = useCallback(
+    (id: string): string[] => {
+      return doCollectSubtreeIds(nodeMap, id)
+    },
+    [nodeMap]
+  )
 
   const flattenNodesForSync = useCallback((): FlatNode[] => {
     return flatNodes
