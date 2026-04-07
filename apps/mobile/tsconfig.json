@@ -4,7 +4,9 @@
     "jsx": "react-native",
     "lib": ["ES2021"],
     "noEmit": true,
-    "allowJs": true
+    "allowJs": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node"
   },
   "include": ["src", "index.js", "App.tsx"],
   "references": [

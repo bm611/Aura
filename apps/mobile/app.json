@@ -22,6 +22,9 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.folio.mobile"
-    }
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
   }
 }

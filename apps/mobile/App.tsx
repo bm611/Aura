@@ -1,30 +1,19 @@
+// Initialize Supabase before any component mounts
+import './src/lib/supabaseClient'
+
+import { NavigationContainer } from '@react-navigation/native'
 import { StatusBar } from 'expo-status-bar'
-import { StyleSheet, Text, View } from 'react-native'
+import { AuthProvider } from './src/contexts/AuthContext'
+import RootNavigator from './src/navigation/RootNavigator'
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Folio</Text>
-      <Text style={styles.subtitle}>Mobile app — coming soon</Text>
-      <StatusBar style="auto" />
-    </View>
+    <AuthProvider>
+      {/* @ts-ignore — React Navigation 7 + @types/react 19 JSX type conflict */}
+      <NavigationContainer>
+        <RootNavigator />
+        <StatusBar style="light" />
+      </NavigationContainer>
+    </AuthProvider>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#888',
-  },
-})
