@@ -1,0 +1,77 @@
+/* ═══════════════════════════════════════════════
+   Syntax Highlighting (highlight.js)
+   ═══════════════════════════════════════════════ */
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-built_in,
+.hljs-name {
+  color: var(--color-h1);
+}
+
+.hljs-string,
+.hljs-attr,
+.hljs-template-variable {
+  color: var(--success);
+}
+
+.hljs-number,
+.hljs-literal,
+.hljs-variable.constant_,
+.hljs-symbol {
+  color: var(--color-h2);
+}
+
+.hljs-title,
+.hljs-title.function_,
+.hljs-title.class_ {
+  color: var(--accent-hover);
+}
+
+.hljs-type,
+.hljs-title.class_.inherited__ {
+  color: var(--color-h3);
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.hljs-punctuation,
+.hljs-operator {
+  color: var(--text-secondary);
+}
+
+.hljs-property,
+.hljs-attribute,
+.hljs-selector-attr,
+.hljs-selector-class,
+.hljs-selector-id {
+  color: var(--accent);
+}
+
+.hljs-meta,
+.hljs-meta .hljs-keyword,
+.hljs-meta .hljs-string {
+  color: var(--text-muted);
+}
+
+.hljs-params {
+  color: var(--text-primary);
+}
+
+.hljs-regexp {
+  color: var(--danger);
+}
+
+.hljs-addition {
+  color: var(--success);
+  background: var(--success-muted);
+}
+
+.hljs-deletion {
+  color: var(--danger);
+  background: var(--danger-muted);
+}

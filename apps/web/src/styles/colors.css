@@ -1,0 +1,182 @@
+/* ═══════════════════════════════════════════════
+   Color System — CSS Custom Properties
+   Theme-switched via data-theme attribute
+   ═══════════════════════════════════════════════ */
+
+:root {
+  /* ── Surfaces ── */
+  --bg-deep: #0c0b0e;
+  --bg-primary: #13121a;
+  --bg-surface: #1c1b24;
+  --bg-elevated: #24232e;
+  --bg-hover: #2e2d38;
+  --grain-opacity: 0.035;
+
+  /* ── Borders ── */
+  --border-subtle: #2e2d38;
+  --border-default: #3d3c48;
+
+  /* ── Text ── */
+  --text-primary: #f2f0ed;
+  --text-secondary: #d4cfc7;
+  --text-muted: #a39e97;
+
+  /* ── Accent — warm rose ── */
+  --accent: #e07a8a;
+  --accent-hover: #f0909f;
+  --accent-muted: color-mix(in srgb, var(--accent) 15%, transparent);
+
+  /* ── Semantic — distinct from accent ── */
+  --danger: #e05c5c;
+  --danger-muted: rgba(224, 92, 92, 0.12);
+  --success: #6aafca;
+  --success-muted: rgba(94, 159, 184, 0.12);
+  --warning: #c89640;
+
+  /* ── Heading scale — harmonious warm tones ── */
+  --color-h1: #e07a8a;
+  --color-h2: #b8a9d4;
+  --color-h3: #6aafca;
+  --color-title: #6aafca;
+  /* Aliases (referenced in JSX) */
+  --h1-color: var(--color-h1);
+  --h2-color: var(--color-h2);
+  --title-color: var(--color-title);
+
+  /* ── Neumorphic shadows ── */
+  --neu-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+  --neu-shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 20px rgba(0, 0, 0, 0.25);
+  --neu-shadow-active: 0 0px 1px rgba(0, 0, 0, 0.4);
+  --neu-shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+
+  /* ── Button accent shadows ── */
+  --neu-btn-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 8px 24px color-mix(in srgb, var(--accent) 25%, transparent);
+  --neu-btn-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.2), 0 12px 32px color-mix(in srgb, var(--accent) 30%, transparent);
+  --neu-btn-shadow-active: 0 0px 2px rgba(0, 0, 0, 0.3);
+
+  /* ── Dialog / modal shadows ── */
+  --dialog-shadow: 0 8px 40px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
+
+  /* ── Typography ── */
+  --body-font: "Outfit", "DM Sans", sans-serif;
+
+  /* ── Tag palette — dark mode ── */
+  --tag-rose-bg: rgba(209, 123, 136, 0.14);
+  --tag-rose-border: rgba(209, 123, 136, 0.35);
+  --tag-rose-text: #e895a2;
+  --tag-rose-x: rgba(209, 123, 136, 0.55);
+  --tag-rose-x-hover: #e895a2;
+
+  --tag-lavender-bg: rgba(171, 161, 196, 0.14);
+  --tag-lavender-border: rgba(171, 161, 196, 0.35);
+  --tag-lavender-text: #c5bce0;
+  --tag-lavender-x: rgba(171, 161, 196, 0.55);
+  --tag-lavender-x-hover: #c5bce0;
+
+  --tag-teal-bg: rgba(94, 159, 184, 0.14);
+  --tag-teal-border: rgba(94, 159, 184, 0.35);
+  --tag-teal-text: #7eb5cc;
+  --tag-teal-x: rgba(94, 159, 184, 0.55);
+  --tag-teal-x-hover: #7eb5cc;
+
+  --tag-mauve-bg: rgba(197, 188, 224, 0.12);
+  --tag-mauve-border: rgba(197, 188, 224, 0.32);
+  --tag-mauve-text: #b8b0d4;
+  --tag-mauve-x: rgba(197, 188, 224, 0.5);
+  --tag-mauve-x-hover: #b8b0d4;
+
+  --tag-sky-bg: rgba(126, 181, 204, 0.13);
+  --tag-sky-border: rgba(126, 181, 204, 0.33);
+  --tag-sky-text: #93c4d8;
+  --tag-sky-x: rgba(126, 181, 204, 0.5);
+  --tag-sky-x-hover: #93c4d8;
+
+  --tag-peach-bg: rgba(232, 149, 162, 0.13);
+  --tag-peach-border: rgba(232, 149, 162, 0.33);
+  --tag-peach-text: #f0a8b4;
+  --tag-peach-x: rgba(232, 149, 162, 0.5);
+  --tag-peach-x-hover: #f0a8b4;
+}
+
+/* ── Light Mode ── */
+
+:root[data-theme="light"] {
+  --bg-deep: #f8f6f3;
+  --bg-primary: #ffffff;
+  --bg-surface: #f5f2ef;
+  --bg-elevated: #ffffff;
+  --bg-hover: #ede9e5;
+  --grain-opacity: 0.02;
+
+  --border-subtle: #e5e0db;
+  --border-default: #d5cec9;
+
+  --text-primary: #2d2a28;
+  --text-secondary: #5c5855;
+  --text-muted: #8c8683;
+
+  --accent: #c4566a;
+  --accent-hover: #d87080;
+  --accent-muted: color-mix(in srgb, var(--accent) 10%, transparent);
+
+  --danger: #c84040;
+  --danger-muted: rgba(200, 64, 64, 0.08);
+  --success: #4b829c;
+  --success-muted: rgba(75, 130, 156, 0.08);
+  --warning: #a07830;
+
+  --color-h1: #c4566a;
+  --color-h2: #8570a0;
+  --color-h3: #3e7e9e;
+  --color-title: #3e7e9e;
+  --h1-color: var(--color-h1);
+  --h2-color: var(--color-h2);
+  --title-color: var(--color-title);
+
+  --neu-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --neu-shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.06), 0 8px 20px rgba(0, 0, 0, 0.06);
+  --neu-shadow-active: 0 0px 1px rgba(0, 0, 0, 0.08);
+  --neu-shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+
+  --neu-btn-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 8px 24px color-mix(in srgb, var(--accent) 15%, transparent);
+  --neu-btn-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.06), 0 12px 32px color-mix(in srgb, var(--accent) 20%, transparent);
+  --neu-btn-shadow-active: 0 0px 2px rgba(0, 0, 0, 0.08);
+
+  --dialog-shadow: 0 8px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  --tag-rose-bg: rgba(184, 96, 112, 0.1);
+  --tag-rose-border: rgba(184, 96, 112, 0.3);
+  --tag-rose-text: #9e4555;
+  --tag-rose-x: rgba(184, 96, 112, 0.45);
+  --tag-rose-x-hover: #9e4555;
+
+  --tag-lavender-bg: rgba(140, 123, 163, 0.1);
+  --tag-lavender-border: rgba(140, 123, 163, 0.3);
+  --tag-lavender-text: #6b5a8a;
+  --tag-lavender-x: rgba(140, 123, 163, 0.45);
+  --tag-lavender-x-hover: #6b5a8a;
+
+  --tag-teal-bg: rgba(75, 130, 156, 0.1);
+  --tag-teal-border: rgba(75, 130, 156, 0.3);
+  --tag-teal-text: #2f6e8c;
+  --tag-teal-x: rgba(75, 130, 156, 0.45);
+  --tag-teal-x-hover: #2f6e8c;
+
+  --tag-mauve-bg: rgba(160, 150, 190, 0.1);
+  --tag-mauve-border: rgba(160, 150, 190, 0.3);
+  --tag-mauve-text: #6e6090;
+  --tag-mauve-x: rgba(160, 150, 190, 0.45);
+  --tag-mauve-x-hover: #6e6090;
+
+  --tag-sky-bg: rgba(100, 158, 180, 0.1);
+  --tag-sky-border: rgba(100, 158, 180, 0.3);
+  --tag-sky-text: #336e8a;
+  --tag-sky-x: rgba(100, 158, 180, 0.45);
+  --tag-sky-x-hover: #336e8a;
+
+  --tag-peach-bg: rgba(209, 123, 136, 0.1);
+  --tag-peach-border: rgba(209, 123, 136, 0.3);
+  --tag-peach-text: #a04458;
+  --tag-peach-x: rgba(209, 123, 136, 0.45);
+  --tag-peach-x-hover: #a04458;
+}

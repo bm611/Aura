@@ -1,0 +1,146 @@
+/* ═══════════════════════════════════════════════
+   Tag Input + Chips
+   ═══════════════════════════════════════════════ */
+
+.tag-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+}
+
+.tag-input-field {
+  flex: 1 1 80px;
+  min-width: 64px;
+  max-width: 200px;
+  height: 24px;
+  padding: 0 4px;
+  font-family: var(--body-font);
+  font-size: 16px;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.tag-input-field::placeholder {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px 2px 8px;
+  border-radius: 999px;
+  font-family: var(--body-font);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  border: 1px solid;
+  cursor: default;
+  user-select: none;
+  transition: opacity 150ms ease;
+  animation: tag-pop-in 0.18s var(--ease-out-quart) both;
+}
+
+.tag-chip__label {
+  line-height: 1;
+}
+
+.tag-chip__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  transition: color 120ms ease, background 120ms ease, transform 120ms ease;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+
+.tag-chip__remove::before {
+  content: '';
+  position: absolute;
+  inset: -13px;
+}
+
+.tag-chip__remove:hover {
+  transform: scale(1.15);
+}
+
+.tag-chip__remove:active {
+  transform: scale(0.9);
+}
+
+/* Tag color variants */
+.tag-chip.tag--rose {
+  background: var(--tag-rose-bg);
+  border-color: var(--tag-rose-border);
+  color: var(--tag-rose-text);
+  --chip-x: var(--tag-rose-x);
+  --chip-x-hover: var(--tag-rose-x-hover);
+  --chip-x-hover-bg: rgba(209, 123, 136, 0.15);
+}
+
+.tag-chip.tag--lavender {
+  background: var(--tag-lavender-bg);
+  border-color: var(--tag-lavender-border);
+  color: var(--tag-lavender-text);
+  --chip-x: var(--tag-lavender-x);
+  --chip-x-hover: var(--tag-lavender-x-hover);
+  --chip-x-hover-bg: rgba(171, 161, 196, 0.15);
+}
+
+.tag-chip.tag--teal {
+  background: var(--tag-teal-bg);
+  border-color: var(--tag-teal-border);
+  color: var(--tag-teal-text);
+  --chip-x: var(--tag-teal-x);
+  --chip-x-hover: var(--tag-teal-x-hover);
+  --chip-x-hover-bg: rgba(94, 159, 184, 0.15);
+}
+
+.tag-chip.tag--mauve {
+  background: var(--tag-mauve-bg);
+  border-color: var(--tag-mauve-border);
+  color: var(--tag-mauve-text);
+  --chip-x: var(--tag-mauve-x);
+  --chip-x-hover: var(--tag-mauve-x-hover);
+  --chip-x-hover-bg: rgba(197, 188, 224, 0.15);
+}
+
+.tag-chip.tag--sky {
+  background: var(--tag-sky-bg);
+  border-color: var(--tag-sky-border);
+  color: var(--tag-sky-text);
+  --chip-x: var(--tag-sky-x);
+  --chip-x-hover: var(--tag-sky-x-hover);
+  --chip-x-hover-bg: rgba(126, 181, 204, 0.15);
+}
+
+.tag-chip.tag--peach {
+  background: var(--tag-peach-bg);
+  border-color: var(--tag-peach-border);
+  color: var(--tag-peach-text);
+  --chip-x: var(--tag-peach-x);
+  --chip-x-hover: var(--tag-peach-x-hover);
+  --chip-x-hover-bg: rgba(232, 149, 162, 0.15);
+}
+
+.tag-chip__remove {
+  color: var(--chip-x, var(--text-muted));
+}
+
+.tag-chip__remove:hover {
+  color: var(--chip-x-hover, var(--text-muted));
+  background: var(--chip-x-hover-bg, transparent);
+}

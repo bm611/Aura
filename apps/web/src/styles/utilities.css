@@ -1,0 +1,133 @@
+/* ═══════════════════════════════════════════════
+   Utility: Number Input Spinner Removal
+   ═══════════════════════════════════════════════ */
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Light mode placeholder contrast */
+:root[data-theme="light"] input::placeholder,
+:root[data-theme="light"] textarea::placeholder {
+  color: #8b92a5;
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════
+   Reduced Motion
+   ═══════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════
+   Mobile Responsive
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 767px) {
+  .sb-search input {
+    font-size: 16px;
+  }
+
+  .ren-input {
+    font-size: 16px;
+  }
+
+  .tree-node {
+    min-height: 48px;
+    padding: 10px 12px;
+  }
+
+  .tn-actions {
+    display: none;
+  }
+
+  button:not(.tag-chip__remove) {
+    min-height: 36px;
+    min-width: 36px;
+  }
+
+  button,
+  [role="button"],
+  .tree-node {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .aura-slash-menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    max-width: 100%;
+    min-width: 100%;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 0.5rem;
+    max-height: 40vh;
+    overflow-y: auto;
+    z-index: 50;
+    animation: slide-up-menu 0.2s var(--ease-out-quart);
+  }
+
+  .aura-slash-item {
+    padding: 0.6rem 0.8rem;
+    min-height: 44px;
+  }
+
+  .mt-modal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    max-width: 100%;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    z-index: 101;
+    animation: slide-up-menu 0.25s var(--ease-out-quart);
+    transform: none !important;
+  }
+
+  .mt-modal-header {
+    margin-bottom: 12px;
+  }
+
+  .mt-modal-body {
+    max-height: 50vh;
+  }
+
+  .mt-modal-footer {
+    margin-top: 16px;
+    padding-top: 12px;
+  }
+}

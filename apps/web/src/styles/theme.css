@@ -1,0 +1,166 @@
+@font-face {
+  font-family: "Liga SFMono Nerd Font";
+  src: url("/fonts/SFMono/LigaSFMonoNerdFont-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Liga SFMono Nerd Font";
+  src: url("/fonts/SFMono/LigaSFMonoNerdFont-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Liga SFMono Nerd Font";
+  src: url("/fonts/SFMono/LigaSFMonoNerdFont-Semibold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Liga SFMono Nerd Font";
+  src: url("/fonts/SFMono/LigaSFMonoNerdFont-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ═══════════════════════════════════════════════
+   Tailwind v4 Theme — Folio Design System
+   ═══════════════════════════════════════════════ */
+
+@theme {
+  /* ── Typography ── */
+  --font-display: "Fraunces", "Georgia", serif;
+  --font-logo: "Italiana", serif;
+  --font-body: "Outfit", "DM Sans", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  /* ── Radius ── */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+
+  /* ── Easing ── */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── Durations ── */
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --duration-slow: 350ms;
+
+  /* ── Animations ── */
+  --animate-fade-in-up: fade-in-up 0.8s var(--ease-out-quart) forwards;
+  --animate-fade-in-up-d1: fade-in-up 0.8s var(--ease-out-quart) 150ms forwards;
+  --animate-fade-in-up-d2: fade-in-up 0.8s var(--ease-out-quart) 300ms forwards;
+  --animate-slide-down: slide-down 0.2s var(--ease-out-quart);
+  --animate-slide-up-menu: slide-up-menu 0.2s var(--ease-out-quart);
+  --animate-slide-up-sheet: slide-up-sheet 0.25s ease-out;
+  --animate-tag-pop: tag-pop-in 0.18s var(--ease-out-quart) both;
+  --animate-action-bar-in: action-bar-in 0.35s var(--ease-out-quart);
+  --animate-ctx-fade-in: ctx-fade-in 0.15s var(--ease-out-quart);
+  --animate-spin: spin 0.8s linear infinite;
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(2rem);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-up-menu {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-up-sheet {
+    from {
+      transform: translateY(100%);
+    }
+
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes tag-pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes action-bar-in {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(12px) scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
+    }
+  }
+
+  @keyframes ctx-fade-in {
+    from {
+      opacity: 0;
+      transform: scale(0.94) translateY(-6px);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+}
