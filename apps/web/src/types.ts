@@ -14,6 +14,7 @@ export interface NoteFile {
   createdAt: string
   updatedAt: string
   wordGoal?: number | null
+  icon?: string | null
 }
 
 export interface NoteFolder {
@@ -25,6 +26,7 @@ export interface NoteFolder {
   deletedAt?: string | null
   createdAt?: string
   updatedAt?: string
+  icon?: string | null
 }
 
 export type TreeNode = NoteFile | NoteFolder

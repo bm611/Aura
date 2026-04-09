@@ -33,6 +33,8 @@
  * -- alter table notes add column if not exists parent_id uuid references notes(id) on delete set null;
  * -- alter table notes add column if not exists type text not null default 'file';
  * -- alter table notes add column if not exists deleted_at timestamptz;
+ * -- Run this migration to add icon support:
+ * -- alter table notes add column if not exists icon text;
  * ─────────────────────────────────────────────
  */
 
@@ -50,6 +52,7 @@ interface DbRow {
   created_at: string
   updated_at: string
   deleted_at: string | null
+  icon: string | null
 }
 
 interface AppNote {
@@ -67,6 +70,7 @@ interface AppNote {
   updatedAt?: string | null
   children?: AppNote[]
   wordGoal?: number | null
+  icon?: string | null
 }
 
 /** Map a Supabase DB row → app note shape */
@@ -84,6 +88,7 @@ function rowToNote(row: DbRow): AppNote {
     deletedAt: row.deleted_at || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    icon: row.icon || null,
     ...(row.type === 'folder' ? { children: [] } : {}),
   }
 }
@@ -102,6 +107,7 @@ function noteToRow(note: AppNote, userId: string): Record<string, unknown> {
     created_at: note.createdAt || null,
     updated_at: note.updatedAt || note.createdAt || null,
     deleted_at: note.deletedAt || null,
+    icon: note.icon || null,
   }
 }
 

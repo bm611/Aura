@@ -1385,6 +1385,34 @@ function AppInner() {
     }, 1500)
   }, [finishSyncingIfIdle, isOnline, queuePendingUpsert, syncNoteToCloud, user])
 
+  const handleChangeIcon = useCallback((id: string, icon: string | null) => {
+    const now = new Date().toISOString()
+    const existingNode = fastFindNode(id)
+    if (!existingNode) return
+
+    const updates = { icon, updatedAt: now, localCheckpointAt: now }
+    const updatedNode = normalizeNote({ ...existingNode, ...updates, parentId: fastGetParentId(id) } as TreeNode & { parentId: string | null })
+
+    setTree((previousTree) => updateFileNode(previousTree, id, updates))
+
+    if (!user) return
+
+    if (!isOnline) {
+      queuePendingUpsert(updatedNode)
+      return
+    }
+
+    queuePendingUpsert(updatedNode)
+    setSyncing(true)
+    clearTimeout(cloudSaveTimers.current[id] ?? undefined)
+    cloudSaveTimers.current[id] = setTimeout(() => {
+      syncNoteToCloud(id).finally(() => {
+        cloudSaveTimers.current[id] = null
+        finishSyncingIfIdle()
+      })
+    }, 250)
+  }, [finishSyncingIfIdle, isOnline, queuePendingUpsert, syncNoteToCloud, user])
+
   const toggleTheme = useCallback(() => {
     setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))
   }, [])
@@ -1667,6 +1695,7 @@ function AppInner() {
           onDeleteNote={handleDeleteNote}
           onRenameNode={handleRenameNode}
           onMoveNode={handleMoveNode}
+          onChangeIcon={handleChangeIcon}
           syncing={syncing}
           syncStatus={sidebarSyncStatus}
           collapsed={sidebarCollapsed}

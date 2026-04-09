@@ -32,6 +32,7 @@ import {
 } from '@hugeicons/core-free-icons';
 
 import Icon from './Icon';
+import { CATEGORY_ICON_MAP } from '../config/categoryIcons';
 import SettingsMenu from './SettingsMenu';
 import {
 	countBodyWords,
@@ -1334,7 +1335,7 @@ export default function NoteEditor({
 														>
 															<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/60 text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
 																<Icon
-																	icon={isDaily ? Calendar01Icon : File01Icon}
+																	icon={n.icon && CATEGORY_ICON_MAP[n.icon] ? CATEGORY_ICON_MAP[n.icon]! : (isDaily ? Calendar01Icon : File01Icon)}
 																	size={15}
 																	strokeWidth={1.5}
 																/>
@@ -1416,7 +1417,7 @@ export default function NoteEditor({
 														>
 															<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/60 text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
 																<Icon
-																	icon={isDaily ? Calendar01Icon : File01Icon}
+																	icon={n.icon && CATEGORY_ICON_MAP[n.icon] ? CATEGORY_ICON_MAP[n.icon]! : (isDaily ? Calendar01Icon : File01Icon)}
 																	size={15}
 																	strokeWidth={1.5}
 																/>
@@ -1509,7 +1510,7 @@ export default function NoteEditor({
 												{/* Icon block */}
 												<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/60 text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
 													<Icon
-														icon={isDaily ? Calendar01Icon : File01Icon}
+														icon={n.icon && CATEGORY_ICON_MAP[n.icon] ? CATEGORY_ICON_MAP[n.icon]! : (isDaily ? Calendar01Icon : File01Icon)}
 														size={17}
 														strokeWidth={1.5}
 													/>

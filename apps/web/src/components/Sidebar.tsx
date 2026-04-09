@@ -23,11 +23,13 @@ import {
   StickyNoteIcon,
   SparklesIcon,
   ArrowShrink02Icon,
+  Image01Icon,
 } from '@hugeicons/core-free-icons'
 
 import type { IconSvgElement } from '@hugeicons/react'
 import Icon from './Icon'
 import { useAuth } from '../contexts/AuthContext'
+import { CATEGORY_ICONS, CATEGORY_ICON_MAP } from '../config/categoryIcons'
 import { getVisibleFiles, getParentId } from '../utils/tree'
 import type { TreeNode as TreeNodeType } from '../types'
 import MoveToModal from './MoveToModal'
@@ -54,6 +56,7 @@ interface SidebarProps {
   onDeleteNote: (id: string) => void
   onRenameNode?: (id: string, name: string) => void
   onMoveNode?: (id: string, newParentId: string | null) => void
+  onChangeIcon?: (id: string, icon: string | null) => void
   collapsed: boolean
   onToggleCollapse: () => void
   searchQuery: string
@@ -80,6 +83,7 @@ interface TreeNodeComponentProps {
   onDelete: (id: string) => void
   onRename: (id: string, name: string) => void
   onMove?: (id: string) => void
+  onChangeIcon?: (id: string, icon: string | null) => void
   expanded: Set<string>
   toggleExpand: (id: string, forceOpen?: boolean) => void
   creatingIn: CreatingState | null
@@ -106,6 +110,7 @@ const ICON_MAP: Record<string, IconSvgElement> = {
   newFolder: FolderAddIcon,
   move: MoveToIcon,
   more: MoreHorizontalIcon,
+  image: Image01Icon,
 }
 
 function SidebarIcon({ n, s = 16 }: { n: string; s?: number }) {
@@ -163,6 +168,7 @@ function TreeNodeComponent({
   onDelete,
   onRename,
   onMove,
+  onChangeIcon,
   expanded,
   toggleExpand,
   creatingIn,
@@ -173,6 +179,7 @@ function TreeNodeComponent({
   const [renaming, setRenaming] = useState(false)
   const [renameVal, setRenameVal] = useState(node.name)
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
+  const [iconPicker, setIconPicker] = useState(false)
   const [showAllChildren, setShowAllChildren] = useState(false)
   const renameRef = useRef<HTMLInputElement>(null)
   const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -266,7 +273,11 @@ function TreeNodeComponent({
           <SidebarIcon n="chevR" s={14} />
         </span>
         <span className="tn-icon">
-          <SidebarIcon n={isFolder ? 'folder' : 'file'} s={16} />
+          {node.icon && CATEGORY_ICON_MAP[node.icon] ? (
+            <Icon icon={CATEGORY_ICON_MAP[node.icon]!} size={16} strokeWidth={1.5} style={{ display: 'block' }} />
+          ) : (
+            <SidebarIcon n={isFolder ? 'folder' : 'file'} s={16} />
+          )}
         </span>
         {renaming ? (
           <input
@@ -373,6 +384,16 @@ function TreeNodeComponent({
               <span>Move to...</span>
             </button>
             <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setIconPicker(true)
+                setContextMenu(null)
+              }}
+            >
+              <SidebarIcon n="image" s={16} />
+              <span>Change Icon</span>
+            </button>
+            <button
               className="ctx-danger"
               onClick={(e) => {
                 e.stopPropagation()
@@ -383,6 +404,54 @@ function TreeNodeComponent({
               <SidebarIcon n="trash" s={16} />
               <span>Delete</span>
             </button>
+          </div>
+        </div>,
+        document.body,
+      )}
+
+      {/* Icon picker popover — portaled to body so it can overflow the sidebar */}
+      {iconPicker && createPortal(
+        <div className="ctx-menu-overlay" onClick={() => setIconPicker(false)}>
+          <div
+            className="ctx-menu icon-picker-menu animate-ctx-fade-in"
+            style={{
+              top: nodeRef.current ? nodeRef.current.getBoundingClientRect().bottom + 6 : 0,
+              left: nodeRef.current ? nodeRef.current.getBoundingClientRect().left + 8 : 0,
+              transformOrigin: 'top left',
+              width: 360,
+              padding: 12,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-2 px-0.5">
+              <span className="text-[13px] font-medium text-[var(--text-secondary)]">Choose an icon</span>
+              {node.icon && (
+                <button
+                  className="text-[12px] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                  onClick={() => {
+                    onChangeIcon?.(node.id, null)
+                    setIconPicker(false)
+                  }}
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-8 gap-1">
+              {CATEGORY_ICONS.map((entry) => (
+                <button
+                  key={entry.key}
+                  className={`flex flex-col items-center justify-center w-10 h-10 rounded-lg transition-colors hover:bg-[var(--bg-hover)] ${node.icon === entry.key ? 'bg-[var(--bg-hover)] ring-1.5 ring-[var(--accent)]' : ''}`}
+                  title={entry.label}
+                  onClick={() => {
+                    onChangeIcon?.(node.id, entry.key)
+                    setIconPicker(false)
+                  }}
+                >
+                  <Icon icon={entry.icon} size={20} strokeWidth={1.5} style={{ display: 'block' }} />
+                </button>
+              ))}
+            </div>
           </div>
         </div>,
         document.body,
@@ -408,6 +477,7 @@ function TreeNodeComponent({
                     onDelete={onDelete}
                     onRename={onRename}
                     onMove={onMove}
+                    onChangeIcon={onChangeIcon}
                     expanded={expanded}
                     toggleExpand={toggleExpand}
                     creatingIn={creatingIn}
@@ -479,6 +549,7 @@ export default function Sidebar({
   onDeleteNote,
   onRenameNode,
   onMoveNode,
+  onChangeIcon,
   collapsed,
   onToggleCollapse,
   searchQuery,
@@ -769,6 +840,7 @@ export default function Sidebar({
                 onDelete={(id) => onDeleteNote(id)}
                 onRename={handleRename}
                 onMove={(id) => setMoveToNode(id)}
+                onChangeIcon={onChangeIcon}
                 expanded={expanded}
                 toggleExpand={toggleExpand}
                 creatingIn={creatingIn}
