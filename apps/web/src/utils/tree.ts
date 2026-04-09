@@ -263,8 +263,8 @@ export function rebuildTreeFromFlat(flatItems: FlatNode[]): TreeNode[] {
 
   for (const item of flatItems) {
     if (item.type === 'folder') {
-      const { parentId: _, ...rest } = item
-      folderMap[item.id] = { ...rest, children: [] } as TreeNode & { children: TreeNode[] }
+      const { parentId, ...rest } = item
+      folderMap[item.id] = { ...rest, parentId, children: [] } as TreeNode & { children: TreeNode[] }
     }
   }
 
@@ -281,10 +281,11 @@ export function rebuildTreeFromFlat(flatItems: FlatNode[]): TreeNode[] {
         root.push(folderNode)
       }
     } else {
+      const fileNode = { ...rest, parentId } as unknown as TreeNode
       if (parentId !== null && folderMap[parentId]) {
-        folderMap[parentId]!.children.push(rest as unknown as TreeNode)
+        folderMap[parentId]!.children.push(fileNode)
       } else {
-        root.push(rest as unknown as TreeNode)
+        root.push(fileNode)
       }
     }
   }

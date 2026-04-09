@@ -97,7 +97,34 @@ describe('tree utilities', () => {
       { id: 'file-b', type: 'file', name: 'Inbox', title: 'Inbox', content: 'two', parentId: null },
     ])
 
-    expect(rebuildTreeFromFlat(flattened)).toEqual(baseTree)
+    // rebuildTreeFromFlat preserves parentId on nodes
+    const rebuiltTree = rebuildTreeFromFlat(flattened)
+    expect(rebuiltTree).toEqual([
+      {
+        id: 'folder-a',
+        type: 'folder',
+        name: 'Projects',
+        parentId: null,
+        children: [
+          {
+            id: 'file-a',
+            type: 'file',
+            name: 'Alpha',
+            title: 'Alpha',
+            content: 'one',
+            parentId: 'folder-a',
+          },
+        ],
+      },
+      {
+        id: 'file-b',
+        type: 'file',
+        name: 'Inbox',
+        title: 'Inbox',
+        content: 'two',
+        parentId: null,
+      },
+    ])
   })
 
   it('collects ids for folders and all descendants', () => {
