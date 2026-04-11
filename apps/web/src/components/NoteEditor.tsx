@@ -26,7 +26,6 @@ import {
 	File01Icon as FileText01Icon,
 	Download01Icon,
 	Home01Icon,
-	ArrowDown01Icon,
 	Folder01Icon,
 	ArrowRight01Icon
 } from '@hugeicons/core-free-icons';
@@ -108,11 +107,6 @@ interface SaveBadgeMeta {
 }
 
 const POPOVER_TRANSITION = { type: 'spring', duration: 0.3, bounce: 0 } as const;
-const POPOVER_VARIANTS = {
-	hidden: { opacity: 0, y: -8, filter: 'blur(4px)', scale: 0.98 },
-	visible: { opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 },
-	exit: { opacity: 0, y: -6, filter: 'blur(2px)', scale: 0.985 }
-} as const;
 
 // ─── Favorite Button Component ────────────────────────────────────────────────
 
@@ -987,40 +981,6 @@ export default function NoteEditor({
 	onWideModeChange
 }: NoteEditorProps) {
 	const { user, signOut } = useAuth();
-	const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-	const accountMenuRef = useRef<HTMLDivElement | null>(null);
-	const accountMenuButtonRef = useRef<HTMLButtonElement | null>(null);
-
-	useEffect(() => {
-		if (!accountMenuOpen) {
-			return undefined;
-		}
-
-		const handlePointerDown = (event: MouseEvent) => {
-			const target = event.target as Node;
-			const clickedMenu = accountMenuRef.current?.contains(target);
-			const clickedTrigger = accountMenuButtonRef.current?.contains(target);
-
-			if (!clickedMenu && !clickedTrigger) {
-				setAccountMenuOpen(false);
-			}
-		};
-
-		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.key === 'Escape') {
-				setAccountMenuOpen(false);
-				accountMenuButtonRef.current?.focus();
-			}
-		};
-
-		document.addEventListener('mousedown', handlePointerDown);
-		document.addEventListener('keydown', handleKeyDown);
-
-		return () => {
-			document.removeEventListener('mousedown', handlePointerDown);
-			document.removeEventListener('keydown', handleKeyDown);
-		};
-	}, [accountMenuOpen]);
 
 	// Flat file notes for reuse across home screen and editor
 	const fileNotes = useMemo(() => notes.filter((n): n is NoteFile => n.type === 'file'), [notes]);
@@ -1955,62 +1915,22 @@ export default function NoteEditor({
 
 					{/* Auth: show sign-in or user menu */}
 					{user ? (
-						<div className="relative">
-							<button
-								ref={accountMenuButtonRef}
-								type="button"
-								onClick={() => setAccountMenuOpen((open) => !open)}
-								className="auth-pill auth-pill--signed-in group relative flex items-center gap-2 transition-transform duration-150 ease-out active:scale-[0.96]"
+						<div className="auth-group">
+							<div
+								className="auth-pill auth-pill--signed-in"
 								title={`Signed in as ${user.email}`}
-								aria-expanded={accountMenuOpen}
-								aria-haspopup="menu"
 							>
 								<span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
 								<span className="auth-pill__dot" />
-								<motion.span
-									initial={false}
-									animate={{ rotate: accountMenuOpen ? 180 : 0, opacity: accountMenuOpen ? 1 : 0.72 }}
-									transition={POPOVER_TRANSITION}
-									className="text-[var(--text-muted)]"
-								>
-									<Icon icon={ArrowDown01Icon} size={14} strokeWidth={1.8} />
-								</motion.span>
+							</div>
+							<button
+								type="button"
+								onClick={signOut}
+								className="auth-signout-btn"
+								title="Sign out"
+							>
+								<Icon icon={Logout01Icon} size={19} strokeWidth={2} />
 							</button>
-
-							<AnimatePresence initial={false}>
-								{accountMenuOpen && (
-									<motion.div
-										ref={accountMenuRef}
-										className="absolute right-0 top-12 z-50 w-52 rounded-xl border border-[var(--border-subtle)]/70 bg-[var(--bg-surface)]/95 backdrop-blur-xl"
-										initial="hidden"
-										animate="visible"
-										exit="exit"
-										variants={POPOVER_VARIANTS}
-										transition={POPOVER_TRANSITION}
-										style={{
-											boxShadow: '0 20px 50px rgba(0, 0, 0, 0.22), 0 1px 0 color-mix(in srgb, white 5%, transparent)',
-											transformOrigin: 'top right',
-										}}
-									>
-										<div className="p-2">
-											<div className="mb-2 border-b border-[var(--border-subtle)]/70 px-3 py-2 text-[12px] truncate text-[var(--text-muted)]">
-												{user.email}
-											</div>
-											<button
-												type="button"
-												onClick={() => {
-													setAccountMenuOpen(false);
-													signOut();
-												}}
-												className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[14px] text-[var(--text-primary)] transition-[transform,background-color] duration-150 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.96]"
-											>
-												<Icon icon={Logout01Icon} size={16} strokeWidth={1.5} />
-												<span>Sign out</span>
-											</button>
-										</div>
-									</motion.div>
-								)}
-							</AnimatePresence>
 						</div>
 					) : (
 						<button
