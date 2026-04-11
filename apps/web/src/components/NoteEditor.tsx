@@ -46,6 +46,7 @@ import DailyHeader from './DailyHeader';
 import AccentPicker from './AccentPicker';
 import type { EditorApi } from './LiveMarkdownEditor';
 import MobileEditorToolbar from './MobileEditorToolbar';
+import NoteBanner from './NoteBanner';
 import type { NoteFile, TreeNode } from '../types';
 import { getBreadcrumbPath } from '../utils/tree';
 
@@ -837,29 +838,6 @@ function FirstNotePrompt() {
 			</motion.div>
 		</motion.div>
 	);
-}
-
-function getGradientForNote(id: string): string {
-	let hash = 0;
-	for (let i = 0; i < id.length; i++) {
-		hash = id.charCodeAt(i) + ((hash << 5) - hash);
-	}
-
-	const colors = [
-		'var(--accent)',
-		'var(--success)',
-		'var(--color-h2)',
-		'var(--accent)',
-		'var(--success)',
-		'var(--color-h2)',
-		'var(--accent-hover)'
-	];
-
-	const color1 = colors[Math.abs(hash) % colors.length];
-	const color2 = colors[Math.abs(hash * 31) % colors.length];
-
-	return `radial-gradient(ellipse at top left, color-mix(in srgb, ${color1} 15%, transparent) 0%, transparent 50%),
-          radial-gradient(ellipse at top right, color-mix(in srgb, ${color2} 15%, transparent) 0%, transparent 50%)`;
 }
 
 function formatRelativeSaveTime(timestamp: string | null | undefined): string | null {
@@ -1829,15 +1807,6 @@ export default function NoteEditor({
 
 	return (
 		<div className="relative flex flex-1 min-h-0 min-w-0 w-full flex-col overflow-hidden rounded-2xl bg-[var(--bg-primary)] transition-[border-radius] duration-300 max-md:rounded-none">
-			{/* Subtle grainy gradient background for the banner area */}
-			<div
-				className="pointer-events-none absolute left-0 right-0 top-0 z-0 h-[20vh] md:h-[35vh] opacity-100 transition-colors duration-700"
-				style={{
-					backgroundImage: getGradientForNote(note.id),
-					maskImage: 'linear-gradient(to bottom, black 0%, black 55%, transparent 100%)',
-					WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 55%, transparent 100%)'
-				}}
-			/>
 
 			<div className="relative z-20 flex items-center justify-between px-4 py-2 md:px-6">
 				<div className="flex items-center gap-2">
@@ -1951,17 +1920,14 @@ export default function NoteEditor({
 				<div className={wideMode ? 'w-full px-4 pb-24 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0' : 'mx-auto max-w-5xl px-4 pb-24 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0'}>
 					<Breadcrumbs note={note} notes={notes} tree={tree} onSelectNote={onSelectNote} />
 
-					<input
-						type="text"
-						value={note.title}
-						onChange={(event) => onUpdateNote(note.id, { title: event.target.value })}
-						onKeyDown={handleTitleKeyDown}
-						className="note-title-input w-full bg-transparent text-3xl font-bold tracking-tight text-[var(--title-color)] placeholder:text-[var(--text-muted)] md:text-4xl"
-						style={{ fontFamily: 'var(--font-display)', textWrap: 'balance' }}
-						placeholder="Untitled"
+					<NoteBanner
+						noteId={note.id}
+						title={note.title}
+						onTitleChange={(title) => onUpdateNote(note.id, { title })}
+						onTitleKeyDown={handleTitleKeyDown}
 					/>
 
-					<div className="mt-3 text-[12px] text-[var(--text-muted)]">
+					<div className="text-[12px] text-[var(--text-muted)]">
 						<span className="inline-flex items-center gap-1.5">
 							<Icon icon={Calendar01Icon} size={14} strokeWidth={1.5} className="opacity-70" />
 							{createdAtLabel}
