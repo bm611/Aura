@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useRef, useEffect } from 'react'
 
 const W = 800
 const H = 280
@@ -165,6 +165,15 @@ export default function NoteBanner({ noteId, title, onTitleChange, onTitleKeyDow
 		[patternSvg]
 	)
 
+	const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+	useEffect(() => {
+		if (textareaRef.current) {
+			textareaRef.current.style.height = 'auto'
+			textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
+		}
+	}, [title])
+
 	return (
 		<div
 			className="relative w-full overflow-hidden mb-6"
@@ -186,13 +195,14 @@ export default function NoteBanner({ noteId, title, onTitleChange, onTitleKeyDow
 
 			{/* Title overlay */}
 			<div className="relative z-10 flex items-end h-full min-h-[160px] p-6 md:p-8">
-				<input
-					type="text"
+				<textarea
+					ref={textareaRef}
 					value={title}
 					onChange={(e) => onTitleChange(e.target.value)}
 					onKeyDown={onTitleKeyDown}
-					className="w-full max-w-[60%] bg-transparent text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white placeholder:text-white/50 focus:outline-none"
-					style={{ fontFamily: '"Outfit", sans-serif', textWrap: 'balance' }}
+					rows={1}
+					className="w-full max-w-[80%] bg-transparent text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white placeholder:text-white/50 focus:outline-none resize-none overflow-hidden"
+					style={{ fontFamily: '"Outfit", sans-serif', textWrap: 'balance', lineHeight: 1.2 }}
 					placeholder="Untitled"
 				/>
 			</div>
