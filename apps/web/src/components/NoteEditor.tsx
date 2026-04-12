@@ -252,7 +252,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 			initial={{ opacity: 0, y: -4 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-			className="flex items-center gap-1.5 text-[13px] text-[var(--text-muted)] mb-3"
+			className="inline-flex items-center gap-1.5 text-[13px] text-[var(--text-muted)] mb-3 px-2 py-1 rounded-md bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-sm"
 		>
 			{/* Folder path */}
 			{folderPath.map((folder, index) => (
@@ -350,6 +350,23 @@ function compareRecentNotes(a: NoteFile, b: NoteFile): number {
 	}
 
 	return a.id.localeCompare(b.id);
+}
+
+function getContentPreview(content: string, maxLength = 90): string {
+	const stripped = content
+		.replace(/^#+\s.*$/gm, '')
+		.replace(/\[.*?\]\(.*?\)/g, '')
+		.replace(/!\[.*?\]\(.*?\)/g, '')
+		.replace(/```[\s\S]*?```/g, '')
+		.replace(/`([^`]+)`/g, '$1')
+		.replace(/[*_~]+/g, '')
+		.replace(/^[-*+]\s/gm, '')
+		.replace(/^\d+\.\s/gm, '')
+		.replace(/^>\s?.*/gm, '')
+		.replace(/\n+/g, ' ')
+		.trim();
+	const preview = stripped.length > maxLength ? stripped.slice(0, maxLength).replace(/\s+\S*$/, '') + '…' : stripped;
+	return preview;
 }
 
 function EditorFallback() {
@@ -983,7 +1000,7 @@ export default function NoteEditor({
 		return `${streak} days strong. You're unstoppable.`;
 	};
 
-	// Last 7 days activity for streak visualization
+	// Last 7 days activity for streak visualization (graduated intensity)
 	const last7DaysActivity = useMemo(() => {
 		return Array.from({ length: 7 }, (_, i) => {
 			const d = new Date()
@@ -991,10 +1008,11 @@ export default function NoteEditor({
 			d.setHours(0, 0, 0, 0)
 			const end = new Date(d)
 			end.setHours(23, 59, 59, 999)
-			return fileNotes.some(n => {
+			const wordsOnDay = fileNotes.reduce((sum, n) => {
 				const nd = new Date(n.updatedAt || n.createdAt)
-				return nd >= d && nd <= end
-			})
+				return nd >= d && nd <= end ? sum + countBodyWords(n.content) : sum
+			}, 0)
+			return { active: wordsOnDay > 0, intensity: Math.min(wordsOnDay / 200, 1) }
 		})
 	}, [fileNotes])
 
@@ -1047,7 +1065,14 @@ export default function NoteEditor({
 		const favoriteNotes = rawFavorites.slice(0, 6);
 
 		return (
-			<div className="flex flex-1 min-w-0 flex-col max-md:rounded-none rounded-2xl bg-[var(--bg-primary)]">
+			<motion.div
+				key="home"
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				exit={{ opacity: 0 }}
+				transition={{ duration: 0.2 }}
+				className="flex flex-1 min-w-0 flex-col max-md:rounded-none rounded-2xl bg-[var(--bg-primary)]"
+			>
 				{/* Top bar */}
 				<div className="flex items-center justify-between px-4 py-2 md:px-6">
 					{sidebarCollapsed ? (
@@ -1167,21 +1192,23 @@ export default function NoteEditor({
 
 						{/* 7-day activity strip */}
 						<div className="flex items-end gap-1.5 mb-1" title="Writing activity — last 7 days">
-							{last7DaysActivity.map((active, i) => {
+							{last7DaysActivity.map(({ active, intensity }, i) => {
 								const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 								const todayDow = new Date().getDay()
 								const label = DAY_LABELS[((todayDow - 6 + i) % 7 + 7) % 7]
 								const isToday = i === 6
+								const accentPct = active ? Math.round(15 + intensity * 30) : 0
+								const borderPct = active ? Math.round(25 + intensity * 25) : 0
 								return (
 									<div key={i} className="flex flex-col items-center gap-1">
 										<motion.div
 											className="w-7 h-7 rounded-lg flex items-center justify-center"
 											style={{
 												background: active
-													? 'color-mix(in srgb, var(--accent) 20%, transparent)'
+													? `color-mix(in srgb, var(--accent) ${accentPct}%, transparent)`
 													: 'var(--glass-bg)',
 												border: `1.5px solid ${active
-													? 'color-mix(in srgb, var(--accent) 42%, transparent)'
+													? `color-mix(in srgb, var(--accent) ${borderPct}%, transparent)`
 													: isToday
 														? 'color-mix(in srgb, var(--accent) 30%, var(--glass-border))'
 														: 'var(--glass-border)'}`,
@@ -1198,7 +1225,7 @@ export default function NoteEditor({
 													animate={{ scale: 1 }}
 													transition={{ delay: i * 0.06 + 0.15, type: 'spring', stiffness: 420, damping: 18 }}
 												>
-													<Icon icon={FireIcon} size={13} strokeWidth={2} style={{ color: 'var(--accent)' }} />
+													<Icon icon={FireIcon} size={13} strokeWidth={2} style={{ color: 'var(--accent)', opacity: 0.6 + intensity * 0.4 }} />
 												</motion.span>
 											)}
 										</motion.div>
@@ -1259,14 +1286,15 @@ export default function NoteEditor({
 						className="animate-fade-in-up-delay-2 mt-8 w-full px-4 md:hidden"
 						style={{ fontFamily: '"Outfit", sans-serif' }}
 					>
-						{/* Tab bar */}
-						<div className="relative mb-6 flex border-b border-[var(--border-subtle)]">
+						{/* Tab bar — editorial treatment */}
+						<div className="relative mb-8 flex">
 							<button
 								type="button"
 								onClick={() => setHomeTab('recent')}
-								className="relative flex flex-1 items-center justify-center gap-2 pb-3 pt-1 text-[14px] font-medium tracking-wide transition-colors duration-150"
+								className="relative flex flex-1 items-center justify-center gap-2 pb-3 text-[14px] font-semibold tracking-wide transition-colors duration-150"
 								style={{
-									color: homeTab === 'recent' ? 'var(--text-primary)' : 'var(--text-muted)'
+									color: homeTab === 'recent' ? 'var(--text-primary)' : 'var(--text-muted)',
+									fontFamily: 'var(--font-display)',
 								}}
 							>
 								<Icon
@@ -1282,7 +1310,7 @@ export default function NoteEditor({
 								{homeTab === 'recent' && (
 									<motion.div
 										layoutId="home-tab-underline"
-										className="absolute bottom-0 left-1/2 h-[2px] w-16 -translate-x-1/2 rounded-full bg-[var(--accent)]"
+										className="absolute bottom-0 left-[10%] right-[10%] h-[2px] rounded-full bg-[var(--accent)]"
 										transition={{ type: 'spring', duration: 0.4, bounce: 0.15 }}
 									/>
 								)}
@@ -1290,9 +1318,10 @@ export default function NoteEditor({
 							<button
 								type="button"
 								onClick={() => setHomeTab('favorites')}
-								className="relative flex flex-1 items-center justify-center gap-2 pb-3 pt-1 text-[14px] font-medium tracking-wide transition-colors duration-150"
+								className="relative flex flex-1 items-center justify-center gap-2 pb-3 text-[14px] font-semibold tracking-wide transition-colors duration-150"
 								style={{
-									color: homeTab === 'favorites' ? 'var(--text-primary)' : 'var(--text-muted)'
+									color: homeTab === 'favorites' ? 'var(--text-primary)' : 'var(--text-muted)',
+									fontFamily: 'var(--font-display)',
 								}}
 							>
 								<Icon
@@ -1308,7 +1337,7 @@ export default function NoteEditor({
 								{homeTab === 'favorites' && (
 									<motion.div
 										layoutId="home-tab-underline"
-										className="absolute bottom-0 left-1/2 h-[2px] w-20 -translate-x-1/2 rounded-full bg-[var(--accent)]"
+										className="absolute bottom-0 left-[10%] right-[10%] h-[2px] rounded-full bg-[var(--accent)]"
 										transition={{ type: 'spring', duration: 0.4, bounce: 0.15 }}
 									/>
 								)}
@@ -1327,7 +1356,7 @@ export default function NoteEditor({
 										transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
 									>
 										{recentNotes.length > 0 ? (
-											<div className="flex flex-col divide-y divide-[var(--border-subtle)]/50">
+											<div className="flex flex-col gap-3">
 												{recentNotes.map((n, i) => {
 													const isDaily = n.tags?.includes('daily');
 													const rawTitle = getNoteDisplayTitle(n);
@@ -1353,29 +1382,37 @@ export default function NoteEditor({
 															key={n.id}
 															type="button"
 															onClick={() => onSelectNote(n.id)}
-															className="glass group flex items-center gap-3 rounded-xl px-1 py-2.5 transition-[background-color,transform,border-color,box-shadow] duration-150 ease-out active:scale-[0.96]"
-															initial={{ opacity: 0, y: 6 }}
+															className="group relative w-full text-left rounded-2xl px-4 py-4 transition-[transform,background-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
+															initial={{ opacity: 0, y: 10 }}
 															animate={{ opacity: 1, y: 0 }}
 															transition={{
-																duration: 0.25,
-																delay: i * 0.04,
+																duration: 0.35,
+																delay: i * 0.06,
 																ease: [0.23, 1, 0.32, 1]
 															}}
-															style={{ WebkitTapHighlightColor: 'transparent' }}
+															style={{
+																WebkitTapHighlightColor: 'transparent',
+																background: 'var(--glass-bg)',
+																border: '1px solid var(--glass-border)',
+															}}
 														>
-															<div className="glass-icon flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
-																<Icon
-																	icon={n.icon && CATEGORY_ICON_MAP[n.icon] ? CATEGORY_ICON_MAP[n.icon]! : (isDaily ? Calendar01Icon : File01Icon)}
-																	size={15}
-																	strokeWidth={1.5}
+															{/* Accent dot for first item */}
+															{i === 0 && (
+																<div
+																	className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-8 rounded-full"
+																	style={{ background: 'var(--accent)' }}
 																/>
+															)}
+															<div className="flex min-w-0 flex-col gap-1.5">
+																<div className="flex items-baseline justify-between gap-3">
+																	<span className="truncate text-[15px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]" style={{ fontFamily: '"Outfit", sans-serif' }}>
+																		{displayTitle}
+																	</span>
+																	<span className="shrink-0 text-[11px] font-medium text-[var(--text-muted)] tabular-nums">
+																		{formatRelativeTime(date)}
+																	</span>
+																</div>
 															</div>
-															<span className="truncate flex-1 text-[15px] font-medium tracking-tight text-[var(--text-primary)] text-left transition-colors duration-150 group-hover:text-[var(--accent)]">
-																{displayTitle}
-															</span>
-															<span className="shrink-0 text-[11px] text-[var(--text-muted)] tabular-nums">
-																{formatRelativeTime(date)}
-															</span>
 														</motion.button>
 													);
 												})}
@@ -1395,8 +1432,7 @@ export default function NoteEditor({
 										transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
 									>
 										{favoriteNotes.length > 0 ? (
-											<>
-											<div className="flex flex-col divide-y divide-[var(--border-subtle)]/50">
+											<div className="flex flex-col gap-3">
 												{(favExpanded ? favoriteNotes : favoriteNotes.slice(0, 4)).map((n, i) => {
 													const isDaily = n.tags?.includes('daily');
 													const rawTitle = getNoteDisplayTitle(n);
@@ -1422,46 +1458,53 @@ export default function NoteEditor({
 															key={n.id}
 															type="button"
 															onClick={() => onSelectNote(n.id)}
-															initial={{ opacity: 0, y: 6 }}
+															initial={{ opacity: 0, y: 10 }}
 															animate={{ opacity: 1, y: 0 }}
 															transition={{
-																duration: 0.24,
-																delay: i * 0.04,
+																duration: 0.35,
+																delay: i * 0.06,
 																ease: [0.23, 1, 0.32, 1]
 															}}
-															className="glass group flex items-center gap-3 rounded-xl px-1 py-3 text-left shadow-sm transition-[background-color,transform,border-color,box-shadow] duration-150 ease-out active:scale-[0.96] hover:shadow-md"
-															style={{ WebkitTapHighlightColor: 'transparent' }}
+															className="group relative w-full text-left rounded-2xl px-4 py-4 transition-[transform,background-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
+															style={{
+																WebkitTapHighlightColor: 'transparent',
+																background: 'var(--glass-bg)',
+																border: '1px solid var(--glass-border)',
+															}}
 														>
-															<div className="glass-icon flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
-																<Icon
-																	icon={n.icon && CATEGORY_ICON_MAP[n.icon] ? CATEGORY_ICON_MAP[n.icon]! : (isDaily ? Calendar01Icon : File01Icon)}
-																	size={15}
-																	strokeWidth={1.5}
-																/>
-															</div>
-															<div className="flex min-w-0 flex-1 flex-col gap-0.5 text-left">
-																<span className="truncate text-[15px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
-																	{displayTitle}
-																</span>
-																<span className="text-[11px] text-[var(--text-muted)] tabular-nums">
-																	{formatRelativeTime(date)}
-																</span>
+															<div className="flex min-w-0 flex-col gap-1.5">
+																<div className="flex items-center gap-2">
+																	<Icon
+																		icon={StarIcon}
+																		size={12}
+																		strokeWidth={2.5}
+																		style={{ color: 'var(--warning)', opacity: 0.5 }}
+																	/>
+																	<span className="truncate text-[15px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]" style={{ fontFamily: '"Outfit", sans-serif' }}>
+																		{displayTitle}
+																	</span>
+																</div>
+																<div className="flex items-center gap-2 text-[11px] text-[var(--text-muted)]">
+																	<span className="tabular-nums font-medium">{formatRelativeTime(date)}</span>
+																</div>
 															</div>
 														</motion.button>
 													);
 												})}
+												{favoriteNotes.length > 4 && (
+													<button
+														type="button"
+														onClick={() => setFavExpanded((v) => !v)}
+														className="mt-1 w-full rounded-xl py-2.5 text-[12px] font-semibold tracking-wide text-[var(--text-muted)] transition-[color,background-color] duration-150 hover:text-[var(--text-primary)] active:scale-[0.97]"
+														style={{
+															WebkitTapHighlightColor: 'transparent',
+															fontFamily: '"Outfit", sans-serif',
+														}}
+													>
+														{favExpanded ? 'Show less' : `Show more (${favoriteNotes.length - 4})`}
+													</button>
+												)}
 											</div>
-											{favoriteNotes.length > 4 && (
-												<button
-													type="button"
-													onClick={() => setFavExpanded((v) => !v)}
-													className="glass mt-2 w-full rounded-xl py-2 text-[12px] font-medium text-[var(--text-muted)] transition-[background-color,color,border-color,box-shadow] duration-150 hover:text-[var(--text-primary)] active:scale-[0.96]"
-													style={{ WebkitTapHighlightColor: 'transparent' }}
-												>
-													{favExpanded ? 'Show less' : `Show more (${favoriteNotes.length - 4})`}
-												</button>
-											)}
-											</>
 										) : (
 											<div className="flex flex-col justify-center min-h-[260px]">
 												<FavoritesEmptyPrompt />
@@ -1473,24 +1516,26 @@ export default function NoteEditor({
 						</div>
 					</div>
 
-					{/* ── Desktop Two-Column View ──────────────────────────── */}
+					{/* ── Desktop Two-Column View — Bolder layout ───────────────── */}
 					<div
-						className="animate-fade-in-up-delay-2 mt-10 w-full max-w-[1200px] md:mt-16 hidden md:grid md:grid-cols-[4fr_5fr] lg:grid-cols-[4fr_6fr] gap-10 lg:gap-14 px-8"
+						className="animate-fade-in-up-delay-2 mt-12 w-full max-w-[1200px] hidden md:grid md:grid-cols-[3fr_5fr] lg:grid-cols-[3fr_5fr] gap-8 lg:gap-12 px-8"
 						style={{ fontFamily: '"Outfit", sans-serif' }}
 					>
-						{/* ── Recent Column — Sleek list ────────────────────────── */}
+						{/* ── Recent Column — Editorial timeline ────────────────── */}
 						<div className="flex flex-col">
-							<div className="mb-5 flex items-center gap-3">
-								<div className="glass-icon flex h-8 w-8 items-center justify-center rounded-lg text-[var(--accent)]" style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)' }}>
-									<Icon icon={Clock01Icon} size={17} strokeWidth={2} />
-								</div>
-								<h2 className="text-[15px] font-semibold tracking-wide text-[var(--text-primary)] letter-spacing-widest opacity-60">
+							{/* Section header — bold display type with accent line */}
+							<div className="mb-6 flex items-center gap-3 pb-4" style={{ borderBottom: '1px solid color-mix(in srgb, var(--border-subtle) 60%, transparent)' }}>
+								<Icon icon={Clock01Icon} size={18} strokeWidth={2} style={{ color: 'var(--accent)', opacity: 0.8 }} />
+								<h2
+									className="text-[18px] font-bold tracking-tight text-[var(--text-primary)]"
+									style={{ fontFamily: 'var(--font-display)' }}
+								>
 									Recent
 								</h2>
 							</div>
 
 							{recentNotes.length > 0 ? (
-								<div className="flex flex-col divide-y divide-[var(--border-subtle)]/50">
+								<div className="flex flex-col">
 									{recentNotes.map((n, i) => {
 										const isDaily = n.tags?.includes('daily');
 										const rawTitle = getNoteDisplayTitle(n);
@@ -1518,40 +1563,60 @@ export default function NoteEditor({
 												key={n.id}
 												type="button"
 												onClick={() => onSelectNote(n.id)}
-												initial={{ opacity: 0, y: 8 }}
-												animate={{ opacity: 1, y: 0 }}
-												transition={{ duration: 0.28, delay: i * 0.04, ease: [0.23, 1, 0.32, 1] }}
-												className="glass group flex items-center gap-4 rounded-xl px-2 py-2.5 transition-[background-color,transform,border-color,box-shadow] duration-150 ease-out active:scale-[0.96]"
+												initial={{ opacity: 0, x: -12 }}
+												animate={{ opacity: 1, x: 0 }}
+												transition={{ duration: 0.4, delay: i * 0.07, ease: [0.23, 1, 0.32, 1] }}
+												className="group relative flex items-start gap-4 py-4 text-left transition-[background-color,transform] duration-200 hover:bg-[var(--glass-bg)] hover:-translate-y-px active:scale-[0.98] rounded-xl px-3 focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
 												style={{ WebkitTapHighlightColor: 'transparent' }}
 											>
-												{/* Icon block */}
-												<div className="glass-icon flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
-													<Icon
-														icon={n.icon && CATEGORY_ICON_MAP[n.icon] ? CATEGORY_ICON_MAP[n.icon]! : (isDaily ? Calendar01Icon : File01Icon)}
-														size={15}
-														strokeWidth={1.5}
+												{/* Timeline dot + line */}
+												<div className="relative flex flex-col items-center shrink-0 pt-1.5">
+													<div
+														className="w-2 h-2 rounded-full ring-2 ring-[var(--bg-primary)] shrink-0"
+														style={{
+															background: i === 0 ? 'var(--accent)' : 'var(--text-muted)',
+															opacity: i === 0 ? 1 : 0.4,
+														}}
 													/>
+													{i < recentNotes.length - 1 && (
+														<div
+															className="w-px flex-1 mt-1.5 rounded-full"
+															style={{
+																background: 'var(--border-subtle)',
+																minHeight: '32px',
+															}}
+														/>
+													)}
 												</div>
 
-												{/* Title inline with timestamp */}
-												<span className="truncate flex-1 text-[15px] font-medium tracking-tight text-[var(--text-primary)] text-left transition-colors duration-150 group-hover:text-[var(--accent)]">
-													{displayTitle}
-												</span>
-												<span className="shrink-0 text-[12px] text-[var(--text-muted)] tabular-nums transition-colors duration-150 group-hover:text-[var(--text-secondary)]">
-													{formatRelativeTime(date)}
-												</span>
+												{/* Content */}
+												<div className="flex min-w-0 flex-1 flex-col gap-1 py-0.5">
+													<span
+														className="truncate text-[15px] font-semibold tracking-tight transition-colors duration-150 group-hover:text-[var(--accent)]"
+														style={{
+															color: i === 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
+														}}
+													>
+														{displayTitle}
+													</span>
+													<div className="flex items-center gap-2 mt-0.5">
+														<span className="text-[10px] font-semibold uppercase tracking-wider tabular-nums" style={{ color: 'var(--accent)', opacity: 0.55 }}>
+															{formatRelativeTime(date)}
+														</span>
+													</div>
+												</div>
 
-												{/* Chevron hint */}
+												{/* Arrow hint */}
 												<svg
-													className="shrink-0 opacity-0 group-hover:opacity-40 transition-opacity duration-150 -translate-x-1 group-hover:translate-x-0 transition-transform"
-													width="14"
-													height="14"
-													viewBox="0 0 14 14"
+													className="shrink-0 opacity-0 group-hover:opacity-30 transition-all duration-200 translate-x-0 group-hover:translate-x-0 self-center"
+													width="16"
+													height="16"
+													viewBox="0 0 16 16"
 													fill="none"
 													aria-hidden="true"
 												>
 													<path
-														d="M5 3l4 4-4 4"
+														d="M6 4l4 4-4 4"
 														stroke="currentColor"
 														strokeWidth="1.5"
 														strokeLinecap="round"
@@ -1569,19 +1634,21 @@ export default function NoteEditor({
 							)}
 						</div>
 
-						{/* ── Favorites Column — Bento card grid ───────────────── */}
+						{/* ── Favorites Column — Statement cards ───────────────── */}
 						<div className="flex flex-col">
-							<div className="mb-5 flex items-center gap-3">
-								<div className="glass-icon flex h-8 w-8 items-center justify-center rounded-lg text-[var(--warning)]" style={{ background: 'color-mix(in srgb, var(--warning) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--warning) 20%, transparent)' }}>
-									<Icon icon={StarIcon} size={17} strokeWidth={2} />
-								</div>
-								<h2 className="text-[15px] font-semibold tracking-wide text-[var(--text-primary)] letter-spacing-widest opacity-60">
+							{/* Section header — bold with star accent */}
+							<div className="mb-6 flex items-center gap-3 pb-4" style={{ borderBottom: '1px solid color-mix(in srgb, var(--warning) 25%, var(--border-subtle))' }}>
+								<Icon icon={StarIcon} size={18} strokeWidth={2.5} style={{ color: 'var(--warning)', opacity: 0.85 }} />
+								<h2
+									className="text-[18px] font-bold tracking-tight text-[var(--text-primary)]"
+									style={{ fontFamily: 'var(--font-display)' }}
+								>
 									Favorites
 								</h2>
 							</div>
 
 							{favoriteNotes.length > 0 ? (
-								<div className="grid grid-cols-2 gap-3">
+								<div className="grid grid-cols-2 gap-4">
 									{favoriteNotes.map((n, i) => {
 										const isDaily = n.tags?.includes('daily');
 										const rawTitle = getNoteDisplayTitle(n);
@@ -1591,17 +1658,17 @@ export default function NoteEditor({
 										if (isDaily) {
 											const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/);
 											if (parts) {
-												const [, dd, mm, yyyy] = parts;
-												const d = new Date(`${yyyy}-${mm}-${dd}`);
-												const readable = d.toLocaleDateString('en-GB', {
-													day: 'numeric',
-													month: 'short',
-													year: 'numeric'
-												});
-												displayTitle = `Daily \u2014 ${readable}`;
-											} else {
-												displayTitle = `Daily \u2014 ${rawTitle}`;
-											}
+																const [, dd, mm, yyyy] = parts;
+																const d = new Date(`${yyyy}-${mm}-${dd}`);
+																const readable = d.toLocaleDateString('en-GB', {
+																	day: 'numeric',
+																	month: 'short',
+																	year: 'numeric'
+																});
+																displayTitle = `Daily \u2014 ${readable}`;
+														} else {
+															displayTitle = `Daily \u2014 ${rawTitle}`;
+														}
 										}
 
 										return (
@@ -1609,35 +1676,58 @@ export default function NoteEditor({
 												key={n.id}
 												type="button"
 												onClick={() => onSelectNote(n.id)}
-												initial={{ opacity: 0, scale: 0.95 }}
-												animate={{ opacity: 1, scale: 1 }}
-												transition={{ duration: 0.3, delay: i * 0.06, ease: [0.23, 1, 0.32, 1] }}
-												className="glass group relative flex flex-col items-start justify-between overflow-hidden rounded-xl px-4 py-3.5 text-left shadow-sm transition-[transform,box-shadow,border-color] duration-150 ease-out hover:border-[var(--glass-border-hover)] hover:shadow-md active:scale-[0.98]"
+												initial={{ opacity: 0, scale: 0.96, y: 8 }}
+												animate={{ opacity: 1, scale: 1, y: 0 }}
+												transition={{ duration: 0.4, delay: i * 0.07, ease: [0.23, 1, 0.32, 1] }}
+												className="group relative flex flex-col justify-between overflow-hidden rounded-2xl px-5 py-5 text-left shadow-md transition-[transform,box-shadow,border-color,background-color] duration-200 ease-out hover:shadow-lg active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
 												style={{
 													WebkitTapHighlightColor: 'transparent',
-													minHeight: '100px'
+													minHeight: '130px',
+													background: 'var(--glass-bg)',
+													border: '1px solid var(--glass-border)',
+													backdropFilter: 'blur(var(--glass-blur))',
+													WebkitBackdropFilter: 'blur(var(--glass-blur))',
 												}}
+												whileHover={{ y: -3 }}
 											>
-												<div className="flex w-full items-start justify-between gap-3 mb-2">
-													{/* Star icon */}
-													<div className="relative z-10 shrink-0 glass-icon flex h-7 w-7 items-center justify-center rounded-md text-[var(--accent)] transition-[background-color,border-color] duration-150 group-hover:bg-[var(--accent)]/15" style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)' }}>
-														<Icon
-															icon={isDaily ? Calendar01Icon : StarIcon}
-															size={14}
-															strokeWidth={2}
-														/>
-													</div>
-													{/* Date */}
-													<span className="relative z-10 shrink-0 text-[11px] text-[var(--text-muted)] font-medium tabular-nums mt-1">
+												{/* Top row: star + time */}
+												<div className="flex w-full items-center justify-between mb-3">
+													<Icon
+														icon={StarIcon}
+														size={14}
+														strokeWidth={2.5}
+														style={{ color: 'var(--warning)', opacity: 0.45 }}
+													/>
+													<span className="text-[11px] font-semibold tabular-nums" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>
 														{formatRelativeTime(date)}
 													</span>
 												</div>
 
-												{/* Title */}
-												<div className="relative z-10 w-full min-w-0">
-													<p className="truncate text-[15px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--text-primary)]">
-														{displayTitle}
-													</p>
+												{/* Title — larger, bolder */}
+												<span
+													className="relative z-10 block truncate text-[17px] font-bold tracking-tight transition-colors duration-150 group-hover:text-[var(--accent)]"
+													style={{
+														fontFamily: 'var(--font-display)',
+														color: 'var(--text-secondary)',
+														lineHeight: 1.3,
+													}}
+												>
+													{displayTitle}
+												</span>
+
+												{/* Bottom: daily badge */}
+												<div className="relative z-10 flex items-center gap-2 mt-3">
+													{isDaily && (
+														<span
+															className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+															style={{
+																background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
+																color: 'var(--accent)',
+															}}
+														>
+															Daily
+														</span>
+													)}
 												</div>
 											</motion.button>
 										);
@@ -1648,8 +1738,7 @@ export default function NoteEditor({
 									<FavoritesEmptyPrompt />
 								</div>
 							)}
-
-							</div>
+						</div>
 					</div>
 				</div>
 				{/* Mobile action bar */}
@@ -1703,7 +1792,7 @@ export default function NoteEditor({
 					</div>
 					</div>
 				</div>
-			</div>
+			</motion.div>
 		);
 	}
 
@@ -1721,7 +1810,14 @@ export default function NoteEditor({
 	// ── Render ───────────────────────────────────────────────────────────────────
 
 	return (
-		<div className="relative flex flex-1 min-h-0 min-w-0 w-full flex-col overflow-hidden rounded-2xl bg-[var(--bg-primary)] transition-[border-radius] duration-300 max-md:rounded-none">
+		<motion.div
+			key="editor"
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			exit={{ opacity: 0 }}
+			transition={{ duration: 0.2 }}
+			className="relative flex flex-1 min-h-0 min-w-0 w-full flex-col overflow-hidden rounded-2xl bg-[var(--bg-primary)] transition-[border-radius] duration-300 max-md:rounded-none"
+		>
 
 			<div className="relative z-20 flex items-center justify-between px-4 py-2 md:px-6">
 				<div className="flex items-center gap-2">
@@ -1753,7 +1849,7 @@ export default function NoteEditor({
 						<div className="hidden md:block w-10" />
 					)}
 				</div>
-				<div className="flex items-center gap-1">
+				<div className="flex items-center gap-1.5 md:gap-2">
 					{/* Home button — desktop only */}
 					<button
 						type="button"
@@ -1767,6 +1863,7 @@ export default function NoteEditor({
 					{note && (
 						<>
 							<FavoriteButton note={note} onUpdateNote={onUpdateNote} />
+							<div className="hidden md:block h-5 w-px bg-[var(--border-subtle)]/50" />
 						</>
 					)}
 
@@ -1883,7 +1980,11 @@ export default function NoteEditor({
 			{/* Stats bar — bottom right (minimal pill) */}
 			<div className="hidden md:flex absolute bottom-4 right-4 z-20 items-center gap-2 rounded-full border border-[var(--border-subtle)]/50 bg-[var(--bg-surface)]/90 px-3.5 py-1.5 backdrop-blur-lg text-[11px] tabular-nums select-none transition-[border-color] duration-300" style={{ fontFamily: '"Outfit", sans-serif' }}>
 				{/* Save status */}
-				<span
+				<motion.span
+					key={saveStatus.state}
+					initial={saveStatus.state === 'syncing' ? { scale: 0.9 } : undefined}
+					animate={saveStatus.state === 'syncing' ? { scale: [0.9, 1.08, 1] } : undefined}
+					transition={saveStatus.state === 'syncing' ? { duration: 0.4, ease: [0.25, 1, 0.5, 1] } : undefined}
 					className={`inline-flex items-center gap-1 font-medium ${getSaveTextClass(saveStatus.state)}`}
 					title={saveError || (lastSavedAt ? `Last saved ${formatRelativeSaveTime(lastSavedAt)}` : saveDetail)}
 				>
@@ -1894,7 +1995,7 @@ export default function NoteEditor({
 						className={saveBadgeMeta.spin ? 'sync-spin' : undefined}
 					/>
 					{saveLabel}
-				</span>
+				</motion.span>
 
 				<span className="text-[var(--text-muted)] opacity-30">·</span>
 
@@ -1942,8 +2043,36 @@ export default function NoteEditor({
 				)}
 			</div>
 
+			{/* Mobile stats — minimal pill (hidden on desktop) */}
+			<div className="flex md:hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-20 items-center gap-2 rounded-full border border-[var(--border-subtle)]/50 bg-[var(--bg-surface)]/90 px-3 py-1 backdrop-blur-lg text-[10px] tabular-nums select-none" style={{ fontFamily: '"Outfit", sans-serif' }}>
+				<span
+					className={`inline-flex items-center gap-1 font-medium ${getSaveTextClass(saveStatus.state)}`}
+				>
+					<Icon
+						icon={saveBadgeMeta.icon}
+						size={10}
+						strokeWidth={1.8}
+						className={saveBadgeMeta.spin ? 'sync-spin' : undefined}
+					/>
+					{saveLabel}
+				</span>
+				<span className="text-[var(--text-muted)] opacity-30">·</span>
+				<span className="text-[var(--text-muted)]">
+					{new Intl.NumberFormat().format(wordCount)} words
+				</span>
+				{sessionDelta > 0 && (
+					<>
+						<span className="text-[var(--text-muted)] opacity-30">·</span>
+						<span className="inline-flex items-center gap-0.5 font-semibold text-[var(--success)]">
+							<Icon icon={FireIcon} size={8} strokeWidth={2.2} />
+							+{sessionDelta.toLocaleString()}
+						</span>
+					</>
+				)}
+			</div>
+
 			{/* Mobile editor toolbar — floating formatting pill */}
 			<MobileEditorToolbar editor={editorInstance} />
-		</div>
+		</motion.div>
 	);
 }
