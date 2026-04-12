@@ -214,7 +214,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 			initial={{ opacity: 0, y: -4 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-			className="inline-flex items-center gap-1.5 text-[13px] text-[var(--text-muted)] mb-3 px-2 py-1 rounded-md bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-sm"
+			className="inline-flex items-center gap-1.5 text-[13px] text-[var(--text-muted)] mb-4 px-2 py-1 rounded-md bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-sm"
 		>
 			{/* Folder path */}
 			{folderPath.map((folder, index) => (
@@ -458,8 +458,8 @@ export default function NoteEditor({
 			className="relative flex flex-1 min-h-0 min-w-0 w-full flex-col overflow-hidden rounded-2xl bg-[var(--bg-primary)] transition-[border-radius] duration-300 max-md:rounded-none"
 		>
 
-			<div className="relative z-20 flex items-center justify-between px-4 py-2 md:px-6">
-				<div className="flex items-center gap-2">
+			<div className="relative z-20 flex items-center justify-between px-4 py-2.5 md:px-6 md:py-3">
+				<div className="flex items-center gap-2.5">
 					{/* Back button — Mobile only */}
 						<button
 							type="button"
@@ -488,7 +488,7 @@ export default function NoteEditor({
 						<div className="hidden md:block w-10" />
 					)}
 				</div>
-				<div className="flex items-center gap-1.5 md:gap-2">
+				<div className="flex items-center gap-2 md:gap-3">
 					{/* Home button — desktop only */}
 					<button
 						type="button"
@@ -502,7 +502,7 @@ export default function NoteEditor({
 					{note && (
 						<>
 							<FavoriteButton note={note} onUpdateNote={onUpdateNote} />
-							<div className="hidden md:block h-5 w-px bg-[var(--border-subtle)]/50" />
+							<div className="hidden md:block h-5 w-px bg-[var(--border-subtle)]/60" />
 						</>
 					)}
 
@@ -568,7 +568,7 @@ export default function NoteEditor({
 
 			{/* Scrollable content */}
 			<div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
-				<div className={wideMode ? 'w-full px-4 pb-24 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0' : 'mx-auto max-w-5xl px-4 pb-24 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0'}>
+				<div className={wideMode ? 'w-full px-4 pb-28 pt-4 sm:px-6 md:px-10 md:pb-36 md:pt-8' : 'mx-auto max-w-3xl px-4 pb-28 pt-4 sm:px-6 md:px-10 md:pb-36 md:pt-8'}>
 					<Breadcrumbs note={note} notes={notes} tree={tree} onSelectNote={onSelectNote} />
 
 					{note.tags?.includes('daily') ? (
@@ -582,14 +582,11 @@ export default function NoteEditor({
 								onTitleKeyDown={handleTitleKeyDown}
 							/>
 
-							<div className="text-[12px] text-[var(--text-muted)]">
-								<span className="inline-flex items-center gap-1.5">
+							<div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-5 md:mt-6">
+								<span className="inline-flex items-center gap-1.5 text-[13px] text-[var(--text-muted)] tracking-wide">
 									<Icon icon={Calendar01Icon} size={14} strokeWidth={1.5} className="opacity-70" />
 									{createdAtLabel}
 								</span>
-							</div>
-
-							<div className="mt-3">
 								<TagInput
 									tags={note.tags || []}
 									onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
@@ -598,7 +595,7 @@ export default function NoteEditor({
 						</>
 					)}
 
-					<div className="mt-4 md:mt-8">
+					<div className="mt-6 md:mt-10">
 						<Suspense fallback={<EditorFallback />}>
 							<LiveMarkdownEditor
 								key={note.id}
@@ -617,7 +614,7 @@ export default function NoteEditor({
 			</div>
 
 			{/* Stats bar — bottom right (minimal pill) */}
-			<div className="hidden md:flex absolute bottom-4 right-4 z-20 items-center gap-2 rounded-full border border-[var(--border-subtle)]/50 bg-[var(--bg-surface)]/90 px-3.5 py-1.5 backdrop-blur-lg text-[11px] tabular-nums select-none transition-[border-color] duration-300" style={{ fontFamily: '"Outfit", sans-serif' }}>
+			<div className="hidden md:flex absolute bottom-5 right-5 z-20 items-center gap-2.5 rounded-full border border-[var(--border-subtle)]/50 bg-[var(--bg-surface)]/90 px-4 py-2 backdrop-blur-lg text-[11px] tabular-nums select-none transition-[border-color] duration-300" style={{ fontFamily: '"Outfit", sans-serif' }}>
 				{/* Save status */}
 				<motion.span
 					key={saveStatus.state}
@@ -683,7 +680,7 @@ export default function NoteEditor({
 			</div>
 
 			{/* Mobile stats — minimal pill (hidden on desktop) */}
-			<div className="flex md:hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-20 items-center gap-2 rounded-full border border-[var(--border-subtle)]/50 bg-[var(--bg-surface)]/90 px-3 py-1 backdrop-blur-lg text-[10px] tabular-nums select-none" style={{ fontFamily: '"Outfit", sans-serif' }}>
+			<div className="flex md:hidden fixed bottom-[5.25rem] left-1/2 -translate-x-1/2 z-20 items-center gap-2 rounded-full border border-[var(--border-subtle)]/50 bg-[var(--bg-surface)]/90 px-3 py-1.5 backdrop-blur-lg text-[10px] tabular-nums select-none" style={{ fontFamily: '"Outfit", sans-serif' }}>
 				<span
 					className={`inline-flex items-center gap-1 font-medium ${getSaveTextClass(saveStatus.state)}`}
 				>

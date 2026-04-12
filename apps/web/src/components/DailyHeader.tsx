@@ -84,7 +84,7 @@ export default function DailyHeader({ note }: DailyHeaderProps) {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
-      className="relative mb-6 overflow-hidden rounded-2xl p-6"
+      className="relative overflow-hidden rounded-2xl p-6"
       style={{
         background: `linear-gradient(135deg, color-mix(in srgb, ${theme.color} 22%, var(--bg-surface)), var(--bg-surface))`,
         border: `1.5px solid color-mix(in srgb, ${theme.color} 28%, transparent)`,
