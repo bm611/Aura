@@ -104,15 +104,15 @@
 @keyframes stats-mobile-slide-up {
   0% {
     opacity: 0;
-    transform: translate(-50%, 20px);
+    translate: 0 20px;
   }
   70% {
     opacity: 1;
-    transform: translate(-50%, -4px);
+    translate: 0 -4px;
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, 0);
+    translate: 0 0;
   }
 }
 

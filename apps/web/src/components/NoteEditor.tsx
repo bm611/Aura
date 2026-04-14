@@ -412,6 +412,22 @@ export default function NoteEditor({
 	const [sessionBase, setSessionBase] = useState<number | null>(null);
 	const [editorInstance, setEditorInstance] = useState<Editor | null>(null);
 
+	// Hide mobile stats pill when the virtual keyboard is open (viewport shrinks)
+	const [keyboardOpen, setKeyboardOpen] = useState(false);
+	useEffect(() => {
+		const vv = window.visualViewport;
+		if (!vv) return;
+		const check = () => {
+			setKeyboardOpen(window.innerHeight - (vv.offsetTop + vv.height) > 80);
+		};
+		vv.addEventListener('resize', check);
+		vv.addEventListener('scroll', check);
+		return () => {
+			vv.removeEventListener('resize', check);
+			vv.removeEventListener('scroll', check);
+		};
+	}, []);
+
 	useEffect(() => {
 		if (!note) return;
 		if (note.id !== prevNoteIdRef.current) {
@@ -722,7 +738,7 @@ export default function NoteEditor({
 			</div>
 
 			{/* Mobile stats — minimal pill (hidden on desktop) */}
-			<div className="stats-bar-mobile flex md:hidden fixed bottom-[5.25rem] left-1/2 -translate-x-1/2 z-20 items-center gap-2 rounded-full border border-[var(--border-subtle)]/50 bg-[var(--bg-surface)]/90 px-3 py-1.5 backdrop-blur-lg text-[10px] tabular-nums select-none" style={{ fontFamily: '"Outfit", sans-serif' }}>
+			<div className={`stats-bar-mobile flex md:hidden fixed z-20 items-center gap-2 rounded-full border border-[var(--border-subtle)]/50 bg-[var(--bg-surface)]/90 px-3 py-1.5 backdrop-blur-lg text-[10px] tabular-nums select-none transition-opacity duration-200 ${keyboardOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`} style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 4.5rem)', left: '50%', transform: 'translateX(-50%)', fontFamily: '"Outfit", sans-serif' }}>
 				<span
 					className={`inline-flex items-center gap-1 font-medium ${getSaveTextClass(saveStatus.state)}`}
 				>
