@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, useReducedMotion } from 'framer-motion';
 
 import {
   ArrowRight01Icon,
@@ -23,7 +23,7 @@ interface LandingPageProps {
 
 // ─── Shared animation helpers ────────────────────────────────────────────────
 
-const spring = { type: 'spring', duration: 0.55, bounce: 0 } as const;
+const spring = { type: 'spring', duration: 0.4, bounce: 0 } as const;
 
 function FadeUp({
   children,
@@ -36,11 +36,12 @@ function FadeUp({
 }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
+  const reduced = useReducedMotion();
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 24 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
+      initial={reduced ? { opacity: 0 } : { opacity: 0, transform: 'translateY(12px)' }}
+      animate={inView ? (reduced ? { opacity: 1 } : { opacity: 1, transform: 'translateY(0px)' }) : {}}
       transition={{ ...spring, delay }}
       className={className}
     >
@@ -60,11 +61,12 @@ function FadeBlur({
 }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-60px' });
+  const reduced = useReducedMotion();
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 32, filter: 'blur(6px)' }}
-      animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
+      initial={reduced ? { opacity: 0 } : { opacity: 0, transform: 'translateY(16px)', filter: 'blur(4px)' }}
+      animate={inView ? (reduced ? { opacity: 1 } : { opacity: 1, transform: 'translateY(0px)', filter: 'blur(0px)' }) : {}}
       transition={{ ...spring, delay }}
       className={className}
     >
@@ -619,7 +621,7 @@ function SectionPersonalization() {
                 {ACCENT_SWATCHES.map(({ label, color }, i) => (
                   <motion.div
                     key={label}
-                    initial={{ opacity: 0, scale: 0.7 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
                     animate={swatchInView ? { opacity: 1, scale: 1 } : {}}
                     transition={{ ...spring, delay: 0.22 + i * 0.07 }}
                     title={label}
@@ -760,10 +762,10 @@ function SectionCTA({ onStart, onSignIn }: { onStart: () => void; onSignIn: () =
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <button
               onClick={onStart}
-              className="glass-accent group inline-flex items-center gap-3 rounded-full bg-[var(--accent)] px-8 py-4 font-medium text-white transition-[transform,filter,box-shadow] duration-300 hover:brightness-110 active:scale-[0.96]"
+              className="glass-accent group inline-flex items-center gap-3 rounded-full bg-[var(--accent)] px-8 py-4 font-medium text-white transition-[transform,filter,box-shadow] duration-200 hover:brightness-110 active:scale-[0.96]"
             >
               <span className="text-base font-semibold tracking-wide">Get Started</span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 shadow-sm transition-[transform,background-color] duration-300 group-hover:translate-x-1 group-hover:bg-white/30">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 shadow-sm transition-[transform,background-color] duration-150 group-hover:translate-x-1 group-hover:bg-white/30">
                 <Icon icon={ArrowRight01Icon} size={16} stroke={2} />
               </div>
             </button>
@@ -772,7 +774,7 @@ function SectionCTA({ onStart, onSignIn }: { onStart: () => void; onSignIn: () =
               onClick={onSignIn}
               className="glass-ghost group inline-flex items-center gap-2.5 rounded-full px-6 py-3.5 text-[14px] font-medium text-[var(--text-muted)] transition-[transform,color,border-color,box-shadow,background-color] duration-200 ease-out hover:text-[var(--text-primary)] active:scale-[0.96]"
             >
-              <Icon icon={CloudIcon} size={16} stroke={1.5} className="transition-colors duration-300 group-hover:text-[var(--accent)]" />
+              <Icon icon={CloudIcon} size={16} stroke={1.5} className="transition-colors duration-150 group-hover:text-[var(--accent)]" />
               <span>Sign in to sync</span>
             </button>
           </div>
@@ -864,10 +866,10 @@ export default function LandingPage({ onStart, onSignIn }: LandingPageProps) {
                 <div className="flex flex-wrap items-center gap-4">
                   <button
                     onClick={onStart}
-                    className="glass-accent group inline-flex items-center gap-3 rounded-full bg-[var(--accent)] px-8 py-4 font-medium text-white transition-[transform,filter,box-shadow] duration-300 hover:brightness-110 active:scale-[0.96]"
+                    className="glass-accent group inline-flex items-center gap-3 rounded-full bg-[var(--accent)] px-8 py-4 font-medium text-white transition-[transform,filter,box-shadow] duration-200 hover:brightness-110 active:scale-[0.96]"
                   >
                     <span className="text-base font-semibold tracking-wide">Get Started</span>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 shadow-sm transition-[transform,background-color] duration-300 group-hover:translate-x-1 group-hover:bg-white/30">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 shadow-sm transition-[transform,background-color] duration-150 group-hover:translate-x-1 group-hover:bg-white/30">
                       <Icon icon={ArrowRight01Icon} size={16} stroke={2} />
                     </div>
                   </button>
@@ -876,7 +878,7 @@ export default function LandingPage({ onStart, onSignIn }: LandingPageProps) {
                     onClick={onSignIn}
                     className="glass-ghost group inline-flex items-center gap-2.5 rounded-full px-6 py-3.5 text-[14px] font-medium text-[var(--text-muted)] transition-[transform,color,border-color,box-shadow,background-color] duration-200 ease-out hover:text-[var(--text-primary)] active:scale-[0.96]"
                   >
-                    <Icon icon={CloudIcon} size={16} stroke={1.5} className="transition-colors duration-300 group-hover:text-[var(--accent)]" />
+                    <Icon icon={CloudIcon} size={16} stroke={1.5} className="transition-colors duration-150 group-hover:text-[var(--accent)]" />
                     <span>Sign in to sync</span>
                   </button>
                 </div>
