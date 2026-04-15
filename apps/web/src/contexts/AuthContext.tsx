@@ -23,9 +23,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Subscribe first so we never miss an auth event that fires while
     // getSession() is in-flight.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
-      if (event === 'TOKEN_REFRESHED' && !newSession) {
-        // Refresh token was invalid/revoked — clear local state
-        supabase.auth.signOut({ scope: 'local' })
+      if (event === 'SIGNED_OUT') {
+        setSession(null)
+        setUser(null)
+        setLoading(false)
+        return
       }
       setSession(newSession)
       setUser(newSession?.user ?? null)
