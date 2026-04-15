@@ -3,11 +3,7 @@ import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
 	Calendar01Icon,
-	Moon02Icon,
-	Sun01Icon,
-	SunCloud02Icon,
 	SidebarLeftIcon,
-	CommandIcon,
 	Add01Icon,
 	Logout01Icon,
 	CloudUploadIcon,
@@ -18,13 +14,11 @@ import {
 
 import Icon from './Icon';
 import SettingsMenu from './SettingsMenu';
-import AccentPicker from './AccentPicker';
 import { countBodyWords, getNoteDisplayTitle } from '../utils/noteMeta';
 import { useAuth } from '../contexts/AuthContext';
 import type { NoteFile, TreeNode } from '../types';
 import type { SyncStatus } from './noteEditorUtils';
 import {
-	POPOVER_TRANSITION,
 	formatRelativeTime,
 	compareRecentNotes,
 	getTimeGreeting,
@@ -452,12 +446,12 @@ export default function HomeScreen({
 	onSelectNote,
 	theme,
 	onSetTheme,
-	onCycleTheme,
+	onCycleTheme: _onCycleTheme,
 	accentId,
 	onAccentChange,
 	sidebarCollapsed,
 	onToggleSidebar,
-	onOpenCommandPalette,
+	onOpenCommandPalette: _onOpenCommandPalette,
 	onOpenAuthModal,
 	syncing,
 	syncStatus,
