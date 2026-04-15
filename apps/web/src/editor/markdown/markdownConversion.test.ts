@@ -12,7 +12,7 @@ describe('markdownConversion', () => {
 > Callouts should round-trip.
 
 \`\`\`js
-console.log("aura")
+console.log("folio")
 \`\`\`
 
 | Name | Value |

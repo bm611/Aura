@@ -74,7 +74,7 @@ export default function LiveMarkdownEditor({
     shouldRerenderOnTransaction: false,
     editorProps: {
       attributes: {
-        class: 'aura-prosemirror',
+        class: 'folio-prosemirror',
         spellcheck: 'true',
       },
     },
@@ -168,7 +168,7 @@ export default function LiveMarkdownEditor({
   }
 
   return (
-    <div className={`aura-editor${wideMode ? ' aura-editor--wide' : ''}`}>
+    <div className={`folio-editor${wideMode ? ' folio-editor--wide' : ''}`}>
       <EditorContent editor={editor} />
       <TableBubbleMenu editor={editor} />
     </div>

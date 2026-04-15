@@ -67,30 +67,30 @@ function CalloutView({ node, updateAttributes, deleteNode, selected }: NodeViewP
 
   return (
     <NodeViewWrapper
-      className={`aura-callout aura-callout-${calloutKind} ${selected ? 'is-selected' : ''}`}
+      className={`folio-callout folio-callout-${calloutKind} ${selected ? 'is-selected' : ''}`}
       data-callout-kind={calloutKind}
     >
-      <div className="aura-callout-header" contentEditable={false}>
+      <div className="folio-callout-header" contentEditable={false}>
         <button
           type="button"
-          className="aura-callout-icon-btn"
+          className="folio-callout-icon-btn"
           onClick={handleToggleKind}
           title="Change type"
         >
           <Icon icon={iconData} size={16} stroke={1.8} />
         </button>
         <input
-          className="aura-callout-title"
+          className="folio-callout-title"
           value={(node.attrs.title as string) || getDefaultTitle(calloutKind)}
           onChange={(event) => updateAttributes({ title: event.target.value })}
           onMouseDown={(event) => event.stopPropagation()}
           aria-label="Callout title"
         />
-        <div className="aura-callout-actions">
+        <div className="folio-callout-actions">
           {node.attrs.foldable ? (
             <button
               type="button"
-              className={`aura-callout-toggle ${collapsed ? 'is-collapsed' : ''}`}
+              className={`folio-callout-toggle ${collapsed ? 'is-collapsed' : ''}`}
               onClick={() => setCollapsed((current) => !current)}
               onMouseDown={(event) => {
                 event.preventDefault()
@@ -103,7 +103,7 @@ function CalloutView({ node, updateAttributes, deleteNode, selected }: NodeViewP
           ) : null}
           <button
             type="button"
-            className="aura-callout-delete"
+            className="folio-callout-delete"
             onClick={deleteNode}
             onMouseDown={(event) => {
               event.preventDefault()
@@ -115,7 +115,7 @@ function CalloutView({ node, updateAttributes, deleteNode, selected }: NodeViewP
           </button>
         </div>
       </div>
-      <NodeViewContent className={`aura-callout-body ${collapsed ? 'is-collapsed' : ''}`} />
+      <NodeViewContent className={`folio-callout-body ${collapsed ? 'is-collapsed' : ''}`} />
     </NodeViewWrapper>
   )
 }

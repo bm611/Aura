@@ -245,12 +245,12 @@ function AiPromptView({ node, editor, getPos, deleteNode }: NodeViewProps) {
   }, [])
 
   return (
-    <NodeViewWrapper className="aura-ai-prompt-wrapper" contentEditable={false}>
+    <NodeViewWrapper className="folio-ai-prompt-wrapper" contentEditable={false}>
       {/* Close button */}
       {status !== 'streaming' && (
         <button
           type="button"
-          className="aura-ai-prompt-close-floating"
+          className="folio-ai-prompt-close-floating"
           onClick={deleteNode}
           title="Cancel (Esc)"
         >
@@ -259,15 +259,15 @@ function AiPromptView({ node, editor, getPos, deleteNode }: NodeViewProps) {
       )}
 
       {/* Mentions row (floats above input) */}
-      <div className="aura-ai-prompt-mentions">
+      <div className="folio-ai-prompt-mentions">
           {mentions.map((m) => (
-            <span key={m.id} className="aura-ai-mention-chip">
-              <span className="aura-ai-mention-at">@</span>
+            <span key={m.id} className="folio-ai-mention-chip">
+              <span className="folio-ai-mention-at">@</span>
               {m.title}
               {status === 'idle' && (
                 <button
                   type="button"
-                  className="aura-ai-mention-remove"
+                  className="folio-ai-mention-remove"
                   onClick={() => removeMention(m.id)}
                 >
                   &times;
@@ -276,13 +276,13 @@ function AiPromptView({ node, editor, getPos, deleteNode }: NodeViewProps) {
             </span>
           ))}
           {status === 'idle' && (
-            <div className="aura-ai-mention-add-wrap">
+            <div className="folio-ai-mention-add-wrap">
               {showMentionDropdown ? (
-                <div className="aura-ai-mention-search-wrap">
+                <div className="folio-ai-mention-search-wrap">
                   <input
                     ref={mentionInputRef}
                     type="text"
-                    className="aura-ai-mention-search"
+                    className="folio-ai-mention-search"
                     placeholder="Search notes..."
                     value={mentionSearch}
                     onChange={(e) => {
@@ -292,15 +292,15 @@ function AiPromptView({ node, editor, getPos, deleteNode }: NodeViewProps) {
                     onKeyDown={handleMentionKeyDown}
                     onBlur={() => setTimeout(() => setShowMentionDropdown(false), 150)}
                   />
-                  <div className="aura-ai-mention-dropdown">
+                  <div className="folio-ai-mention-dropdown">
                     {getFilteredNotes().length === 0 ? (
-                      <div className="aura-ai-mention-dropdown-empty">No notes found</div>
+                      <div className="folio-ai-mention-dropdown-empty">No notes found</div>
                     ) : (
                       getFilteredNotes().map((note, i) => (
                         <button
                           key={note.id}
                           type="button"
-                          className={`aura-ai-mention-dropdown-item ${i === selectedMentionIndex ? 'is-active' : ''}`}
+                          className={`folio-ai-mention-dropdown-item ${i === selectedMentionIndex ? 'is-active' : ''}`}
                           onMouseDown={(e) => {
                             e.preventDefault()
                             addMention(note)
@@ -315,7 +315,7 @@ function AiPromptView({ node, editor, getPos, deleteNode }: NodeViewProps) {
               ) : (
                 <button
                   type="button"
-                  className="aura-ai-mention-add-btn"
+                  className="folio-ai-mention-add-btn"
                   onClick={handleAtClick}
                 >
                   + Add note
@@ -327,11 +327,11 @@ function AiPromptView({ node, editor, getPos, deleteNode }: NodeViewProps) {
 
         {/* Query input */}
         {status === 'idle' && (
-          <div className="aura-ai-prompt-input-row">
+          <div className="folio-ai-prompt-input-row">
             <input
               ref={inputRef}
               type="text"
-              className="aura-ai-prompt-input"
+              className="folio-ai-prompt-input"
               placeholder="Ask a question about your notes..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -339,7 +339,7 @@ function AiPromptView({ node, editor, getPos, deleteNode }: NodeViewProps) {
             />
             <button
               type="button"
-              className="aura-ai-prompt-send"
+              className="folio-ai-prompt-send"
               onClick={handleSend}
               disabled={!query.trim() && mentions.length === 0}
               title="Send (Enter)"
@@ -354,25 +354,25 @@ function AiPromptView({ node, editor, getPos, deleteNode }: NodeViewProps) {
 
         {/* Streaming state */}
         {status === 'streaming' && (
-          <div className="aura-ai-prompt-streaming">
-            <div className="aura-ai-prompt-streaming-header">
-              <span className="aura-ai-pulse" />
+          <div className="folio-ai-prompt-streaming">
+            <div className="folio-ai-prompt-streaming-header">
+              <span className="folio-ai-pulse" />
               <span>Generating...</span>
             </div>
             {streamedContent && (
-              <pre className="aura-ai-prompt-preview">{streamedContent}</pre>
+              <pre className="folio-ai-prompt-preview">{streamedContent}</pre>
             )}
           </div>
         )}
 
         {/* Error state */}
         {status === 'error' && (
-          <div className="aura-ai-prompt-error">
-            <span className="aura-ai-prompt-error-text">{errorMessage}</span>
-            <div className="aura-ai-prompt-error-actions">
+          <div className="folio-ai-prompt-error">
+            <span className="folio-ai-prompt-error-text">{errorMessage}</span>
+            <div className="folio-ai-prompt-error-actions">
               <button
                 type="button"
-                className="aura-ai-prompt-retry"
+                className="folio-ai-prompt-retry"
                 onClick={() => {
                   setStatus('idle')
                   setErrorMessage('')
@@ -382,7 +382,7 @@ function AiPromptView({ node, editor, getPos, deleteNode }: NodeViewProps) {
               </button>
               <button
                 type="button"
-                className="aura-ai-prompt-close"
+                className="folio-ai-prompt-close"
                 onClick={deleteNode}
               >
                 Dismiss

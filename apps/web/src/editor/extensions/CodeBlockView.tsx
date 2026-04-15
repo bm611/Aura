@@ -119,34 +119,34 @@ export default function CodeBlockView({
     : POPULAR_LANGUAGES
 
   return (
-    <NodeViewWrapper className="aura-codeblock-wrapper" data-language={language}>
+    <NodeViewWrapper className="folio-codeblock-wrapper" data-language={language}>
       {/* ── Toolbar ── */}
-      <div className="aura-codeblock-toolbar" contentEditable={false}>
+      <div className="folio-codeblock-toolbar" contentEditable={false}>
         {/* Language selector */}
-        <div className="aura-codeblock-lang-select" ref={dropdownRef}>
+        <div className="folio-codeblock-lang-select" ref={dropdownRef}>
           <button
             type="button"
-            className="aura-codeblock-lang-btn"
+            className="folio-codeblock-lang-btn"
             onClick={() => setDropdownOpen((prev) => !prev)}
             onMouseDown={(e) => {
               e.preventDefault()
               e.stopPropagation()
             }}
           >
-            <span className="aura-codeblock-lang-label">
+            <span className="folio-codeblock-lang-label">
               {getLanguageLabel(language)}
             </span>
             <Icon
               icon={ArrowDown01Icon}
               size={12}
               stroke={1.8}
-              className={`aura-codeblock-chevron ${dropdownOpen ? 'is-open' : ''}`}
+              className={`folio-codeblock-chevron ${dropdownOpen ? 'is-open' : ''}`}
             />
           </button>
 
           {dropdownOpen && (
-            <div className="aura-codeblock-dropdown">
-              <div className="aura-codeblock-dropdown-search">
+            <div className="folio-codeblock-dropdown">
+              <div className="folio-codeblock-dropdown-search">
                 <input
                   ref={searchRef}
                   type="text"
@@ -162,15 +162,15 @@ export default function CodeBlockView({
                       handleLanguageChange(filteredLanguages[0]!.value)
                     }
                   }}
-                  className="aura-codeblock-search-input"
+                  className="folio-codeblock-search-input"
                 />
               </div>
-              <div className="aura-codeblock-dropdown-list">
+              <div className="folio-codeblock-dropdown-list">
                 {filteredLanguages.map((lang) => (
                   <button
                     key={lang.value}
                     type="button"
-                    className={`aura-codeblock-dropdown-item ${
+                    className={`folio-codeblock-dropdown-item ${
                       language === lang.value ? 'is-active' : ''
                     }`}
                     onClick={() => handleLanguageChange(lang.value)}
@@ -183,7 +183,7 @@ export default function CodeBlockView({
                   </button>
                 ))}
                 {filteredLanguages.length === 0 && (
-                  <div className="aura-codeblock-dropdown-empty">
+                  <div className="folio-codeblock-dropdown-empty">
                     No languages found
                   </div>
                 )}
@@ -193,10 +193,10 @@ export default function CodeBlockView({
         </div>
 
         {/* Action buttons */}
-        <div className="aura-codeblock-actions">
+        <div className="folio-codeblock-actions">
           <button
             type="button"
-            className={`aura-codeblock-action-btn ${copied ? 'is-copied' : ''}`}
+            className={`folio-codeblock-action-btn ${copied ? 'is-copied' : ''}`}
             onClick={handleCopy}
             onMouseDown={(e) => {
               e.preventDefault()
@@ -213,7 +213,7 @@ export default function CodeBlockView({
           </button>
           <button
             type="button"
-            className="aura-codeblock-action-btn aura-codeblock-delete-btn"
+            className="folio-codeblock-action-btn folio-codeblock-delete-btn"
             onClick={deleteNode}
             onMouseDown={(e) => {
               e.preventDefault()

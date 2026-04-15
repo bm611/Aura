@@ -5,7 +5,7 @@ import { runFolioEditorCommand } from '../core/editorCommands'
 
 function createMenu(): HTMLDivElement {
   const element = document.createElement('div')
-  element.className = 'aura-slash-menu'
+  element.className = 'folio-slash-menu'
   document.body.appendChild(element)
   return element
 }
@@ -22,8 +22,8 @@ function renderItems(element: HTMLDivElement, props: SuggestionProps, selectedIn
   props.items.forEach((item, index) => {
     const button = document.createElement('button')
     button.type = 'button'
-    button.className = `aura-slash-item ${index === selectedIndex ? 'is-active' : ''}`
-    button.innerHTML = `<span class="aura-slash-trigger">/${item.trigger}</span><span class="aura-slash-title">${item.title}</span>`
+    button.className = `folio-slash-item ${index === selectedIndex ? 'is-active' : ''}`
+    button.innerHTML = `<span class="folio-slash-trigger">/${item.trigger}</span><span class="folio-slash-title">${item.title}</span>`
     button.addEventListener('mousedown', (event) => {
       event.preventDefault()
       props.command(item)

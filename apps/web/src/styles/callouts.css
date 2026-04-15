@@ -2,7 +2,7 @@
    Callouts — Folio (TipTap)
    ═══════════════════════════════════════════════ */
 
-.aura-callout {
+.folio-callout {
   --callout-color: var(--accent);
   --callout-bg: color-mix(in srgb, var(--callout-color) 6%, var(--bg-surface));
   --callout-border: color-mix(in srgb, var(--callout-color) 18%, transparent);
@@ -13,7 +13,7 @@
   overflow: hidden;
 }
 
-.aura-callout-header {
+.folio-callout-header {
   display: flex;
   align-items: center;
   gap: 0.55rem;
@@ -22,7 +22,7 @@
   color: var(--callout-color);
 }
 
-.aura-callout-icon-btn {
+.folio-callout-icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -38,13 +38,13 @@
   transition: background var(--duration-fast), border-color var(--duration-fast), box-shadow var(--duration-fast);
 }
 
-.aura-callout-icon-btn:hover {
+.folio-callout-icon-btn:hover {
   background: color-mix(in srgb, var(--callout-color) 12%, transparent);
   border-color: color-mix(in srgb, var(--callout-color) 20%, transparent);
   box-shadow: 0 0 8px color-mix(in srgb, var(--callout-color) 10%, transparent);
 }
 
-.aura-callout-title {
+.folio-callout-title {
   flex: 1;
   min-width: 0;
   border: none;
@@ -57,7 +57,7 @@
   padding: 0.3rem 0;
 }
 
-.aura-callout-actions {
+.folio-callout-actions {
   display: flex;
   align-items: center;
   gap: 2px;
@@ -65,12 +65,12 @@
   transition: opacity var(--duration-fast);
 }
 
-.aura-callout:hover .aura-callout-actions {
+.folio-callout:hover .folio-callout-actions {
   opacity: 1;
 }
 
-.aura-callout-toggle,
-.aura-callout-delete {
+.folio-callout-toggle,
+.folio-callout-delete {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -85,83 +85,83 @@
   transition: opacity var(--duration-fast) var(--ease-out-quart), color var(--duration-fast) var(--ease-out-quart);
 }
 
-.aura-callout-toggle:hover,
-.aura-callout-delete:hover {
+.folio-callout-toggle:hover,
+.folio-callout-delete:hover {
   opacity: 1;
   background: color-mix(in srgb, var(--callout-color) 12%, transparent);
 }
 
-.aura-callout-delete:hover {
+.folio-callout-delete:hover {
   color: var(--danger);
   background: var(--danger-muted);
 }
 
-.aura-callout-toggle.is-collapsed {
+.folio-callout-toggle.is-collapsed {
   transform: rotate(-90deg);
 }
 
-.aura-callout-body {
+.folio-callout-body {
   padding: 0.25rem 0.8rem 0.7rem;
 }
 
-.aura-callout-body.is-collapsed {
+.folio-callout-body.is-collapsed {
   display: none;
 }
 
 @media (max-width: 767px) {
-  .aura-callout {
+  .folio-callout {
     margin: 0.5rem 0;
   }
 
-  .aura-callout-header {
+  .folio-callout-header {
     padding: 0.3rem 0.5rem;
     gap: 0.4rem;
   }
 
-  .aura-callout-title {
+  .folio-callout-title {
     font-size: 0.78rem;
     padding: 0.2rem 0;
   }
 
-  .aura-callout-body {
+  .folio-callout-body {
     padding: 0.2rem 0.6rem 0.5rem;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 }
 
-.aura-callout-tip,
-.aura-callout-success {
+.folio-callout-tip,
+.folio-callout-success {
   --callout-color: #4d8f5d;
 }
 
-.aura-callout-warning,
-.aura-callout-caution,
-.aura-callout-question {
+.folio-callout-warning,
+.folio-callout-caution,
+.folio-callout-question {
   --callout-color: var(--warning);
 }
 
-.aura-callout-danger,
-.aura-callout-failure,
-.aura-callout-bug {
+.folio-callout-danger,
+.folio-callout-failure,
+.folio-callout-bug {
   --callout-color: var(--danger);
 }
 
-.aura-callout-note,
-.aura-callout-info,
-.aura-callout-todo,
-.aura-callout-abstract {
+.folio-callout-note,
+.folio-callout-info,
+.folio-callout-todo,
+.folio-callout-abstract {
   --callout-color: var(--accent);
 }
 
-.aura-callout-important {
+.folio-callout-important {
   --callout-color: var(--color-h1);
 }
 
-.aura-callout-example {
+.folio-callout-example {
   --callout-color: var(--color-h3);
 }
 
-.aura-callout-quote {
+.folio-callout-quote {
   --callout-color: var(--text-secondary);
 }

@@ -2,12 +2,12 @@
    AI Prompt Block (/ai)
    ═══════════════════════════════════════════════ */
 
-.aura-ai-prompt-wrapper {
+.folio-ai-prompt-wrapper {
   margin: 0.75rem 0;
   position: relative;
 }
 
-.aura-ai-prompt-close-floating {
+.folio-ai-prompt-close-floating {
   position: absolute;
   top: -1.8rem;
   right: 0;
@@ -25,11 +25,11 @@
   opacity: 0;
 }
 
-.aura-ai-prompt-wrapper:hover .aura-ai-prompt-close-floating {
+.folio-ai-prompt-wrapper:hover .folio-ai-prompt-close-floating {
   opacity: 1;
 }
 
-.aura-ai-prompt-close-floating:hover {
+.folio-ai-prompt-close-floating:hover {
   background: var(--glass-bg);
   border-color: var(--glass-border);
   color: var(--text-primary);
@@ -40,7 +40,7 @@
 
 /* ── Mentions row (floats above input) ── */
 
-.aura-ai-prompt-mentions {
+.folio-ai-prompt-mentions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -50,7 +50,7 @@
   margin-bottom: 0.4rem;
 }
 
-.aura-ai-mention-chip {
+.folio-ai-mention-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.15rem;
@@ -64,13 +64,13 @@
   line-height: 1.5;
 }
 
-.aura-ai-mention-at {
+.folio-ai-mention-at {
   opacity: 0.4;
   font-size: 0.88em;
   margin-right: 0.05em;
 }
 
-.aura-ai-mention-remove {
+.folio-ai-mention-remove {
   margin-left: 0.2em;
   padding: 0;
   border: none;
@@ -83,15 +83,15 @@
   transition: opacity var(--duration-fast);
 }
 
-.aura-ai-mention-remove:hover {
+.folio-ai-mention-remove:hover {
   opacity: 0.7;
 }
 
-.aura-ai-mention-add-wrap {
+.folio-ai-mention-add-wrap {
   position: relative;
 }
 
-.aura-ai-mention-add-btn {
+.folio-ai-mention-add-btn {
   padding: 0.15em 0.45em;
   border: 1px dashed color-mix(in srgb, var(--text-muted) 30%, transparent);
   border-radius: var(--radius-sm);
@@ -104,18 +104,18 @@
   transition: border-color var(--duration-fast), color var(--duration-fast), background-color var(--duration-fast), box-shadow var(--duration-fast);
 }
 
-.aura-ai-mention-add-btn:hover {
+.folio-ai-mention-add-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
   background: var(--glass-bg);
   box-shadow: var(--glass-glow);
 }
 
-.aura-ai-mention-search-wrap {
+.folio-ai-mention-search-wrap {
   position: relative;
 }
 
-.aura-ai-mention-search {
+.folio-ai-mention-search {
   width: 10rem;
   padding: 0.25rem 0.45rem;
   border: 1px solid var(--border-subtle);
@@ -127,11 +127,11 @@
   outline: none;
 }
 
-.aura-ai-mention-search:focus {
+.folio-ai-mention-search:focus {
   border-color: var(--border-default);
 }
 
-.aura-ai-mention-dropdown {
+.folio-ai-mention-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
@@ -149,7 +149,7 @@
   backdrop-filter: blur(12px);
 }
 
-.aura-ai-mention-dropdown-item {
+.folio-ai-mention-dropdown-item {
   display: block;
   width: 100%;
   padding: 0.4rem 0.55rem;
@@ -166,11 +166,11 @@
   white-space: nowrap;
 }
 
-.aura-ai-mention-dropdown-item.is-active {
+.folio-ai-mention-dropdown-item.is-active {
   background: color-mix(in srgb, var(--text-muted) 8%, transparent);
 }
 
-.aura-ai-mention-dropdown-empty {
+.folio-ai-mention-dropdown-empty {
   padding: 0.5rem 0.55rem;
   color: var(--text-muted);
   font-size: 0.8rem;
@@ -179,14 +179,14 @@
 
 /* ── Query input row ── */
 
-.aura-ai-prompt-input-row {
+.folio-ai-prompt-input-row {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   padding: 0 0.7rem 0.6rem;
 }
 
-.aura-ai-prompt-input {
+.folio-ai-prompt-input {
   flex: 1;
   padding: 0.45rem 0.6rem;
   border: 2px solid var(--accent);
@@ -199,16 +199,16 @@
   transition: border-color var(--duration-fast), box-shadow var(--duration-fast), background-color var(--duration-fast);
 }
 
-.aura-ai-prompt-input:focus {
+.folio-ai-prompt-input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
-.aura-ai-prompt-input::placeholder {
+.folio-ai-prompt-input::placeholder {
   color: var(--text-muted);
 }
 
-.aura-ai-prompt-send {
+.folio-ai-prompt-send {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -223,12 +223,12 @@
   transition: border-color var(--duration-fast), background-color var(--duration-fast), color var(--duration-fast), box-shadow var(--duration-fast), transform var(--duration-fast);
 }
 
-.aura-ai-prompt-send:disabled {
+.folio-ai-prompt-send:disabled {
   opacity: 0.35;
   cursor: default;
 }
 
-.aura-ai-prompt-send:not(:disabled):hover {
+.folio-ai-prompt-send:not(:disabled):hover {
   border-color: var(--text-muted);
   color: var(--text-primary);
   background: color-mix(in srgb, var(--text-muted) 5%, transparent);
@@ -236,7 +236,7 @@
 
 /* ── Streaming state ── */
 
-.aura-ai-prompt-streaming {
+.folio-ai-prompt-streaming {
   padding: 0 0.7rem 0.65rem;
   border: 2px solid var(--accent);
   border-radius: var(--radius-lg);
@@ -244,7 +244,7 @@
   padding: 0.5rem 0.7rem 0.65rem;
 }
 
-.aura-ai-prompt-streaming-header {
+.folio-ai-prompt-streaming-header {
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -253,7 +253,7 @@
   margin-bottom: 0.4rem;
 }
 
-.aura-ai-pulse {
+.folio-ai-pulse {
   display: inline-block;
   width: 6px;
   height: 6px;
@@ -274,7 +274,7 @@
   }
 }
 
-.aura-ai-prompt-preview {
+.folio-ai-prompt-preview {
   margin: 0;
   padding: 0.5rem 0.6rem;
   border-radius: var(--radius-md);
@@ -291,14 +291,14 @@
 
 /* ── Error state ── */
 
-.aura-ai-prompt-error {
+.folio-ai-prompt-error {
   padding: 0.5rem 0.7rem 0.6rem;
   border: 2px solid var(--danger);
   border-radius: var(--radius-lg);
   background: var(--bg-primary);
 }
 
-.aura-ai-prompt-error-text {
+.folio-ai-prompt-error-text {
   display: block;
   color: var(--danger, #ef4444);
   font-size: 0.82rem;
@@ -306,12 +306,12 @@
   margin-bottom: 0.4rem;
 }
 
-.aura-ai-prompt-error-actions {
+.folio-ai-prompt-error-actions {
   display: flex;
   gap: 0.4rem;
 }
 
-.aura-ai-prompt-retry {
+.folio-ai-prompt-retry {
   padding: 0.3rem 0.65rem;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-sm);
@@ -323,7 +323,7 @@
   transition: background-color var(--duration-fast), color var(--duration-fast), border-color var(--duration-fast);
 }
 
-.aura-ai-prompt-retry:hover {
+.folio-ai-prompt-retry:hover {
   background: color-mix(in srgb, var(--text-muted) 5%, transparent);
   color: var(--text-primary);
   border-color: var(--text-muted);

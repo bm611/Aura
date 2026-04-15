@@ -2,7 +2,7 @@
    Slash Command Menu
    ═══════════════════════════════════════════════ */
 
-.aura-slash-menu {
+.folio-slash-menu {
   position: absolute;
   z-index: 80;
   min-width: 15rem;
@@ -14,7 +14,7 @@
   backdrop-filter: blur(12px);
 }
 
-.aura-slash-item {
+.folio-slash-item {
   display: flex;
   width: 100%;
   align-items: center;
@@ -30,16 +30,16 @@
   font-family: var(--body-font);
 }
 
-.aura-slash-item.is-active {
+.folio-slash-item.is-active {
   background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
-.aura-slash-trigger {
+.folio-slash-trigger {
   color: var(--accent);
   font-family: var(--font-mono);
   font-size: 0.8rem;
 }
 
-.aura-slash-title {
+.folio-slash-title {
   font-size: 0.9rem;
 }
