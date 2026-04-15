@@ -268,7 +268,7 @@ export default function SettingsMenu({
         {open && (
           <motion.div
             ref={panelRef}
-            className="absolute right-0 top-11 z-50 w-64 overflow-visible rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]"
+            className="absolute right-0 top-11 z-50 w-64 overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]"
             initial="hidden"
             animate="visible"
             exit="exit"

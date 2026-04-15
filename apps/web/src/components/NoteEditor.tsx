@@ -642,12 +642,12 @@ export default function NoteEditor({
 								<div className="flex flex-col gap-1 mt-5 md:mt-6">
 									<div className="flex items-center gap-2.5">
 										<Icon icon={Calendar01Icon} size={13} strokeWidth={1.5} style={{ color: 'var(--text-muted)', opacity: 0.6, flexShrink: 0 }} />
-										<span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--text-muted)] opacity-50 w-14 shrink-0">Created</span>
+										<span className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-70 w-14 shrink-0">Created</span>
 										<span className="text-[13px] text-[var(--text-secondary)]">{createdAtLabel}</span>
 									</div>
 									<div className="flex items-center gap-2.5">
 										<Icon icon={Tag01Icon} size={13} strokeWidth={1.5} style={{ color: 'var(--text-muted)', opacity: 0.6, flexShrink: 0 }} />
-										<span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--text-muted)] opacity-50 w-14 shrink-0">Tags</span>
+										<span className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-70 w-14 shrink-0">Tags</span>
 										<TagInput
 											tags={note.tags || []}
 											onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}

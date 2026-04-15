@@ -545,6 +545,21 @@ export default function HomeScreen({
 		>
 			{/* Top bar */}
 			<div className="flex items-center justify-between px-4 py-2 md:px-6">
+				{/* Mobile: always show sidebar button */}
+				<button
+					type="button"
+					onClick={onToggleSidebar}
+					className="glass-icon md:hidden relative flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.96]"
+					title="Open sidebar"
+				>
+					<Icon
+						icon={SidebarLeftIcon}
+						size={22}
+						strokeWidth={1.5}
+						style={{ transform: 'scaleX(-1)' }}
+					/>
+				</button>
+				{/* Desktop: show only when collapsed */}
 				{sidebarCollapsed ? (
 					<button
 						type="button"
@@ -573,6 +588,7 @@ export default function HomeScreen({
 						onSync={onSync}
 						fontId={fontId}
 						onFontChange={onFontChange}
+						className="!block"
 					/>
 					{user ? (
 						<div className="auth-group">
@@ -1201,57 +1217,6 @@ export default function HomeScreen({
 							</div>
 						)}
 					</div>
-				</div>
-			</div>
-			{/* Mobile action bar */}
-			<div
-				className="mobile-action-bar"
-				style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-			>
-				<div className="mobile-bar-inner">
-				<div className="mobile-action-bar-inner">
-					<button type="button" onClick={onToggleSidebar}>
-						<Icon icon={SidebarLeftIcon} size={18} strokeWidth={1.5} />
-					</button>
-					<button type="button" onClick={() => onNewNote?.()}>
-						<Icon icon={Add01Icon} size={18} strokeWidth={1.5} />
-					</button>
-					{onOpenCommandPalette && (
-						<button type="button" onClick={onOpenCommandPalette}>
-							<Icon icon={CommandIcon} size={18} strokeWidth={1.5} />
-						</button>
-					)}
-					<AccentPicker
-						accentId={accentId}
-						onAccentChange={onAccentChange}
-						theme={theme}
-						mobile
-					/>
-					<button
-						type="button"
-						onClick={onCycleTheme}
-						className="transition-transform duration-150 ease-out active:scale-[0.96]"
-						aria-label="Cycle theme"
-					>
-						<span className="relative flex h-[18px] w-[18px] items-center justify-center">
-							<motion.span className="absolute inset-0 flex items-center justify-center" initial={false}
-								animate={{ opacity: theme === 'dark' ? 1 : 0, scale: theme === 'dark' ? 1 : 0.25 }}
-								transition={POPOVER_TRANSITION}>
-								<Icon icon={Moon02Icon} size={18} strokeWidth={1.5} />
-							</motion.span>
-							<motion.span className="absolute inset-0 flex items-center justify-center" initial={false}
-								animate={{ opacity: theme === 'light' ? 1 : 0, scale: theme === 'light' ? 1 : 0.25 }}
-								transition={POPOVER_TRANSITION}>
-								<Icon icon={Sun01Icon} size={18} strokeWidth={1.5} />
-							</motion.span>
-							<motion.span className="absolute inset-0 flex items-center justify-center" initial={false}
-								animate={{ opacity: theme === 'playful' ? 1 : 0, scale: theme === 'playful' ? 1 : 0.25 }}
-								transition={POPOVER_TRANSITION}>
-								<Icon icon={SunCloud02Icon} size={18} strokeWidth={1.5} style={{ color: '#e8602a' }} />
-							</motion.span>
-						</span>
-					</button>
-				</div>
 				</div>
 			</div>
 		</motion.div>
