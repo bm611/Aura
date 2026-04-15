@@ -610,85 +610,87 @@ export default function HomeScreen({
 			</div>
 
 			{/* Welcome content */}
-			<div className="flex flex-1 flex-col items-center px-6 pt-[6vh] md:pt-[8vh] pb-36 md:pb-6 overflow-y-auto">
+			<div className="flex flex-1 flex-col items-center px-6 pt-3 md:pt-4 pb-6 overflow-y-auto">
 				<div className="flex flex-col items-center text-center">
+					{/* Greeting — strengthened hierarchy */}
 					<motion.h1
-						className="text-[28px] sm:text-[34px] font-bold tracking-tight leading-[1.1] mb-2"
+						className="text-[36px] sm:text-[48px] md:text-[52px] font-bold tracking-tight leading-[1.05] mb-1.5"
 						style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
-						initial={{ opacity: 0, y: 12 }}
+						initial={{ opacity: 0, y: 16 }}
 						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
+						transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
 					>
 						{getTimeGreeting()}
 					</motion.h1>
+
+					{/* Motivational message — refined */}
 					<motion.p
-						className="text-[15px] mb-7 max-w-[280px] leading-relaxed"
+						className="text-[15px] sm:text-[16px] mb-5 max-w-[300px] leading-relaxed font-light"
 						style={{ fontFamily: 'var(--font-body)', color: 'var(--text-secondary)' }}
 						initial={{ opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 1, 0.5, 1] }}
+						transition={{ duration: 0.5, delay: 0.15, ease: [0.25, 1, 0.5, 1] }}
 					>
 						{getMotivationalMessage(streak)}
 					</motion.p>
 
-					{/* Stat badges */}
+					{/* Stats row — elegant & minimal */}
 					<motion.div
-						className="flex items-center gap-2.5 mb-7 flex-wrap justify-center"
+						className="flex items-baseline gap-8 mb-5 justify-center flex-wrap"
 						style={{ fontFamily: 'var(--font-body)' }}
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
-						transition={{ duration: 0.3, delay: 0.25 }}
+						transition={{ duration: 0.4, delay: 0.3 }}
 					>
-						<motion.span
-							className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3.5 py-[7px] text-[12px]"
-							style={{
-								background: 'color-mix(in srgb, var(--success) 14%, transparent)',
-								borderColor: 'color-mix(in srgb, var(--success) 25%, transparent)',
-								color: 'var(--success)',
-							}}
-							initial={{ opacity: 0, y: 6, scale: 0.95 }}
-							animate={{ opacity: 1, y: 0, scale: 1 }}
-							transition={{ duration: 0.35, delay: 0.3, ease: [0.25, 1, 0.5, 1] }}
+						{/* Notes count */}
+						<motion.div
+							className="flex flex-col items-center gap-1"
+							initial={{ opacity: 0, y: 4 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.4, delay: 0.35, ease: [0.25, 1, 0.5, 1] }}
 						>
-							<Icon icon={File01Icon} size={13} strokeWidth={2.2} />
-							<span className="font-semibold tabular-nums">{fileNotes.length}</span>
-							<span className="font-medium opacity-70">{fileNotes.length === 1 ? 'note' : 'notes'}</span>
-						</motion.span>
-						<motion.span
-							className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3.5 py-[7px] text-[12px]"
-							style={{
-								background: 'color-mix(in srgb, var(--warning) 14%, transparent)',
-								borderColor: 'color-mix(in srgb, var(--warning) 25%, transparent)',
-								color: 'var(--warning)',
-							}}
-							initial={{ opacity: 0, y: 6, scale: 0.95 }}
-							animate={{ opacity: 1, y: 0, scale: 1 }}
-							transition={{ duration: 0.35, delay: 0.38, ease: [0.25, 1, 0.5, 1] }}
+							<span className="text-[20px] sm:text-[22px] font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+								{fileNotes.length}
+							</span>
+							<span className="text-[12px] uppercase tracking-wider opacity-60" style={{ color: 'var(--text-secondary)' }}>
+								{fileNotes.length === 1 ? 'note' : 'notes'}
+							</span>
+						</motion.div>
+
+						{/* Streak with accent */}
+						<motion.div
+							className="flex flex-col items-center gap-1"
+							initial={{ opacity: 0, y: 4 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.4, delay: 0.42, ease: [0.25, 1, 0.5, 1] }}
 						>
-							<Icon icon={FireIcon} size={13} strokeWidth={2.2} />
-							<span className="font-semibold tabular-nums">{streak}</span>
-							<span className="font-medium opacity-70">day streak</span>
-						</motion.span>
-						<motion.span
-							className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3.5 py-[7px] text-[12px]"
-							style={{
-								background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
-								borderColor: 'color-mix(in srgb, var(--accent) 25%, transparent)',
-								color: 'var(--accent)',
-							}}
-							initial={{ opacity: 0, y: 6, scale: 0.95 }}
-							animate={{ opacity: 1, y: 0, scale: 1 }}
-							transition={{ duration: 0.35, delay: 0.46, ease: [0.25, 1, 0.5, 1] }}
+							<span className="text-[20px] sm:text-[22px] font-semibold tracking-tight" style={{ color: 'var(--accent)' }}>
+								{streak}
+							</span>
+							<span className="text-[12px] uppercase tracking-wider opacity-60" style={{ color: 'var(--text-secondary)' }}>
+								day streak
+							</span>
+						</motion.div>
+
+						{/* Word count */}
+						<motion.div
+							className="flex flex-col items-center gap-1"
+							initial={{ opacity: 0, y: 4 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.4, delay: 0.49, ease: [0.25, 1, 0.5, 1] }}
 						>
-							<Icon icon={FileText01Icon} size={13} strokeWidth={2.2} />
-							<span className="font-semibold tabular-nums">{totalWords.toLocaleString()}</span>
-							<span className="font-medium opacity-70">words</span>
-						</motion.span>
+							<span className="text-[20px] sm:text-[22px] font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+								{(totalWords / 1000).toFixed(1)}k
+							</span>
+							<span className="text-[12px] uppercase tracking-wider opacity-60" style={{ color: 'var(--text-secondary)' }}>
+								words
+							</span>
+						</motion.div>
 					</motion.div>
 
 					{/* 7-day activity strip */}
 					<motion.div
-						className="flex items-end gap-[6px] mb-1"
+						className="flex items-end gap-[6px] mb-4"
 						title="Writing activity — last 7 days"
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
@@ -753,7 +755,7 @@ export default function HomeScreen({
 					</motion.div>
 				</div>
 
-				<div className="animate-fade-in-up-delay-2 mt-8 mb-2 flex items-center justify-center w-full max-w-md">
+				<div className="animate-fade-in-up-delay-2 mt-3 mb-5 flex items-center justify-center w-full max-w-md">
 					<div className="flex items-center gap-3 w-full justify-center px-4 sm:px-0">
 						<motion.button
 							onClick={() => onNewNote?.()}
@@ -791,7 +793,7 @@ export default function HomeScreen({
 
 				{/* ── Mobile Tab View ─────────────────────────────────── */}
 				<div
-					className="animate-fade-in-up-delay-2 mt-8 w-full px-4 md:hidden"
+					className="animate-fade-in-up-delay-2 mt-4 w-full px-4 md:hidden"
 					style={{ fontFamily: 'var(--font-body)' }}
 				>
 					{/* Tab bar — editorial treatment */}
