@@ -1,5 +1,7 @@
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
+import { TextStyle } from '@tiptap/extension-text-style'
+import { Color } from '@tiptap/extension-color'
 import { Table } from '@tiptap/extension-table'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
@@ -89,5 +91,7 @@ export function createFolioEditorExtensions(): Extensions {
     SlashCommand,
     MarkdownPaste,
     AiPromptBlock,
+    TextStyle,
+    Color,
   ]
 }

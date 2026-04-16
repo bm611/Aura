@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { createPortal } from 'react-dom'
 
 import type { Editor } from '@tiptap/react'
 import {
@@ -16,9 +17,11 @@ import {
   ListIndentIncreaseIcon,
   ListIndentDecreaseIcon,
   Delete01Icon,
+  PaintBoardIcon,
 } from '@hugeicons/core-free-icons'
 
 import Icon from './Icon'
+import { ACCENT_COLORS } from '../config/accents'
 
 export interface ToolbarAction {
   id: string
@@ -215,6 +218,140 @@ const TABLE_ACTIONS = [
   },
 ]
 
+// ── Detect current theme so we pick the right accent swatch value ────────────
+function useIsDarkTheme(): boolean {
+  const [isDark, setIsDark] = useState(
+    () => document.documentElement.getAttribute('data-theme') !== 'light'
+  )
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.getAttribute('data-theme') !== 'light')
+    })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => observer.disconnect()
+  }, [])
+  return isDark
+}
+
+// ── Color picker popover ─────────────────────────────────────────────────────
+
+interface ColorPickerProps {
+  editor: Editor
+  isDesktop: boolean
+}
+
+function ColorPicker({ editor, isDesktop }: ColorPickerProps) {
+  const [open, setOpen] = useState(false)
+  const [popoverPos, setPopoverPos] = useState<{ left: number; bottom: number } | null>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const isDark = useIsDarkTheme()
+
+  // Compute fixed position when opening
+  const openPicker = useCallback(() => {
+    if (!btnRef.current) return
+    const rect = btnRef.current.getBoundingClientRect()
+    setPopoverPos({
+      left: rect.left + rect.width / 2,
+      bottom: window.innerHeight - rect.top + 10,
+    })
+    setOpen(true)
+  }, [])
+
+  // Close on outside click — check both the trigger wrap and the portalled popover
+  useEffect(() => {
+    if (!open) return undefined
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node
+      const inWrap = wrapRef.current?.contains(target)
+      const inPopover = document.querySelector('.color-picker-popover')?.contains(target)
+      if (!inWrap && !inPopover) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const currentColor = editor.getAttributes('textStyle').color as string | undefined
+
+  const applyColor = (color: string) => {
+    editor.chain().focus().setColor(color).run()
+    setOpen(false)
+  }
+
+  const clearColor = () => {
+    editor.chain().focus().unsetColor().run()
+    setOpen(false)
+  }
+
+  // The active swatch color (for the icon underline indicator)
+  const activeAccent = currentColor
+    ? ACCENT_COLORS.find((a) => {
+        const val = isDark ? a.dark.accent : a.light.accent
+        return val.toLowerCase() === currentColor.toLowerCase()
+      })
+    : null
+
+  return (
+    <div ref={wrapRef} className="color-picker-wrap">
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={() => {
+          if (open) { setOpen(false) } else { openPicker() }
+        }}
+        className={`mobile-editor-toolbar-btn color-picker-trigger${open ? ' is-active' : ''}`}
+        title="Text color"
+        style={{ position: 'relative' }}
+      >
+        <Icon icon={PaintBoardIcon} size={isDesktop ? 16 : 18} strokeWidth={1.5} />
+        {/* Color indicator bar under the icon */}
+        <span
+          className="color-picker-indicator"
+          style={{ background: activeAccent ? (isDark ? activeAccent.dark.accent : activeAccent.light.accent) : 'currentColor', opacity: activeAccent ? 1 : 0.3 }}
+        />
+      </button>
+
+      {open && popoverPos && createPortal(
+        <div
+          className="color-picker-popover"
+          style={{ position: 'fixed', left: popoverPos.left, bottom: popoverPos.bottom, transform: 'translateX(-50%)' }}
+        >
+          <div className="color-picker-swatches">
+            {ACCENT_COLORS.map((accent) => {
+              const color = isDark ? accent.dark.accent : accent.light.accent
+              const isActive = currentColor?.toLowerCase() === color.toLowerCase()
+              return (
+                <button
+                  key={accent.id}
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    applyColor(color)
+                  }}
+                  className={`color-swatch${isActive ? ' is-active' : ''}`}
+                  style={{ background: color }}
+                  title={accent.label}
+                />
+              )
+            })}
+          </div>
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault()
+              clearColor()
+            }}
+            className="color-picker-clear"
+          >
+            Clear
+          </button>
+        </div>,
+        document.body
+      )}
+    </div>
+  )
+}
+
 export default function MobileEditorToolbar({ editor }: MobileEditorToolbarProps) {
   const bottom = useKeyboardAwareBottom()
   const isDesktop = useDesktopToolbar()
@@ -251,7 +388,29 @@ export default function MobileEditorToolbar({ editor }: MobileEditorToolbarProps
     >
       <div className="mobile-bar-inner">
       <div className="mobile-action-bar-inner mobile-editor-toolbar-inner">
-        {TOOLBAR_ACTIONS.map((item) => (
+        {/* H1–H3, Bold, Italic, Strikethrough — always visible on mobile */}
+        {TOOLBAR_ACTIONS.slice(0, 6).map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault()
+              item.action(editor)
+            }}
+            className="mobile-editor-toolbar-btn"
+            title={item.title}
+          >
+            <Icon icon={item.icon} size={18} strokeWidth={1.5} />
+          </button>
+        ))}
+
+        {/* Color picker after text-style buttons so it's visible without scrolling */}
+        <div className="mx-1 h-5 w-px shrink-0 bg-[var(--border-subtle)]" style={{ opacity: 0.4 }} />
+        <ColorPicker editor={editor} isDesktop={isDesktop} />
+        <div className="mx-1 h-5 w-px shrink-0 bg-[var(--border-subtle)]" style={{ opacity: 0.4 }} />
+
+        {/* Code, lists, quote, indent/dedent — scrollable */}
+        {TOOLBAR_ACTIONS.slice(6).map((item) => (
           <button
             key={item.id}
             type="button"
