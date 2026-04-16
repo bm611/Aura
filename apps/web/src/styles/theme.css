@@ -34,8 +34,8 @@
 @theme {
   /* ── Typography ── */
   --font-display: "Fraunces", "Georgia", serif;
-  --font-logo: "Italiana", serif;
-  --font-body: "Outfit", "DM Sans", sans-serif;
+  --font-logo: "Fraunces", "Georgia", serif;
+  --font-body: "DM Sans", "Outfit", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
 
   /* ── Radius ── */
@@ -52,7 +52,7 @@
 
   /* ── Durations ── */
   --duration-fast: 120ms;
-  --duration-normal: 200ms;
+  --duration-normal: 150ms;
   --duration-slow: 350ms;
 
   /* ── Animations ── */

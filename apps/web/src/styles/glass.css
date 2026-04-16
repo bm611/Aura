@@ -21,7 +21,7 @@
 
 .glass:active {
   background: var(--glass-bg-active);
-  transform: scale(0.97);
+  transform: scale(0.99);
 }
 
 /* ── Glass accent (primary CTA) ── */
@@ -127,36 +127,32 @@
   background: var(--glass-bg-active);
 }
 
-/* ── Glass nav (sidebar nav items) ── */
+/* ── Glass nav (sidebar nav items) — flat, no blur ── */
 
 .glass-nav {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid transparent;
-  will-change: transform, background-color, border-color, box-shadow;
+  will-change: transform, background-color, border-color;
   transition: transform 100ms ease-out,
               background-color 0.15s ease-out,
               border-color 0.15s ease-out,
-              box-shadow 0.15s ease-out,
               color 0.15s ease-out;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .glass-nav:hover {
-    background: var(--glass-bg);
-    border-color: var(--glass-border);
-    box-shadow: var(--glass-glow);
+    background: var(--bg-hover);
+    border-color: transparent;
   }
 }
 
 .glass-nav:active {
-  transform: scale(0.98);
+  transform: scale(0.99);
 }
 
 .glass-nav.is-active {
-  background: var(--glass-bg-hover);
-  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
-  box-shadow: var(--glass-glow);
+  background: var(--bg-elevated);
+  border-color: transparent;
+  font-weight: 500;
 }
 
 /* ── Glass danger (destructive actions) ── */
