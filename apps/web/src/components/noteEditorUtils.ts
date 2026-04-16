@@ -35,8 +35,6 @@ export interface SaveBadgeMeta {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-export const POPOVER_TRANSITION = { type: 'spring', duration: 0.3, bounce: 0 } as const;
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 export function formatRelativeTime(date: Date): string {
@@ -57,7 +55,7 @@ export function formatRelativeTime(date: Date): string {
 	return `${months}mo ago`;
 }
 
-export function getComparableTimestamp(value: string | undefined | null): number {
+function getComparableTimestamp(value: string | undefined | null): number {
 	const parsed = Date.parse(value || '');
 	return Number.isNaN(parsed) ? 0 : parsed;
 }
@@ -82,23 +80,6 @@ export function compareRecentNotes(a: NoteFile, b: NoteFile): number {
 	}
 
 	return a.id.localeCompare(b.id);
-}
-
-export function getContentPreview(content: string, maxLength = 90): string {
-	const stripped = content
-		.replace(/^#+\s.*$/gm, '')
-		.replace(/\[.*?\]\(.*?\)/g, '')
-		.replace(/!\[.*?\]\(.*?\)/g, '')
-		.replace(/```[\s\S]*?```/g, '')
-		.replace(/`([^`]+)`/g, '$1')
-		.replace(/[*_~]+/g, '')
-		.replace(/^[-*+]\s/gm, '')
-		.replace(/^\d+\.\s/gm, '')
-		.replace(/^>\s?.*/gm, '')
-		.replace(/\n+/g, ' ')
-		.trim();
-	const preview = stripped.length > maxLength ? stripped.slice(0, maxLength).replace(/\s+\S*$/, '') + '…' : stripped;
-	return preview;
 }
 
 export function formatRelativeSaveTime(timestamp: string | null | undefined): string | null {

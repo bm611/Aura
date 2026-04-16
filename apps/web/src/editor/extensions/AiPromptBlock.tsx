@@ -16,7 +16,7 @@ interface NoteRef {
   title: string
 }
 
-export interface StoredNote {
+interface StoredNote {
   id: string
   title: string
   content: string

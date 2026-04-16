@@ -1,6 +1,6 @@
 import { getNoteDisplayTitle } from './noteMeta'
 
-export interface SearchResult {
+interface SearchResult {
   note: NoteInput
   score: number
   excerpt: string
@@ -15,7 +15,7 @@ interface NoteInput {
   createdAt?: string
 }
 
-export function stripMarkdown(content: string = ''): string {
+function stripMarkdown(content: string = ''): string {
   return content
     .replace(/```[\s\S]*?```/g, ' ')
     .replace(/`([^`]+)`/g, ' $1 ')
@@ -37,7 +37,7 @@ function getMatchExcerpt(content: string, matchIndex: number, queryLength: numbe
   return content.slice(start, end).replace(/\s+/g, ' ').trim()
 }
 
-export function getNoteExcerpt(note: NoteInput, query: string = ''): string {
+function getNoteExcerpt(note: NoteInput, query: string = ''): string {
   const plainText = stripMarkdown(note.content)
 
   if (!plainText) {

@@ -16,10 +16,6 @@ import {
   MoreHorizontalIcon,
   Home01Icon,
   Cancel01Icon,
-  CloudIcon,
-  CloudSavingDone01Icon,
-  CloudUploadIcon,
-  Loading01Icon,
   StickyNoteIcon,
   SparklesIcon,
   ArrowShrink02Icon,
@@ -28,7 +24,6 @@ import {
 
 import type { IconSvgElement } from '@hugeicons/react'
 import Icon from './Icon'
-import { useAuth } from '../contexts/AuthContext'
 import { CATEGORY_ICONS, CATEGORY_ICON_MAP } from '../config/categoryIcons'
 import { getVisibleFiles, getParentId } from '../utils/tree'
 import type { TreeNode as TreeNodeType } from '../types'
@@ -68,11 +63,6 @@ interface SidebarProps {
   onOpenTemplateGallery?: () => void
   activeView?: 'notes' | 'chat'
   onViewChange?: (view: 'notes' | 'chat') => void
-}
-
-interface SyncIndicatorProps {
-  syncing: boolean
-  syncStatus?: SyncStatus
 }
 
 interface TreeNodeComponentProps {
@@ -117,46 +107,6 @@ function SidebarIcon({ n, s = 16 }: { n: string; s?: number }) {
   const iconData = ICON_MAP[n]
   if (!iconData) return null
   return <Icon icon={iconData} size={s} strokeWidth={1.5} style={{ display: 'block' }} />
-}
-
-// ─── Sync Indicator (inline next to app name) ────────────────────────────────
-export function SyncIndicator({ syncing, syncStatus }: SyncIndicatorProps) {
-  const { user } = useAuth()
-  const state = syncStatus?.state
-
-  let icon: IconSvgElement
-  let iconColor: string
-  let tooltip: string
-  let spin = false
-
-  if (!user) {
-    icon = CloudUploadIcon
-    iconColor = 'var(--warning)'
-    tooltip = 'Sign in to save your notes'
-  } else if (state === 'offline') {
-    icon = CloudIcon
-    iconColor = 'var(--warning)'
-    tooltip = syncStatus?.message || 'Offline — changes are safe'
-  } else if (state === 'error') {
-    icon = CloudIcon
-    iconColor = 'var(--danger)'
-    tooltip = syncStatus?.error || 'Cloud sync failed'
-  } else if (syncing || state === 'syncing') {
-    icon = Loading01Icon
-    iconColor = 'var(--success)'
-    tooltip = 'Saving to cloud…'
-    spin = true
-  } else {
-    icon = CloudSavingDone01Icon
-    iconColor = 'var(--success)'
-    tooltip = `Synced to cloud as ${user.email}`
-  }
-
-  return (
-    <span className="sb-sync-indicator" title={tooltip}>
-      <Icon icon={icon} size={16} strokeWidth={1.5} style={{ color: iconColor }} className={spin ? 'sync-spin' : ''} />
-    </span>
-  )
 }
 
 // ─── Tree Node ─────────────────────────────────────────────────────────────────

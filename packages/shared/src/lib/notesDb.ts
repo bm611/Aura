@@ -87,12 +87,6 @@ export async function upsertNote(note: AppNote, userId: string): Promise<void> {
   if (error) throw error
 }
 
-export async function deleteNote(id: string): Promise<void> {
-  const supabase = getSupabase()
-  const { error } = await supabase.from('notes').delete().eq('id', id)
-  if (error) throw error
-}
-
 export async function softDeleteNotes(ids: string[]): Promise<void> {
   if (!ids?.length) return
 
@@ -101,22 +95,6 @@ export async function softDeleteNotes(ids: string[]): Promise<void> {
     .from('notes')
     .update({ deleted_at: new Date().toISOString() })
     .in('id', ids)
-
-  if (error) throw error
-}
-
-export async function restoreNotes(notes: AppNote[], userId: string): Promise<void> {
-  if (!notes?.length) return
-
-  const supabase = getSupabase()
-  const rows = notes.map((note) => ({
-    ...noteToRow({ ...note, deletedAt: null }, userId),
-    deleted_at: null,
-  }))
-
-  const { error } = await supabase
-    .from('notes')
-    .upsert(rows, { onConflict: 'id' })
 
   if (error) throw error
 }

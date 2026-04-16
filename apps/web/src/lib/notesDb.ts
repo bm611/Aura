@@ -133,12 +133,6 @@ export async function upsertNote(note: AppNote, userId: string): Promise<void> {
   if (error) throw error
 }
 
-/** Hard-delete a note by id */
-export async function deleteNote(id: string): Promise<void> {
-  const { error } = await supabase.from('notes').delete().eq('id', id)
-  if (error) throw error
-}
-
 export async function softDeleteNotes(ids: string[]): Promise<void> {
   if (!ids?.length) {
     return

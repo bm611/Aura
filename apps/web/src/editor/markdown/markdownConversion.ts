@@ -107,7 +107,7 @@ export function looksLikeMarkdown(text: string = ''): boolean {
   return MARKDOWN_PATTERN.test(text)
 }
 
-export function markdownToHTML(content: string = ''): string {
+function markdownToHTML(content: string = ''): string {
   if (!content.trim()) {
     return '<p></p>'
   }

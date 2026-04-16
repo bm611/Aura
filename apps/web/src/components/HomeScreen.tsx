@@ -28,7 +28,7 @@ import {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export interface HomeScreenProps {
+interface HomeScreenProps {
 	notes: TreeNode[];
 	onNewNote: () => void;
 	onCreateDailyNote: () => void;

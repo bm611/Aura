@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { getNoteExcerpt, searchNotes } from './knowledgeBase'
+import { searchNotes } from './knowledgeBase'
 
 const notes = [
   {
@@ -27,10 +27,6 @@ const notes = [
 ]
 
 describe('knowledge base search', () => {
-  it('creates excerpts from markdown notes', () => {
-    expect(getNoteExcerpt({ content: '# Heading\n\nBody copy for the note.' })).toContain('Heading')
-  })
-
   it('prioritizes title matches and uses updatedAt as a tie breaker', () => {
     const results = searchNotes(notes, 'launch')
 

@@ -1,7 +1,7 @@
 const CURSOR_TOKEN = '__CURSOR__'
 const SELECTION_TOKEN = '__SELECTION__'
 
-export interface SnippetResult {
+interface SnippetResult {
   text: string
   cursorOffset: number
 }
@@ -173,14 +173,4 @@ export function getEditorCommandById(commandId: string): EditorCommand | null {
   return EDITOR_COMMANDS.find((command) => command.id === commandId) || null
 }
 
-export function buildCommandInsertion(command: EditorCommand | null, selectedText: string = ''): SnippetResult | null {
-  if (!command) {
-    return null
-  }
 
-  if (typeof command.build === 'function') {
-    return command.build(selectedText)
-  }
-
-  return createSnippetResult(command.template!, selectedText)
-}

@@ -55,23 +55,6 @@ export function updateFileNode(tree: TreeNode[], id: string, updates: Partial<Tr
   })
 }
 
-export function findFile(nodes: TreeNode[], id: string): TreeNode | null {
-  for (const node of nodes) {
-    if (node.id === id && node.type === 'file') {
-      return node
-    }
-
-    if ('children' in node && node.children) {
-      const match = findFile(node.children, id)
-      if (match) {
-        return match
-      }
-    }
-  }
-
-  return null
-}
-
 export function findNode(nodes: TreeNode[], id: string): TreeNode | null {
   for (const node of nodes) {
     if (node.id === id) {

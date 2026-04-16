@@ -4,7 +4,7 @@
 // `accentHover` → --accent-hover (slightly lighter/brighter on hover)
 // `colorH1`     → --color-h1 (heading level 1 — mirrors accent by convention)
 
-export interface AccentThemeValues {
+interface AccentThemeValues {
   accent: string
   accentHover: string
   colorH1: string

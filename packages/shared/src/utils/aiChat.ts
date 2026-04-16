@@ -4,7 +4,7 @@ export interface AiChatRequest {
   mode?: 'chat' | 'inline'
 }
 
-export interface AiStreamCallbacks {
+interface AiStreamCallbacks {
   onToken: (token: string) => void
   onDone: () => void
   onError: (error: string) => void

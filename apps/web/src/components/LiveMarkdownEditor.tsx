@@ -9,7 +9,7 @@ import { docToMarkdown, markdownToDoc } from '../editor/markdown/markdownConvers
 import TableBubbleMenu from './TableBubbleMenu'
 import type { NoteFile } from '../types'
 
-export interface EditorPayload {
+interface EditorPayload {
   content: string
   contentDoc: JSONContent
   editorVersion: number

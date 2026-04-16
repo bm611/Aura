@@ -1,4 +1,4 @@
-export interface FontOption {
+interface FontOption {
   id: string
   name: string
   value: string
