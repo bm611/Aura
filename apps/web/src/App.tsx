@@ -29,7 +29,7 @@ import AiChatPage from './components/AiChatPage'
 import CommandPalette from './components/CommandPalette'
 import type { PaletteItem } from './components/CommandPalette'
 import LandingPage from './components/LandingPage'
-import AuthModal from './components/AuthModal'
+import AuthPage from './components/AuthPage'
 import TemplateGallery from './components/TemplateGallery'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { getEditorCommands } from './utils/editorCommands'
@@ -458,7 +458,7 @@ function AppInner() {
   const [accentId, setAccentId] = useState(() => localStorage.getItem('canvas-accent') || 'rose')
   const [editorReady, setEditorReady] = useState(false)
   const [deletedNote, setDeletedNote] = useState<DeletedNoteState | null>(null)
-  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [showAuthPage, setShowAuthPage] = useState(false)
   const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [syncError, setSyncError] = useState<string | null>(null)
@@ -860,7 +860,7 @@ function AppInner() {
     lastUserIdRef.current = user.id
     setDemoMode(false)
     demoModeRef.current = false
-    setAuthModalOpen(false)
+    setShowAuthPage(false)
     setSyncError(null)
     pendingUpsertsRef.current = cachedPendingUpserts
     pendingDeleteIdsRef.current = cachedPendingDeleteIds
@@ -1675,13 +1675,16 @@ function AppInner() {
 
   // Show landing page for unauthenticated users who haven't entered demo mode
   if (!user && !demoMode) {
+    if (showAuthPage) {
+      return <AuthPage onBack={() => setShowAuthPage(false)} />
+    }
+
     return (
       <>
         <LandingPage
           onStart={handleStart}
-          onSignIn={() => setAuthModalOpen(true)}
+          onSignIn={() => setShowAuthPage(true)}
         />
-        <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
       </>
     )
   }
@@ -1757,7 +1760,7 @@ function AppInner() {
               sidebarCollapsed={sidebarCollapsed}
               onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
               onOpenCommandPalette={openCommandPalette}
-              onOpenAuthModal={() => setAuthModalOpen(true)}
+              onOpenAuthModal={() => setShowAuthPage(true)}
               saveStatus={saveStatus}
               lastSavedAt={activeNoteLastSavedAt ?? null}
               onRetrySync={retryFailedSyncs}
@@ -1828,12 +1831,14 @@ function AppInner() {
         </div>
       )}
 
-      <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
       <TemplateGallery
         open={templateGalleryOpen}
         onClose={() => setTemplateGalleryOpen(false)}
         onSelectTemplate={handleSelectTemplate}
       />
+      {showAuthPage && (
+        <AuthPage onBack={() => setShowAuthPage(false)} />
+      )}
     </>
   )
 }
