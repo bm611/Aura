@@ -19,6 +19,12 @@ export interface AccentColor {
 
 export const ACCENT_COLORS: AccentColor[] = [
   {
+    id: 'rust',
+    label: 'Rust',
+    dark:  { accent: '#d4714a', accentHover: '#e08560', colorH1: '#d4714a' },
+    light: { accent: '#b85c38', accentHover: '#cc7048', colorH1: '#b85c38' },
+  },
+  {
     id: 'rose',
     label: 'Rose',
     dark:  { accent: '#e07a8a', accentHover: '#f0909f', colorH1: '#e07a8a' },

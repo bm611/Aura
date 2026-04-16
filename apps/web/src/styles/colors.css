@@ -4,73 +4,74 @@
    ═══════════════════════════════════════════════ */
 
 :root {
-  /* ── Surfaces ── */
-  --bg-deep: #0c0b0e;
-  --bg-primary: #13121a;
-  --bg-surface: #1c1b24;
-  --bg-elevated: #24232e;
-  --bg-hover: #2e2d38;
-  --grain-opacity: 0.035;
+  /* ── Surfaces — warm dark walnut ── */
+  --bg-deep: #1a1814;
+  --bg-primary: #211e19;
+  --bg-surface: #2a2620;
+  --bg-elevated: #332f28;
+  --bg-hover: #3d382f;
+  --grain-opacity: 0;
 
   /* ── Borders ── */
-  --border-subtle: #2e2d38;
-  --border-default: #3d3c48;
+  --border-subtle: #332f28;
+  --border-default: #3d382f;
 
-  /* ── Text ── */
-  --text-primary: #f2f0ed;
-  --text-secondary: #d4cfc7;
-  --text-muted: #a39e97;
+  /* ── Text — warm whites ── */
+  --text-primary: #f0ece4;
+  --text-secondary: #c8bfb0;
+  --text-muted: #8a8178;
 
-  /* ── Accent — warm rose ── */
-  --accent: #e07a8a;
-  --accent-hover: #f0909f;
+  /* ── Accent — warm rust ── */
+  --accent: #d4714a;
+  --accent-hover: #e08560;
   --accent-muted: color-mix(in srgb, var(--accent) 15%, transparent);
   --banner-accent-mix: 55%;
 
-  /* ── Semantic — distinct from accent ── */
+  /* ── Semantic ── */
   --danger: #e05c5c;
   --danger-muted: rgba(224, 92, 92, 0.12);
   --success: #6aafca;
   --success-muted: rgba(94, 159, 184, 0.12);
   --warning: #c89640;
 
-  /* ── Heading scale — harmonious warm tones ── */
-  --color-h1: #e07a8a;
-  --color-h2: #b8a9d4;
-  --color-h3: #6aafca;
-  --color-title: #6aafca;
+  /* ── Heading scale — warm editorial tones ── */
+  --color-h1: #d4714a;  /* rust — matches accent */
+  --color-h2: #c8a070;  /* warm gold */
+  --color-h3: #7a9e8a;  /* sage */
+  --color-title: #7a9e8a;
   /* Aliases (referenced in JSX) */
   --h1-color: var(--color-h1);
   --h2-color: var(--color-h2);
   --title-color: var(--color-title);
 
-  /* ── Neumorphic shadows ── */
+  /* ── Shadows — warmer, flatter ── */
   --neu-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
   --neu-shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 20px rgba(0, 0, 0, 0.25);
   --neu-shadow-active: 0 0px 1px rgba(0, 0, 0, 0.4);
   --neu-shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 
-  /* ── Button accent shadows ── */
-  --neu-btn-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 8px 24px color-mix(in srgb, var(--accent) 25%, transparent);
-  --neu-btn-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.2), 0 12px 32px color-mix(in srgb, var(--accent) 30%, transparent);
+  /* ── Button shadows — flat, no accent glow ── */
+  --neu-btn-shadow: 0 2px 4px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
+  --neu-btn-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.25), 0 8px 20px rgba(0, 0, 0, 0.2);
   --neu-btn-shadow-active: 0 0px 2px rgba(0, 0, 0, 0.3);
 
-  /* ── Glassmorphism ── */
-  --glass-bg: rgba(255, 255, 255, 0.06);
-  --glass-bg-hover: rgba(255, 255, 255, 0.10);
-  --glass-bg-active: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-border-hover: rgba(255, 255, 255, 0.20);
-  --glass-blur: 16px;
-  --glass-glow: 0 0 20px color-mix(in srgb, var(--accent) 15%, transparent);
-  --glass-glow-hover: 0 0 28px color-mix(in srgb, var(--accent) 25%, transparent);
-  --glass-glow-active: 0 0 12px color-mix(in srgb, var(--accent) 10%, transparent);
+  /* ── Glass — minimal, mostly flat ── */
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-bg-hover: rgba(255, 255, 255, 0.07);
+  --glass-bg-active: rgba(255, 255, 255, 0.02);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.13);
+  --glass-blur: 4px;
+  /* Glows replaced with flat shadows */
+  --glass-glow: 0 0 0 transparent;
+  --glass-glow-hover: 0 4px 16px rgba(0, 0, 0, 0.2);
+  --glass-glow-active: 0 2px 8px rgba(0, 0, 0, 0.15);
 
   /* ── Dialog / modal shadows ── */
-  --dialog-shadow: 0 8px 40px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
+  --dialog-shadow: 0 8px 40px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
 
   /* ── Typography ── */
-  --body-font: "Outfit", "DM Sans", sans-serif;
+  --body-font: "DM Sans", "Outfit", sans-serif;
 
   /* ── Tag palette — dark mode ── */
   --tag-rose-bg: rgba(209, 123, 136, 0.14);
@@ -110,25 +111,25 @@
   --tag-peach-x-hover: #f0a8b4;
 }
 
-/* ── Light Mode ── */
+/* ── Light Mode — warm cream paper ── */
 
 :root[data-theme="light"] {
-  --bg-deep: #f8f6f3;
-  --bg-primary: #ffffff;
-  --bg-surface: #f5f2ef;
-  --bg-elevated: #ffffff;
-  --bg-hover: #ede9e5;
-  --grain-opacity: 0.02;
+  --bg-deep: #e8e2d8;
+  --bg-primary: #faf8f4;
+  --bg-surface: #f0ece4;
+  --bg-elevated: #faf8f4;
+  --bg-hover: #e4ddd4;
+  --grain-opacity: 0;
 
-  --border-subtle: #e5e0db;
-  --border-default: #d5cec9;
+  --border-subtle: #ddd8d0;
+  --border-default: #ccc4b8;
 
-  --text-primary: #2d2a28;
-  --text-secondary: #5c5855;
-  --text-muted: #8c8683;
+  --text-primary: #2a2420;
+  --text-secondary: #5c5248;
+  --text-muted: #8c8278;
 
-  --accent: #c4566a;
-  --accent-hover: #d87080;
+  --accent: #b85c38;
+  --accent-hover: #cc7048;
   --accent-muted: color-mix(in srgb, var(--accent) 10%, transparent);
   --banner-accent-mix: 100%;
 
@@ -138,34 +139,34 @@
   --success-muted: rgba(75, 130, 156, 0.08);
   --warning: #a07830;
 
-  --color-h1: #c4566a;
-  --color-h2: #8570a0;
-  --color-h3: #3e7e9e;
-  --color-title: #3e7e9e;
+  --color-h1: #b85c38;
+  --color-h2: #8a7050;
+  --color-h3: #5a8070;
+  --color-title: #5a8070;
   --h1-color: var(--color-h1);
   --h2-color: var(--color-h2);
   --title-color: var(--color-title);
 
   --neu-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
-  --neu-shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.06), 0 8px 20px rgba(0, 0, 0, 0.06);
+  --neu-shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.08), 0 8px 20px rgba(0, 0, 0, 0.06);
   --neu-shadow-active: 0 0px 1px rgba(0, 0, 0, 0.08);
   --neu-shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.06);
 
-  --neu-btn-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 8px 24px color-mix(in srgb, var(--accent) 15%, transparent);
-  --neu-btn-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.06), 0 12px 32px color-mix(in srgb, var(--accent) 20%, transparent);
+  --neu-btn-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.05);
+  --neu-btn-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.1), 0 8px 20px rgba(0, 0, 0, 0.07);
   --neu-btn-shadow-active: 0 0px 2px rgba(0, 0, 0, 0.08);
 
-  --glass-bg: rgba(255, 255, 255, 0.55);
-  --glass-bg-hover: rgba(255, 255, 255, 0.70);
-  --glass-bg-active: rgba(255, 255, 255, 0.40);
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --glass-border-hover: rgba(0, 0, 0, 0.14);
-  --glass-blur: 16px;
-  --glass-glow: 0 0 16px color-mix(in srgb, var(--accent) 10%, transparent);
-  --glass-glow-hover: 0 0 24px color-mix(in srgb, var(--accent) 18%, transparent);
-  --glass-glow-active: 0 0 10px color-mix(in srgb, var(--accent) 8%, transparent);
+  --glass-bg: rgba(255, 255, 255, 0.60);
+  --glass-bg-hover: rgba(255, 255, 255, 0.80);
+  --glass-bg-active: rgba(255, 255, 255, 0.45);
+  --glass-border: rgba(0, 0, 0, 0.07);
+  --glass-border-hover: rgba(0, 0, 0, 0.12);
+  --glass-blur: 4px;
+  --glass-glow: 0 0 0 transparent;
+  --glass-glow-hover: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --glass-glow-active: 0 2px 8px rgba(0, 0, 0, 0.08);
 
-  --dialog-shadow: 0 8px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  --dialog-shadow: 0 8px 40px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.08);
 
   --tag-rose-bg: rgba(184, 96, 112, 0.1);
   --tag-rose-border: rgba(184, 96, 112, 0.3);
@@ -213,7 +214,7 @@
   --bg-surface: #f8eece;
   --bg-elevated: #fdfaef;
   --bg-hover: #f0e0b5;
-  --grain-opacity: 0.01;
+  --grain-opacity: 0;
 
   /* Warm borders */
   --border-subtle: #dfd0a5;
@@ -252,8 +253,8 @@
   --neu-shadow-active: 0 0px 1px rgba(60, 40, 10, 0.12);
   --neu-shadow-inset: inset 0 1px 3px rgba(60, 40, 10, 0.08);
 
-  --neu-btn-shadow: 0 2px 4px rgba(60, 40, 10, 0.1), 0 8px 24px color-mix(in srgb, var(--accent) 20%, transparent);
-  --neu-btn-shadow-hover: 0 4px 8px rgba(60, 40, 10, 0.12), 0 12px 32px color-mix(in srgb, var(--accent) 25%, transparent);
+  --neu-btn-shadow: 0 2px 4px rgba(60, 40, 10, 0.1), 0 4px 12px rgba(60, 40, 10, 0.06);
+  --neu-btn-shadow-hover: 0 4px 8px rgba(60, 40, 10, 0.12), 0 8px 20px rgba(60, 40, 10, 0.08);
   --neu-btn-shadow-active: 0 0px 2px rgba(60, 40, 10, 0.15);
 
   --glass-bg: rgba(253, 246, 227, 0.50);
@@ -261,10 +262,10 @@
   --glass-bg-active: rgba(253, 246, 227, 0.35);
   --glass-border: rgba(139, 110, 60, 0.12);
   --glass-border-hover: rgba(139, 110, 60, 0.22);
-  --glass-blur: 14px;
-  --glass-glow: 0 0 20px color-mix(in srgb, var(--accent) 18%, transparent);
-  --glass-glow-hover: 0 0 28px color-mix(in srgb, var(--accent) 28%, transparent);
-  --glass-glow-active: 0 0 12px color-mix(in srgb, var(--accent) 12%, transparent);
+  --glass-blur: 4px;
+  --glass-glow: 0 0 0 transparent;
+  --glass-glow-hover: 0 4px 16px rgba(60, 40, 10, 0.12);
+  --glass-glow-active: 0 2px 8px rgba(60, 40, 10, 0.08);
 
   --dialog-shadow: 0 8px 40px rgba(60, 40, 10, 0.12), 0 2px 8px rgba(60, 40, 10, 0.08);
 

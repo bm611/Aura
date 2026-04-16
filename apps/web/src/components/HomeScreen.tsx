@@ -13,6 +13,7 @@ import {
 } from '@hugeicons/core-free-icons';
 
 import Icon from './Icon';
+import { EmptyStateFox } from './EmptyStateFox';
 import SettingsMenu from './SettingsMenu';
 import { countBodyWords, getNoteDisplayTitle } from '../utils/noteMeta';
 import { useAuth } from '../contexts/AuthContext';
@@ -212,231 +213,35 @@ function FirstNotePrompt() {
 			transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
 			className="flex flex-col items-center justify-center py-12 px-4 gap-6 select-none h-full"
 		>
-			{/* Animated illustration */}
-			<div className="relative w-48 h-44">
-				<svg
-					viewBox="0 0 192 176"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-					className="w-full h-full"
-					aria-hidden="true"
-				>
-					{/* Glow backdrop */}
-					<motion.ellipse
-						cx="96"
-						cy="110"
-						rx="64"
-						ry="18"
-						fill="var(--accent)"
-						initial={{ opacity: 0, scaleX: 0.4 }}
-						animate={{ opacity: [0.06, 0.12, 0.06], scaleX: [0.8, 1, 0.8] }}
-						transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-					/>
-
-					{/* Back paper — tilted left */}
-					<motion.g
-						initial={{ opacity: 0, y: 14, rotate: -10 }}
-						animate={{ opacity: 1, y: 0, rotate: -6 }}
-						transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 1, 0.5, 1] }}
-						style={{ transformOrigin: '96px 95px' }}
-					>
-						<motion.rect
-							x="44"
-							y="30"
-							width="88"
-							height="112"
-							rx="10"
-							fill="var(--bg-elevated)"
-							stroke="var(--border-subtle)"
-							strokeWidth="1.2"
-							animate={{ y: [0, -3, 0] }}
-							transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
-						/>
-						{/* Lines on back paper */}
-						{[55, 68, 81, 94].map((y, i) => (
-							<motion.line
-								key={y}
-								x1="58"
-								y1={y}
-								x2="118"
-								y2={y}
-								stroke="var(--border-subtle)"
-								strokeWidth="1.5"
-								strokeLinecap="round"
-								initial={{ pathLength: 0, opacity: 0 }}
-								animate={{ pathLength: 1, opacity: 1 }}
-								transition={{ duration: 0.5, delay: 0.7 + i * 0.08 }}
-							/>
-						))}
-					</motion.g>
-
-					{/* Front paper — slight right tilt */}
-					<motion.g
-						initial={{ opacity: 0, y: 20, rotate: 8 }}
-						animate={{ opacity: 1, y: 0, rotate: 4 }}
-						transition={{ duration: 0.65, delay: 0.55, ease: [0.25, 1, 0.5, 1] }}
-						style={{ transformOrigin: '96px 95px' }}
-					>
-						<motion.rect
-							x="52"
-							y="22"
-							width="88"
-							height="112"
-							rx="10"
-							fill="var(--bg-surface)"
-							stroke="var(--border-default)"
-							strokeWidth="1.2"
-							animate={{ y: [0, -5, 0], rotate: [4, 5.5, 4] }}
-							transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-							style={{ transformOrigin: '96px 78px' }}
-						/>
-						{/* Accent top bar */}
-						<motion.rect
-							x="52"
-							y="22"
-							width="88"
-							height="22"
-							rx="10"
-							fill="var(--accent)"
-							opacity="0.18"
-							animate={{ opacity: [0.18, 0.28, 0.18] }}
-							transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-						/>
-						{/* Pen/cursor icon on front paper */}
-						<motion.g
-							animate={{ y: [0, -2, 0], rotate: [0, 3, 0] }}
-							transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-							style={{ transformOrigin: '96px 70px' }}
-						>
-							{/* Pen body */}
-							<motion.path
-								d="M89 62 L103 48 L111 56 L97 70 Z"
-								fill="var(--accent)"
-								opacity="0.9"
-								initial={{ scale: 0, opacity: 0 }}
-								animate={{ scale: 1, opacity: 0.9 }}
-								transition={{ duration: 0.4, delay: 1 }}
-								style={{ transformOrigin: '100px 59px' }}
-							/>
-							{/* Pen tip */}
-							<motion.path
-								d="M97 70 L93 74 L96 71 Z"
-								fill="var(--accent)"
-								initial={{ opacity: 0 }}
-								animate={{ opacity: 1 }}
-								transition={{ delay: 1.2 }}
-							/>
-							{/* Pen highlight */}
-							<motion.line
-								x1="92"
-								y1="66"
-								x2="100"
-								y2="58"
-								stroke="white"
-								strokeWidth="1"
-								strokeLinecap="round"
-								opacity="0.3"
-								initial={{ pathLength: 0 }}
-								animate={{ pathLength: 1 }}
-								transition={{ duration: 0.3, delay: 1.1 }}
-							/>
-						</motion.g>
-						{/* Placeholder lines */}
-						{[90, 103, 116].map((y, i) => (
-							<motion.line
-								key={y}
-								x1="66"
-								y1={y}
-								x2={i === 2 ? '110' : '126'}
-								y2={y}
-								stroke="var(--border-subtle)"
-								strokeWidth="1.5"
-								strokeLinecap="round"
-								initial={{ pathLength: 0, opacity: 0 }}
-								animate={{ pathLength: 1, opacity: 1 }}
-								transition={{ duration: 0.4, delay: 0.9 + i * 0.1 }}
-							/>
-						))}
-					</motion.g>
-
-					{/* Orbiting sparkle ring */}
-					<motion.g
-						animate={{ rotate: 360 }}
-						transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-						style={{ transformOrigin: '96px 78px' }}
-					>
-						{[0, 72, 144, 216, 288].map((deg, i) => {
-							const rad = (deg * Math.PI) / 180;
-							const r = 66;
-							const cx = 96 + r * Math.cos(rad);
-							const cy = 78 + r * Math.sin(rad);
-							return (
-								<motion.circle
-									key={deg}
-									cx={cx}
-									cy={cy}
-									r={i % 2 === 0 ? 2.5 : 1.5}
-									fill={i % 2 === 0 ? 'var(--accent)' : 'var(--color-h2)'}
-									animate={{ opacity: [0.2, 0.7, 0.2], scale: [0.8, 1.2, 0.8] }}
-									transition={{
-										duration: 2.5,
-										repeat: Infinity,
-										ease: 'easeInOut',
-										delay: i * 0.4
-									}}
-									style={{ transformOrigin: `${cx}px ${cy}px` }}
-								/>
-							);
-						})}
-					</motion.g>
-
-					{/* Floating ink drops */}
-					{[
-						{ x: 32, y: 44, delay: 0.8, color: 'var(--accent)' },
-						{ x: 158, y: 58, delay: 1.4, color: 'var(--color-h2)' },
-						{ x: 148, y: 128, delay: 2.1, color: 'var(--success)' }
-					].map(({ x, y, delay, color }, i) => (
-						<motion.circle
-							key={i}
-							cx={x}
-							cy={y}
-							r="3.5"
-							fill={color}
-							initial={{ opacity: 0, scale: 0 }}
-							animate={{ opacity: [0, 0.6, 0], scale: [0, 1, 0], y: [0, -12, -20] }}
-							transition={{
-								duration: 2.8,
-								delay,
-								repeat: Infinity,
-								repeatDelay: 2,
-								ease: 'easeOut'
-							}}
-						/>
-					))}
-				</svg>
-			</div>
+			{/* Fox mascot */}
+			<motion.div
+				initial={{ opacity: 0, scale: 0.9, y: 12 }}
+				animate={{ opacity: 1, scale: 1, y: 0 }}
+				transition={{ duration: 0.6, delay: 0.3, ease: [0.25, 1, 0.5, 1] }}
+			>
+				<EmptyStateFox className="w-40 h-44" />
+			</motion.div>
 
 			{/* Text */}
 			<motion.div
 				className="flex flex-col items-center gap-2 text-center"
 				initial={{ opacity: 0, y: 8 }}
 				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.5, delay: 0.8 }}
+				transition={{ duration: 0.5, delay: 0.6 }}
 			>
 				<p
 					className="text-[22px] font-semibold text-[var(--text-primary)] tracking-tight leading-[1.15]"
 					style={{ fontFamily: 'var(--font-display)' }}
 				>
-					Your canvas is empty.
+					Nothing here yet.
 				</p>
 				<p className="text-[15px] text-[var(--text-muted)] max-w-[240px] leading-relaxed" style={{ fontFamily: 'var(--font-body)' }}>
-					Every great idea starts somewhere. Write your first note.
+					Write your first note. Every good thing starts small.
 				</p>
 			</motion.div>
 		</motion.div>
 	);
 }
-
 // ─── HomeScreen Component ─────────────────────────────────────────────────────
 
 export default function HomeScreen({
