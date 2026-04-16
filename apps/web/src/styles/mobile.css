@@ -96,6 +96,81 @@
   display: none;
 }
 
+@media (min-width: 768px) and (pointer: fine) {
+  .mobile-action-bar--editor.mobile-action-bar--editor-desktop {
+    display: flex;
+    position: absolute;
+    left: 50%;
+    bottom: 20px;
+    z-index: 30;
+    width: max-content;
+    max-width: min(calc(100vw - 2rem), 56rem);
+    transform: translateX(-50%);
+  }
+
+  .mobile-action-bar--editor.mobile-action-bar--editor-desktop .mobile-bar-inner {
+    display: flex;
+    align-items: center;
+    width: auto;
+    max-width: inherit;
+    padding: 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg-surface) 90%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border-subtle) 50%, transparent);
+    box-shadow: none;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .mobile-action-bar--editor.mobile-action-bar--editor-desktop .mobile-editor-toolbar-inner {
+    display: flex;
+    align-items: center;
+    width: auto;
+    max-width: inherit;
+    gap: 2px;
+    padding: 4px 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  .mobile-action-bar--editor.mobile-action-bar--editor-desktop .mobile-editor-toolbar-inner::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-action-bar--editor.mobile-action-bar--editor-desktop .mobile-editor-toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    min-height: 30px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition:
+      color 150ms cubic-bezier(0.23, 1, 0.32, 1),
+      background-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
+      transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .mobile-action-bar--editor.mobile-action-bar--editor-desktop .mobile-editor-toolbar-btn:hover {
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--bg-hover) 80%, transparent);
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  .mobile-action-bar--editor.mobile-action-bar--editor-desktop .mobile-editor-toolbar-btn:active {
+    background: color-mix(in srgb, var(--bg-hover) 92%, transparent);
+    transform: scale(0.96);
+  }
+}
+
 @media (max-width: 767px) {
   .mobile-action-bar--editor {
     display: flex;

@@ -135,6 +135,26 @@ interface MobileEditorToolbarProps {
   editor: Editor | null
 }
 
+function useDesktopToolbar(): boolean {
+  const [isDesktop, setIsDesktop] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+
+    const mediaQuery = window.matchMedia('(min-width: 768px) and (pointer: fine)')
+    const update = () => setIsDesktop(mediaQuery.matches)
+
+    update()
+    mediaQuery.addEventListener('change', update)
+
+    return () => {
+      mediaQuery.removeEventListener('change', update)
+    }
+  }, [])
+
+  return isDesktop
+}
+
 /**
  * Detect whether the virtual keyboard is open so the toolbar can stick
  * to the bottom of the visible area. With `interactive-widget=resizes-content`
@@ -197,6 +217,7 @@ const TABLE_ACTIONS = [
 
 export default function MobileEditorToolbar({ editor }: MobileEditorToolbarProps) {
   const bottom = useKeyboardAwareBottom()
+  const isDesktop = useDesktopToolbar()
   const [isTableActive, setIsTableActive] = useState(false)
 
   useEffect(() => {
@@ -222,10 +243,10 @@ export default function MobileEditorToolbar({ editor }: MobileEditorToolbarProps
 
   return (
     <div
-      className="mobile-action-bar mobile-action-bar--editor"
+      className={`mobile-action-bar mobile-action-bar--editor${isDesktop ? ' mobile-action-bar--editor-desktop' : ''}`}
       style={{
-        bottom,
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        bottom: isDesktop ? 20 : bottom,
+        paddingBottom: isDesktop ? undefined : 'env(safe-area-inset-bottom, 0px)',
       }}
     >
       <div className="mobile-bar-inner">
