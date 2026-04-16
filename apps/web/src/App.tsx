@@ -39,6 +39,7 @@ import { fetchNotes, restoreNotes, softDeleteNotes, upsertNote } from './lib/not
 import { exportNoteAsMarkdown } from './utils/exportNote'
 import { ACCENT_COLORS } from './config/accents'
 import { FONT_OPTIONS } from './config/fonts'
+import { THEMES } from './config/themes'
 import type { TreeNode, NoteFile, NoteFolder, FlatNode } from './types'
 import type { EditorApi } from './components/LiveMarkdownEditor'
 import type { Template } from './config/templates'
@@ -934,7 +935,8 @@ function AppInner() {
   useEffect(() => {
     const palette = ACCENT_COLORS.find((a) => a.id === accentId)
     if (palette) {
-      const c = theme === 'dark' ? palette.dark : palette.light
+      const themeMode = THEMES.find((t) => t.id === theme)?.mode ?? 'dark'
+      const c = themeMode === 'dark' ? palette.dark : palette.light
       document.documentElement.style.setProperty('--accent', c.accent)
       document.documentElement.style.setProperty('--accent-hover', c.accentHover)
       document.documentElement.style.setProperty('--color-h1', c.colorH1)
@@ -1414,7 +1416,11 @@ function AppInner() {
   }, [finishSyncingIfIdle, isOnline, queuePendingUpsert, syncNoteToCloud, user])
 
   const cycleTheme = useCallback(() => {
-    setTheme((t) => t === 'dark' ? 'light' : t === 'light' ? 'playful' : 'dark')
+    const themeIds = THEMES.map((t) => t.id)
+    setTheme((t) => {
+      const i = themeIds.indexOf(t)
+      return themeIds[(i + 1) % themeIds.length] ?? themeIds[0] ?? t
+    })
   }, [])
 
   const onResizeStart = useCallback((e: React.MouseEvent) => {
@@ -1588,10 +1594,10 @@ function AppInner() {
     {
       id: 'action-toggle-theme',
       section: 'Actions',
-      title: theme === 'dark' ? 'Switch to light mode' : theme === 'light' ? 'Switch to playful mode' : 'Switch to dark mode',
-      subtitle: 'Cycle between dark, light, and playful themes',
-      icon: theme === 'dark' ? <Icon icon={Sun01Icon} size={16} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={16} strokeWidth={1.5} />,
-      keywords: ['theme', 'color', 'dark', 'light', 'playful'],
+      title: 'Cycle theme',
+      subtitle: 'Cycle through all themes',
+      icon: THEMES.find((t) => t.id === theme)?.mode === 'dark' ? <Icon icon={Sun01Icon} size={16} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={16} strokeWidth={1.5} />,
+      keywords: ['theme', 'color', 'dark', 'light', 'catppuccin', 'ayu', 'tokyo'],
       run: () => cycleTheme(),
     },
     {

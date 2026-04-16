@@ -12,7 +12,6 @@ import {
   ArrowRight01Icon,
   Tick01Icon,
   ExpandIcon,
-  SunCloud02Icon,
   Moon02Icon,
 } from '@hugeicons/core-free-icons'
 import type { IconSvgElement } from '@hugeicons/react'
@@ -20,6 +19,7 @@ import type { IconSvgElement } from '@hugeicons/react'
 import Icon from './Icon'
 import AccentPicker from './AccentPicker'
 import { FONT_OPTIONS } from '../config/fonts'
+import { THEMES } from '../config/themes'
 
 /* ── Types ──────────────────────────────────────────────────── */
 
@@ -77,6 +77,147 @@ const POPOVER_VARIANTS = {
   visible: { opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 },
   exit: { opacity: 0, y: -6, filter: 'blur(2px)', scale: 0.985 },
 } as const
+
+/* ── Theme Picker Popover (portaled to body) ────────────────── */
+
+interface ThemePopoverProps {
+  anchorRef: React.RefObject<HTMLButtonElement | null>
+  theme: string
+  onSetTheme: (id: string) => void
+  onClose: () => void
+}
+
+function ThemePopover({ anchorRef, theme, onSetTheme, onClose }: ThemePopoverProps) {
+  const popoverRef = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState<{ top: number; left: number; flipX: boolean }>({
+    top: 0, left: 0, flipX: false,
+  })
+
+  useEffect(() => {
+    if (!anchorRef.current) return
+    const rect = anchorRef.current.getBoundingClientRect()
+    const popoverW = 272
+    const flipX = rect.left + popoverW > window.innerWidth - 8
+    setPos({
+      top: rect.bottom + 6,
+      left: flipX ? rect.right - popoverW : rect.left,
+      flipX,
+    })
+  }, [anchorRef])
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const inPopover = popoverRef.current?.contains(e.target as Node)
+      const inAnchor = anchorRef.current?.contains(e.target as Node)
+      if (!inPopover && !inAnchor) onClose()
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [anchorRef, onClose])
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  // Group themes preserving insertion order
+  const groups = THEMES.reduce<Record<string, typeof THEMES>>((acc, t) => {
+    if (!acc[t.group]) acc[t.group] = []
+    ;(acc[t.group] as typeof THEMES).push(t)
+    return acc
+  }, {})
+
+  return createPortal(
+    <motion.div
+      ref={popoverRef}
+      data-settings-theme-popover
+      className="fixed z-[9999] w-[272px] rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3"
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={POPOVER_VARIANTS}
+      transition={POPOVER_TRANSITION}
+      style={{
+        top: pos.top,
+        left: pos.left,
+        boxShadow: 'var(--dialog-shadow)',
+        fontFamily: '"Outfit", sans-serif',
+        transformOrigin: pos.flipX ? 'top right' : 'top left',
+      }}
+    >
+      <div className="flex flex-col gap-3">
+        {Object.entries(groups).map(([group, groupThemes]) => (
+          <div key={group}>
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)] select-none px-0.5">
+              {group}
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {groupThemes.map((t) => {
+                const isActive = t.id === theme
+                const labelColor = t.mode === 'dark'
+                  ? 'rgba(255,255,255,0.65)'
+                  : 'rgba(0,0,0,0.55)'
+                const labelColorActive = t.accent
+
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => { onSetTheme(t.id); onClose() }}
+                    className="group relative flex flex-col overflow-hidden rounded-md transition-transform duration-150 active:scale-95"
+                    style={{
+                      backgroundColor: t.bg,
+                      outline: isActive ? `2px solid ${t.accent}` : '2px solid transparent',
+                      outlineOffset: '2px',
+                    }}
+                    title={`${group} ${t.label}`}
+                  >
+                    {/* Inner surface panel — makes dark themes distinguishable */}
+                    <div className="mx-1.5 mt-1.5 flex-1 rounded-lg p-2" style={{ backgroundColor: t.surface }}>
+                      {/* Accent heading line */}
+                      <div className="mb-1.5 h-[3px] w-[60%] rounded-full" style={{ backgroundColor: t.accent }} />
+                      {/* Body lines */}
+                      <div
+                        className="mb-1 h-[2px] w-full rounded-full"
+                        style={{ backgroundColor: t.mode === 'dark' ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.12)' }}
+                      />
+                      <div
+                        className="h-[2px] w-[75%] rounded-full"
+                        style={{ backgroundColor: t.mode === 'dark' ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.07)' }}
+                      />
+                    </div>
+
+                    {/* Bottom label strip */}
+                    <div className="flex items-center justify-between px-2 py-1.5">
+                      <span
+                        className="text-[10px] font-semibold leading-none tracking-wide"
+                        style={{ color: isActive ? labelColorActive : labelColor }}
+                      >
+                        {t.label}
+                      </span>
+                      {isActive && (
+                        <Icon
+                          icon={Tick01Icon}
+                          size={10}
+                          strokeWidth={2.5}
+                          style={{ color: t.accent }}
+                        />
+                      )}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>,
+    document.body,
+  )
+}
 
 /* ── Font Picker Popover (portaled to body) ─────────────────── */
 
@@ -186,19 +327,24 @@ export default function SettingsMenu({
 }: SettingsMenuProps) {
   const [open, setOpen] = useState(false)
   const [fontOpen, setFontOpen] = useState(false)
+  const [themeOpen, setThemeOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const fontBtnRef = useRef<HTMLButtonElement>(null)
+  const themeBtnRef = useRef<HTMLButtonElement>(null)
 
   const syncMeta = useMemo(() => getSyncMeta(syncing, syncStatus), [syncing, syncStatus])
   const activeFont = FONT_OPTIONS.find((o) => o.id === fontId) ?? FONT_OPTIONS[0]!
+  const activeTheme = THEMES.find((t) => t.id === theme)
 
   const closeMenu = useCallback(() => {
     setOpen(false)
     setFontOpen(false)
+    setThemeOpen(false)
   }, [])
 
   const closeFontPopover = useCallback(() => setFontOpen(false), [])
+  const closeThemePopover = useCallback(() => setThemeOpen(false), [])
 
   /* Close panel on outside click — careful to exclude portaled popovers */
   useEffect(() => {
@@ -214,6 +360,10 @@ export default function SettingsMenu({
       const fontPopover = document.querySelector('[data-settings-font-popover]')
       if (fontPopover?.contains(target)) return
 
+      // Inside the portaled theme popover — don't close
+      const themePopover = document.querySelector('[data-settings-theme-popover]')
+      if (themePopover?.contains(target)) return
+
       // Inside the portaled accent popover — don't close
       const accentPopover = document.querySelector('[data-accent-popover]')
       if (accentPopover?.contains(target)) return
@@ -227,6 +377,10 @@ export default function SettingsMenu({
           setFontOpen(false)
           return
         }
+        if (themeOpen) {
+          setThemeOpen(false)
+          return
+        }
         closeMenu()
       }
     }
@@ -237,7 +391,7 @@ export default function SettingsMenu({
       document.removeEventListener('mousedown', handlePointerDown)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [open, fontOpen, closeMenu])
+  }, [open, fontOpen, themeOpen, closeMenu])
 
   /* Auto-focus on open */
   useEffect(() => {
@@ -289,52 +443,27 @@ export default function SettingsMenu({
             />
 
             {/* ── Theme ────────────────────────────────────── */}
-            <div className="settings-item" data-settings-autofocus="true">
+            <button
+              ref={themeBtnRef}
+              type="button"
+              onClick={() => setThemeOpen((v) => !v)}
+              className="settings-item"
+              data-settings-autofocus="true"
+              aria-expanded={themeOpen}
+              aria-haspopup="listbox"
+            >
               <span className={ICON_WRAP}>
-                <span className="relative flex h-[18px] w-[18px] items-center justify-center">
-                  <motion.span className="absolute inset-0 flex items-center justify-center" initial={false}
-                    animate={{ opacity: theme === 'dark' ? 1 : 0, scale: theme === 'dark' ? 1 : 0.3 }}
-                    transition={POPOVER_TRANSITION}>
-                    <Icon icon={Moon02Icon} size={18} strokeWidth={1.8} />
-                  </motion.span>
-                  <motion.span className="absolute inset-0 flex items-center justify-center" initial={false}
-                    animate={{ opacity: theme === 'light' ? 1 : 0, scale: theme === 'light' ? 1 : 0.3 }}
-                    transition={POPOVER_TRANSITION}>
-                    <Icon icon={Sun01Icon} size={18} strokeWidth={1.8} />
-                  </motion.span>
-                  <motion.span className="absolute inset-0 flex items-center justify-center" initial={false}
-                    animate={{ opacity: theme === 'playful' ? 1 : 0, scale: theme === 'playful' ? 1 : 0.3 }}
-                    transition={POPOVER_TRANSITION}>
-                    <Icon icon={SunCloud02Icon} size={18} strokeWidth={1.8} style={{ color: '#e8602a' }} />
-                  </motion.span>
-                </span>
+                <Icon
+                  icon={activeTheme?.mode === 'dark' ? Moon02Icon : Sun01Icon}
+                  size={18}
+                  strokeWidth={1.8}
+                />
               </span>
-              <span className="settings-item-label">Theme</span>
-              <div className="ml-auto flex items-center gap-0.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-deep)] p-0.5">
-                {([
-                  { id: 'dark',    icon: Moon02Icon,     label: 'Dark'    },
-                  { id: 'light',   icon: Sun01Icon,     label: 'Light'   },
-                  { id: 'playful', icon: SunCloud02Icon, label: 'Playful' },
-                ] as const).map(({ id, icon, label }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    title={label}
-                    onClick={() => onSetTheme(id)}
-                    className="relative flex h-[22px] w-[22px] items-center justify-center rounded-md transition-colors duration-150"
-                    style={{
-                      color: theme === id
-                        ? (id === 'playful' ? '#e8602a' : 'var(--accent)')
-                        : 'var(--text-muted)',
-                      background: theme === id ? 'var(--glass-bg-hover)' : 'transparent',
-                      boxShadow: theme === id ? 'var(--glass-glow)' : 'none',
-                    }}
-                  >
-                    <Icon icon={icon} size={13} strokeWidth={2} />
-                  </button>
-                ))}
-              </div>
-            </div>
+              <span className="settings-item-label">
+                {activeTheme ? `${activeTheme.group} · ${activeTheme.label}` : 'Theme'}
+              </span>
+              <Icon icon={ArrowRight01Icon} size={14} strokeWidth={1.8} className="shrink-0 text-[var(--text-muted)]" />
+            </button>
 
             {/* ── Font ─────────────────────────────────────── */}
             <button
@@ -402,6 +531,21 @@ export default function SettingsMenu({
             </button>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Portaled Theme Popover ──────────────────────────── */}
+      <AnimatePresence initial={false}>
+        {themeOpen && (
+          <ThemePopover
+            anchorRef={themeBtnRef}
+            theme={theme}
+            onSetTheme={(id) => {
+              onSetTheme(id)
+              closeThemePopover()
+            }}
+            onClose={closeThemePopover}
+          />
         )}
       </AnimatePresence>
 
