@@ -703,11 +703,10 @@
 }
 
 .folio-editor .ProseMirror .table-node-view__frame {
-  display: grid;
+  display: inline-grid;
   grid-template-columns: auto auto;
   grid-template-rows: auto auto;
   gap: 0.35rem;
-  width: fit-content;
   max-width: 100%;
   min-width: min(100%, 18rem);
   vertical-align: top;
