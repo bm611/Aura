@@ -158,12 +158,12 @@ function TreeNodeComponent({
     const rect = nodeRef.current?.getBoundingClientRect()
     longPressRef.current = setTimeout(() => {
       if (navigator.vibrate) navigator.vibrate(12)
-      const MENU_HEIGHT = 220
+      const menuHeight = isFolder ? 260 : 170
       const y = rect ? rect.bottom + 4 : touch.clientY
-      const wouldOverflowBottom = y + MENU_HEIGHT > window.innerHeight
+      const wouldOverflowBottom = y + menuHeight > window.innerHeight
       setContextMenu({
         x: Math.min(touch.clientX, window.innerWidth - 180),
-        y: wouldOverflowBottom && rect ? rect.top - MENU_HEIGHT : y,
+        y: wouldOverflowBottom && rect ? rect.top - menuHeight : y,
       })
       longPressRef.current = null
     }, 550)
@@ -377,10 +377,10 @@ function TreeNodeComponent({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-2 px-0.5">
-              <span className="text-[13px] font-medium text-[var(--text-secondary)]">Choose an icon</span>
+              <span className="text-[13px] font-medium text-(--text-secondary)">Choose an icon</span>
               {node.icon && (
                 <button
-                  className="text-[12px] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                  className="text-[12px] text-(--text-muted) hover:text-(--text-primary) transition-colors"
                   onClick={() => {
                     onChangeIcon?.(node.id, null)
                     setIconPicker(false)
@@ -394,7 +394,7 @@ function TreeNodeComponent({
               {CATEGORY_ICONS.map((entry) => (
                 <button
                   key={entry.key}
-                  className={`glass-icon flex flex-col items-center justify-center w-10 h-10 rounded-lg transition-[background-color,color,border-color,box-shadow] hover:bg-[var(--glass-bg-hover)] ${node.icon === entry.key ? 'bg-[var(--glass-bg-hover)] ring-1.5 ring-[var(--accent)]' : ''}`}
+                  className={`glass-icon flex flex-col items-center justify-center w-10 h-10 rounded-lg transition-[background-color,color,border-color,box-shadow] hover:bg-(--glass-bg-hover) ${node.icon === entry.key ? 'bg-(--glass-bg-hover) ring-1.5 ring-(--accent)' : ''}`}
                   title={entry.label}
                   onClick={() => {
                     onChangeIcon?.(node.id, entry.key)
@@ -477,7 +477,7 @@ function InlineCreator({ depth, type, onConfirm, onCancel }: InlineCreatorProps)
       </span>
       <input
         ref={ref}
-        className="ren-input focus:border-[var(--accent)]"
+        className="ren-input focus:border-(--accent)"
         value={val}
         placeholder={type === 'folder' ? 'folder name' : 'file name'}
         onChange={(e) => setVal(e.target.value)}
@@ -636,10 +636,10 @@ export default function Sidebar({
       {/* On mobile this element is always 0-wide in the flex row; the aside is position:fixed and slides over the content */}
       <aside
         className={`sidebar-vs
-          max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-40 max-md:h-[100dvh] max-md:w-[80vw]
+          max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-40 max-md:h-dvh max-md:w-[80vw]
           max-md:transition-transform max-md:duration-300 max-md:ease-out
           ${collapsed ? 'max-md:-translate-x-full' : 'max-md:translate-x-0'}
-          md:relative md:z-auto md:h-[100dvh] md:shrink-0 md:transition-[width] md:duration-300 md:ease-out`}
+          md:relative md:z-auto md:h-dvh md:shrink-0 md:transition-[width] md:duration-300 md:ease-out`}
         style={{
           width: typeof window !== 'undefined' && window.innerWidth < 768 ? undefined : (collapsed ? 0 : width),
         }}
@@ -653,7 +653,7 @@ export default function Sidebar({
             <button
               type="button"
               onClick={onToggleCollapse}
-              className="glass-icon relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:text-[var(--text-primary)] after:absolute after:-inset-3 active:scale-[0.96]"
+              className="glass-icon relative flex h-9 w-9 items-center justify-center rounded-lg text-(--text-muted) transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:text-(--text-primary) after:absolute after:-inset-3 active:scale-[0.96]"
               title="Toggle sidebar (Cmd+B)"
             >
               <Icon icon={SidebarLeftIcon} size={22} stroke={1.5} />
@@ -753,7 +753,7 @@ export default function Sidebar({
           {/* Tree list */}
           <div className="sb-tree">
             <div className="sb-tree-actions">
-              <span className="text-[15px] font-semibold text-[var(--text-secondary)] select-none" style={{ fontFamily: '"Outfit", var(--body-font)', paddingLeft: 4 }}>Notes</span>
+              <span className="text-[15px] font-semibold text-(--text-secondary) select-none" style={{ fontFamily: '"Outfit", var(--body-font)', paddingLeft: 4 }}>Notes</span>
               {!searchQuery.trim() && (
                 <div className="flex items-center gap-0">
                   <button
@@ -810,7 +810,7 @@ export default function Sidebar({
               />
             )}
             {searchQuery.trim() && visibleTree.length === 0 && (
-              <div className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">No notes matched that search.</div>
+              <div className="px-4 py-8 text-center text-sm text-(--text-muted)">No notes matched that search.</div>
             )}
           </div>
         </div>
@@ -820,7 +820,7 @@ export default function Sidebar({
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="relative absolute bottom-[calc(2.5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-primary)] shadow-2xl backdrop-blur-xl transition-[transform,background-color,box-shadow] duration-150 ease-out after:absolute after:-inset-3 md:hidden active:scale-[0.92]"
+            className="absolute bottom-[calc(2.5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border border-(--border-subtle) bg-(--bg-elevated) text-(--text-primary) shadow-2xl backdrop-blur-xl transition-[transform,background-color,box-shadow] duration-150 ease-out after:absolute after:-inset-3 md:hidden active:scale-[0.92]"
                          aria-label="Close sidebar"
           >
             <Icon icon={Cancel01Icon} size={24} stroke={2} />
