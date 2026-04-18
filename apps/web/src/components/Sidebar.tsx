@@ -158,9 +158,12 @@ function TreeNodeComponent({
     const rect = nodeRef.current?.getBoundingClientRect()
     longPressRef.current = setTimeout(() => {
       if (navigator.vibrate) navigator.vibrate(12)
+      const MENU_HEIGHT = 220
+      const y = rect ? rect.bottom + 4 : touch.clientY
+      const wouldOverflowBottom = y + MENU_HEIGHT > window.innerHeight
       setContextMenu({
         x: Math.min(touch.clientX, window.innerWidth - 180),
-        y: rect ? rect.bottom + 4 : touch.clientY,
+        y: wouldOverflowBottom && rect ? rect.top - MENU_HEIGHT : y,
       })
       longPressRef.current = null
     }, 550)
