@@ -16,6 +16,7 @@
 @import "./styles/syntax.css";
 @import "./styles/callouts.css";
 @import "./styles/slash-command.css";
+@import "./styles/date-mention.css";
 @import "./styles/ai-prompt.css";
 
 /* ── Components ── */

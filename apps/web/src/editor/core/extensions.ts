@@ -16,6 +16,8 @@ import type { Extensions } from '@tiptap/core'
 import { createLowlight, all } from 'lowlight'
 import { CalloutNode } from '../extensions/CalloutNode'
 import { SlashCommand } from '../extensions/SlashCommand'
+import { DateCommand } from '../extensions/DateCommand'
+import { DateMention } from '../extensions/DateMention'
 import { MarkdownPaste } from '../extensions/MarkdownPaste'
 import { AiPromptBlock } from '../extensions/AiPromptBlock'
 
@@ -89,6 +91,8 @@ export function createFolioEditorExtensions(): Extensions {
     }),
     CalloutNode,
     SlashCommand,
+    DateMention,
+    DateCommand,
     MarkdownPaste,
     AiPromptBlock,
     TextStyle,

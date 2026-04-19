@@ -20,6 +20,7 @@ import {
   SparklesIcon,
   ArrowShrink02Icon,
   Image01Icon,
+  PinIcon,
 } from '@hugeicons/core-free-icons'
 
 import type { IconSvgElement } from '@hugeicons/react'
@@ -52,6 +53,7 @@ interface SidebarProps {
   onRenameNode?: (id: string, name: string) => void
   onMoveNode?: (id: string, newParentId: string | null) => void
   onChangeIcon?: (id: string, icon: string | null) => void
+  onTogglePin?: (id: string) => void
   collapsed: boolean
   onToggleCollapse: () => void
   searchQuery: string
@@ -74,6 +76,7 @@ interface TreeNodeComponentProps {
   onRename: (id: string, name: string) => void
   onMove?: (id: string) => void
   onChangeIcon?: (id: string, icon: string | null) => void
+  onTogglePin?: (id: string) => void
   expanded: Set<string>
   toggleExpand: (id: string, forceOpen?: boolean) => void
   creatingIn: CreatingState | null
@@ -119,6 +122,7 @@ function TreeNodeComponent({
   onRename,
   onMove,
   onChangeIcon,
+  onTogglePin,
   expanded,
   toggleExpand,
   creatingIn,
@@ -137,6 +141,7 @@ function TreeNodeComponent({
   const isFolder = node.type === 'folder'
   const isOpen = expanded.has(node.id)
   const isActive = activeId === node.id
+  const isPinnedNote = !isFolder && 'tags' in node && (node as { tags?: string[] }).tags?.includes('pinned')
 
   useEffect(() => {
     if (renaming) {
@@ -248,6 +253,9 @@ function TreeNodeComponent({
         ) : (
           <span className="tn-name" title={node.name}>
             {node.name}
+            {isPinnedNote && (
+              <Icon icon={PinIcon} size={12} strokeWidth={1.5} style={{ display: 'inline-block', marginLeft: 4, opacity: 0.5, verticalAlign: 'middle' }} />
+            )}
           </span>
         )}
         {hover && !renaming && (
@@ -336,6 +344,18 @@ function TreeNodeComponent({
               <SidebarIcon n="move" s={16} />
               <span>Move to...</span>
             </button>
+            {!isFolder && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onTogglePin?.(node.id)
+                  setContextMenu(null)
+                }}
+              >
+                <Icon icon={PinIcon} size={16} strokeWidth={1.5} style={{ display: 'block' }} />
+                <span>{isPinnedNote ? 'Unpin' : 'Pin to top'}</span>
+              </button>
+            )}
             <button
               onClick={(e) => {
                 e.stopPropagation()
@@ -431,6 +451,7 @@ function TreeNodeComponent({
                     onRename={onRename}
                     onMove={onMove}
                     onChangeIcon={onChangeIcon}
+                    onTogglePin={onTogglePin}
                     expanded={expanded}
                     toggleExpand={toggleExpand}
                     creatingIn={creatingIn}
@@ -503,6 +524,7 @@ export default function Sidebar({
   onRenameNode,
   onMoveNode,
   onChangeIcon,
+  onTogglePin,
   collapsed,
   onToggleCollapse,
   searchQuery,
@@ -546,9 +568,16 @@ export default function Sidebar({
   const handleRootCreate = useCallback((type: 'file' | 'folder') => setCreatingIn({ parentId: null, type }), [])
 
   const visibleTree = useMemo(() => {
+    const isPinned = (node: TreeNodeType) =>
+      node.type === 'file' && 'tags' in node && (node as { tags?: string[] }).tags?.includes('pinned')
+
     const sortNodes = (nodes: TreeNodeType[]): TreeNodeType[] => {
       return [...nodes]
         .sort((a, b) => {
+          const aPinned = isPinned(a)
+          const bPinned = isPinned(b)
+          if (aPinned && !bPinned) return -1
+          if (!aPinned && bPinned) return 1
           if (a.type === 'folder' && b.type !== 'folder') return -1
           if (a.type !== 'folder' && b.type === 'folder') return 1
           return a.name.localeCompare(b.name)
@@ -794,6 +823,7 @@ export default function Sidebar({
                 onRename={handleRename}
                 onMove={(id) => setMoveToNode(id)}
                 onChangeIcon={onChangeIcon}
+                onTogglePin={onTogglePin}
                 expanded={expanded}
                 toggleExpand={toggleExpand}
                 creatingIn={creatingIn}

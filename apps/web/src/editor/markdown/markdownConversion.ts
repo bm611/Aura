@@ -32,6 +32,14 @@ const markdown = new MarkdownIt({
 
 markdown.use(markdownItTaskLists, { enabled: true })
 
+function formatDateChipMd(isoDate: string): string {
+  const d = new Date(isoDate)
+  const day = String(d.getDate()).padStart(2, '0')
+  const mon = d.toLocaleString('en-US', { month: 'short' })
+  const year = d.getFullYear()
+  return `${day}-${mon}-${year}`
+}
+
 function escapeAttribute(value: string = ''): string {
   return String(value)
     .replaceAll('&', '&amp;')
@@ -223,6 +231,10 @@ function renderInline(nodes: DocNode[] = []): string {
 
       if (node.type === 'text') {
         return renderTextNode(node)
+      }
+
+      if (node.type === 'dateMention' && node.attrs?.date) {
+        return `<span data-date-mention="${escapeAttribute(node.attrs.date as string)}">${escapeAttribute(formatDateChipMd(node.attrs.date as string))}</span>`
       }
 
       if (node.type === 'hardBreak') {

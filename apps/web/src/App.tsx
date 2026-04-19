@@ -527,6 +527,16 @@ function makeSampleTree(): TreeNode[] {
     {
       id: generateId(),
       type: 'file',
+      name: 'To-Do',
+      title: 'To-Do',
+      content: TODO_NOTE,
+      tags: ['pinned'],
+      createdAt: now,
+      updatedAt: now,
+    } as NoteFile,
+    {
+      id: generateId(),
+      type: 'file',
       name: 'Folio Knowledge Base',
       title: 'Folio Knowledge Base',
       content: SAMPLE_NOTE,
@@ -537,9 +547,35 @@ function makeSampleTree(): TreeNode[] {
   ]
 }
 
+const TODO_NOTE = `# 📋 To-Do
+
+A pinned space for your tasks. Add items, check them off, and stay on track.
+
+---
+
+- [ ] Try slash commands — type \`/todo\` for quick checkboxes
+- [ ] Organize notes into folders
+- [ ] Explore the command palette (\`Cmd + K\`)
+
+---
+
+> [!tip] - This note is pinned
+> Pinned notes always stay at the top of your sidebar for quick access.
+`
+
 function makeOnboardingTree(): TreeNode[] {
   const now = new Date().toISOString()
   return [
+    {
+      id: generateId(),
+      type: 'file',
+      name: 'To-Do',
+      title: 'To-Do',
+      content: TODO_NOTE,
+      tags: ['pinned'],
+      createdAt: now,
+      updatedAt: now,
+    } as NoteFile,
     {
       id: generateId(),
       type: 'file',
@@ -1576,6 +1612,39 @@ function AppInner() {
     }, 250)
   }, [finishSyncingIfIdle, isOnline, queuePendingUpsert, syncNoteToCloud, user])
 
+  const handleTogglePin = useCallback((id: string) => {
+    const now = new Date().toISOString()
+    const existingNode = fastFindNode(id)
+    if (!existingNode || existingNode.type !== 'file') return
+
+    const fileNode = existingNode as NoteFile
+    const currentTags = fileNode.tags || []
+    const wasPinned = currentTags.includes('pinned')
+    const tags = wasPinned ? currentTags.filter((t: string) => t !== 'pinned') : [...currentTags, 'pinned']
+
+    const updates = { tags, updatedAt: now, localCheckpointAt: now }
+    const updatedNode = normalizeNote({ ...existingNode, ...updates, parentId: fastGetParentId(id) } as TreeNode & { parentId: string | null })
+
+    setTree((previousTree) => updateFileNode(previousTree, id, updates))
+
+    if (!user) return
+
+    if (!isOnline) {
+      queuePendingUpsert(updatedNode)
+      return
+    }
+
+    queuePendingUpsert(updatedNode)
+    setSyncing(true)
+    clearTimeout(cloudSaveTimers.current[id] ?? undefined)
+    cloudSaveTimers.current[id] = setTimeout(() => {
+      syncNoteToCloud(id).finally(() => {
+        cloudSaveTimers.current[id] = null
+        finishSyncingIfIdle()
+      })
+    }, 250)
+  }, [finishSyncingIfIdle, isOnline, queuePendingUpsert, syncNoteToCloud, user])
+
   const cycleTheme = useCallback(() => {
     const themeIds = THEMES.map((t) => t.id)
     setTheme((t) => {
@@ -1868,6 +1937,7 @@ function AppInner() {
           onRenameNode={handleRenameNode}
           onMoveNode={handleMoveNode}
           onChangeIcon={handleChangeIcon}
+          onTogglePin={handleTogglePin}
           syncing={syncing}
           syncStatus={sidebarSyncStatus}
           collapsed={sidebarCollapsed}

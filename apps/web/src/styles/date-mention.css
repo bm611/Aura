@@ -1,0 +1,63 @@
+/* ═══════════════════════════════════════════════
+   Date Mention — inline chip + @ menu
+   ═══════════════════════════════════════════════ */
+
+/* ── Inline chip ── */
+.folio-date-mention {
+  display: inline-block;
+  padding: 0.1em 0.55em;
+  border-radius: var(--radius-md, 6px);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: color-mix(in srgb, var(--accent) 80%, var(--text-primary));
+  font-weight: 500;
+  font-size: 0.92em;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  vertical-align: baseline;
+  white-space: nowrap;
+  user-select: all;
+}
+
+/* ── Suggestion menu ── */
+.folio-date-menu {
+  position: absolute;
+  z-index: 80;
+  min-width: 14rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-elevated) 94%, transparent);
+  box-shadow: var(--neu-shadow);
+  padding: 0.35rem;
+  backdrop-filter: blur(12px);
+}
+
+.folio-date-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  padding: 0.55rem 0.7rem;
+  text-align: left;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: var(--body-font);
+}
+
+.folio-date-item.is-active {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.folio-date-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.folio-date-preview {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
