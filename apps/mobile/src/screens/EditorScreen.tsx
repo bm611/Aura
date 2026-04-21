@@ -7,13 +7,13 @@ import {
   Platform,
   TouchableOpacity,
   Text,
-  ScrollView,
 } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { AppStackParamList } from '../navigation/AppNavigator'
 import { useNotes } from '../contexts/NotesContext'
-import FormatToolbar from '../components/FormatToolbar'
-import type { Selection } from '../components/FormatToolbar'
+import MarkdownEditor from '../components/MarkdownEditor'
+import MarkdownToolbar from '../components/MarkdownToolbar'
+import type { MarkdownEditorHandle } from '../components/MarkdownEditor'
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Editor'>
 
@@ -24,10 +24,9 @@ export default function EditorScreen({ route, navigation }: Props) {
   const note = findNote(noteId)
   const [title, setTitle] = useState(note?.title || note?.name || '')
   const [content, setContent] = useState(note?.content || '')
-  const [selection, setSelection] = useState<Selection>({ start: 0, end: 0 })
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const inputRef = useRef<TextInput>(null)
+  const editorRef = useRef<MarkdownEditorHandle>(null)
 
   // Set header title button
   useEffect(() => {
@@ -69,26 +68,12 @@ export default function EditorScreen({ route, navigation }: Props) {
     }, 500)
   }
 
-  function handleContentChange(text: string) {
-    setContent(text)
-    scheduleSave(title, text)
-  }
-
-  function handleFormatChange(newText: string, newSelection: Selection) {
-    setContent(newText)
-    setSelection(newSelection)
-    scheduleSave(title, newText)
-    // Restore selection after state update
-    setTimeout(() => {
-      inputRef.current?.setNativeProps({ selection: newSelection })
-    }, 10)
-  }
-
-  const handleSelectionChange = useCallback(
-    (e: { nativeEvent: { selection: { start: number; end: number } } }) => {
-      setSelection(e.nativeEvent.selection)
+  const handleContentChange = useCallback(
+    (markdown: string) => {
+      setContent(markdown)
+      scheduleSave(title, markdown)
     },
-    []
+    [title]
   )
 
   if (!note) {
@@ -105,33 +90,15 @@ export default function EditorScreen({ route, navigation }: Props) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
-        keyboardDismissMode="interactive"
-      >
-        <TextInput
-          ref={inputRef}
-          style={styles.editor}
-          value={content}
-          onChangeText={handleContentChange}
-          onSelectionChange={handleSelectionChange}
-          multiline
-          textAlignVertical="top"
-          autoCorrect
-          autoCapitalize="sentences"
-          placeholder="Start writing…"
-          placeholderTextColor="#444"
-          scrollEnabled={false}
-          selection={selection}
-        />
-      </ScrollView>
-
-      <FormatToolbar
-        text={content}
-        selection={selection}
-        onChange={handleFormatChange}
+      <MarkdownEditor
+        ref={editorRef}
+        value={content}
+        onChange={handleContentChange}
+        placeholder="Start writing…"
+        style={styles.editor}
       />
+
+      <MarkdownToolbar editorRef={editorRef} />
     </KeyboardAvoidingView>
   )
 }
@@ -141,20 +108,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0f0f0f',
   },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    padding: 20,
-  },
   editor: {
     flex: 1,
-    color: '#e8e8e8',
-    fontSize: 16,
-    lineHeight: 26,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    minHeight: 400,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
 })
 

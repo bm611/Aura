@@ -450,58 +450,47 @@ export default function HomeScreen({
 						{getMotivationalMessage(streak)}
 					</motion.p>
 
-					{/* Stats row — elegant & minimal */}
+					{/* Stats row */}
 					<motion.div
-						className="flex items-baseline gap-8 mb-5 justify-center flex-wrap"
+						className="grid grid-cols-3 gap-1.5 sm:gap-2 mb-5 w-full max-w-[300px]"
 						style={{ fontFamily: 'var(--font-body)' }}
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						transition={{ duration: 0.4, delay: 0.3 }}
 					>
-						{/* Notes count */}
-						<motion.div
-							className="flex flex-col items-center gap-1"
-							initial={{ opacity: 0, y: 4 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.4, delay: 0.35, ease: [0.25, 1, 0.5, 1] }}
-						>
-							<span className="text-[20px] sm:text-[22px] font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-								{fileNotes.length}
-							</span>
-							<span className="text-[12px] uppercase tracking-wider opacity-60" style={{ color: 'var(--text-secondary)' }}>
-								{fileNotes.length === 1 ? 'note' : 'notes'}
-							</span>
-						</motion.div>
-
-						{/* Streak with accent */}
-						<motion.div
-							className="flex flex-col items-center gap-1"
-							initial={{ opacity: 0, y: 4 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.4, delay: 0.42, ease: [0.25, 1, 0.5, 1] }}
-						>
-							<span className="text-[20px] sm:text-[22px] font-semibold tracking-tight" style={{ color: 'var(--accent)' }}>
-								{streak}
-							</span>
-							<span className="text-[12px] uppercase tracking-wider opacity-60" style={{ color: 'var(--text-secondary)' }}>
-								day streak
-							</span>
-						</motion.div>
-
-						{/* Word count */}
-						<motion.div
-							className="flex flex-col items-center gap-1"
-							initial={{ opacity: 0, y: 4 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.4, delay: 0.49, ease: [0.25, 1, 0.5, 1] }}
-						>
-							<span className="text-[20px] sm:text-[22px] font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-								{(totalWords / 1000).toFixed(1)}k
-							</span>
-							<span className="text-[12px] uppercase tracking-wider opacity-60" style={{ color: 'var(--text-secondary)' }}>
-								words
-							</span>
-						</motion.div>
+						{[
+							{ value: fileNotes.length, label: fileNotes.length === 1 ? 'note' : 'notes', accent: false, delay: 0.35 },
+							{ value: streak, label: 'day streak', accent: true, delay: 0.42 },
+							{ value: totalWords >= 1000 ? `${(totalWords / 1000).toFixed(1)}k` : totalWords, label: 'words', accent: false, delay: 0.49 },
+						].map((stat) => (
+							<motion.div
+								key={stat.label}
+								className="flex flex-col items-center justify-center rounded-lg px-2 py-2"
+								style={{
+									background: 'var(--glass-bg)',
+									boxShadow: '0 0 0 1px color-mix(in srgb, var(--text-primary) 6%, transparent), 0 1px 2px color-mix(in srgb, var(--text-primary) 4%, transparent)',
+								}}
+								initial={{ opacity: 0, y: 6 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ duration: 0.4, delay: stat.delay, ease: [0.25, 1, 0.5, 1] }}
+							>
+								<span
+									className="text-[22px] sm:text-[26px] font-bold tracking-tight"
+									style={{
+										color: stat.accent ? 'var(--accent)' : 'var(--text-primary)',
+										fontVariantNumeric: 'tabular-nums',
+									}}
+								>
+									{stat.value}
+								</span>
+								<span
+									className="text-[11px] sm:text-[12px] font-medium mt-0.5"
+									style={{ color: 'var(--text-muted)', fontFamily: "'Outfit', sans-serif" }}
+								>
+									{stat.label}
+								</span>
+							</motion.div>
+						))}
 					</motion.div>
 
 					{/* 7-day activity strip */}
