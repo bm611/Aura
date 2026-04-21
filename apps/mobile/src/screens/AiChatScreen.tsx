@@ -10,15 +10,11 @@ import {
   Alert,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import type { AppStackParamList } from '../navigation/AppNavigator'
 import { useNotes } from '../contexts/NotesContext'
 import { useAiChat } from '../hooks/useAiChat'
 import AiMessageBubble from '../components/AiMessageBubble'
 import { useTheme } from '../theme'
 import { Screen, Text } from '../components/ui'
-
-type Props = NativeStackScreenProps<AppStackParamList, 'AiChat'>
 
 const SUGGESTIONS = [
   { label: 'Summarize', prompt: 'Summarize this note in 3 bullets.' },
@@ -27,9 +23,9 @@ const SUGGESTIONS = [
   { label: 'Brainstorm', prompt: 'Brainstorm 5 directions I could take this.' },
 ]
 
-export default function AiChatScreen({ route }: Props) {
+export default function AiChatScreen({ route }: any) {
   const theme = useTheme()
-  const { noteId } = route.params ?? {}
+  const { noteId } = route?.params ?? {}
   const navigation = useNavigation()
   const { findNote } = useNotes()
   const { messages, isStreaming, sendMessage, noApiKey, abort } = useAiChat()
@@ -71,7 +67,7 @@ export default function AiChatScreen({ route }: Props) {
         'API Key Required',
         'Add your OpenRouter API key in Settings to use AI chat.',
         [
-          { text: 'Go to Settings', onPress: () => navigation.navigate('Settings' as never) },
+          { text: 'Go to Settings', onPress: () => navigation.navigate('SettingsTab' as never) },
           { text: 'Cancel', style: 'cancel' },
         ]
       )

@@ -40,7 +40,7 @@ export default function EditorScreen({ route, navigation }: Props) {
           glyph="✦"
           tone="accent"
           variant="ghost"
-          onPress={() => navigation.navigate('AiChat', { noteId })}
+          onPress={() => navigation.navigate('HomeTabs', { screen: 'AiTab', params: { noteId } })}
           accessibilityLabel="AI chat"
         />
       ),

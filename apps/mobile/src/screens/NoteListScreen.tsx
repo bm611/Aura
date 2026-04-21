@@ -1,25 +1,21 @@
-import { useCallback, useLayoutEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   View,
   FlatList,
-  TouchableOpacity,
   StyleSheet,
   Alert,
   ActivityIndicator,
 } from 'react-native'
-import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { useNavigation } from '@react-navigation/native'
 import * as Haptics from 'expo-haptics'
 import type { NoteFile, NoteFolder, TreeNode } from '@folio/shared'
 import { filterTreeNodes, collectSubtreeIds } from '@folio/shared'
 import { useNotes } from '../contexts/NotesContext'
-import type { AppStackParamList } from '../navigation/AppNavigator'
 import SearchBar from '../components/SearchBar'
 import TreeNodeRow from '../components/TreeNodeRow'
 import EmptyState from '../components/EmptyState'
 import { useTheme } from '../theme'
-import { IconButton, Screen, Text } from '../components/ui'
-
-type Props = NativeStackScreenProps<AppStackParamList, 'NoteList'>
+import { IconButton, Text } from '../components/ui'
 
 interface FlatItem {
   node: TreeNode
@@ -37,8 +33,9 @@ function buildFlatList(nodes: TreeNode[], expandedFolders: Set<string>, depth = 
   return items
 }
 
-export default function NoteListScreen({ navigation }: Props) {
+export default function NoteListScreen() {
   const theme = useTheme()
+  const navigation = useNavigation<any>()
   const { tree, isLoading, isSyncing, createNote, createFolder, deleteTreeNode, renameTreeNode } = useNotes()
   const [search, setSearch] = useState('')
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
@@ -49,17 +46,13 @@ export default function NoteListScreen({ navigation }: Props) {
     [filteredTree, expandedFolders]
   )
 
-  useLayoutEffect(() => {
-    navigation.setOptions({ headerShown: false })
-  }, [navigation])
-
   function handleCreateNote() {
     const note = createNote(null)
-    navigation.push('Editor', { noteId: note.id })
+    navigation.getParent()?.navigate('Editor', { noteId: note.id })
   }
 
   function handleFilePress(note: NoteFile) {
-    navigation.push('Editor', { noteId: note.id })
+    navigation.getParent()?.navigate('Editor', { noteId: note.id })
   }
 
   function handleFolderPress(folder: NoteFolder) {
@@ -97,7 +90,7 @@ export default function NoteListScreen({ navigation }: Props) {
               onPress: () => {
                 const note = createNote(node.id)
                 setExpandedFolders((prev) => new Set([...prev, node.id]))
-                navigation.push('Editor', { noteId: note.id })
+                navigation.getParent()?.navigate('Editor', { noteId: note.id })
               },
             },
           ]
@@ -144,28 +137,16 @@ export default function NoteListScreen({ navigation }: Props) {
   }
 
   return (
-    <Screen safeEdges={['top']}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.bgDeep }}>
       <View style={[styles.header, { paddingHorizontal: theme.spacing[4] }]}>
-        <View style={styles.brand}>
-          <Text
-            style={{
-              fontFamily: theme.fonts.displaySemibold,
-              fontSize: 28,
-              color: theme.colors.textPrimary,
-              letterSpacing: -0.5,
-            }}
-          >
-            Folio
-          </Text>
-          {isSyncing ? (
-            <View style={[styles.syncPill, { backgroundColor: theme.colors.bgElevated }]}>
-              <ActivityIndicator size="small" color={theme.colors.accent} style={{ transform: [{ scale: 0.7 }] }} />
-              <Text variant="micro" tone="muted">
-                Syncing
-              </Text>
-            </View>
-          ) : null}
-        </View>
+        {isSyncing ? (
+          <View style={[styles.syncPill, { backgroundColor: theme.colors.bgElevated }]}>
+            <ActivityIndicator size="small" color={theme.colors.accent} style={{ transform: [{ scale: 0.7 }] }} />
+            <Text variant="micro" tone="muted">
+              Syncing
+            </Text>
+          </View>
+        ) : <View />}
         <View style={styles.actions}>
           <IconButton
             glyph="✎"
@@ -173,20 +154,12 @@ export default function NoteListScreen({ navigation }: Props) {
             accessibilityLabel="New folder"
           />
           <IconButton
-            glyph="⚙"
-            onPress={() => navigation.navigate('Settings')}
-            accessibilityLabel="Settings"
+            glyph="+"
+            onPress={handleCreateNote}
+            accessibilityLabel="New note"
           />
         </View>
       </View>
-
-      <Text
-        variant="small"
-        tone="muted"
-        style={{ paddingHorizontal: theme.spacing[4], marginBottom: theme.spacing[2] }}
-      >
-        Your notes, beautifully organized.
-      </Text>
 
       <SearchBar value={search} onChange={setSearch} />
 
@@ -206,25 +179,7 @@ export default function NoteListScreen({ navigation }: Props) {
         />
       )}
 
-      <TouchableOpacity
-        style={[
-          styles.fab,
-          {
-            backgroundColor: theme.colors.accent,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.3,
-            shadowRadius: 14,
-            elevation: 8,
-          },
-        ]}
-        onPress={handleCreateNote}
-        activeOpacity={0.85}
-        accessibilityLabel="New note"
-      >
-        <Text style={{ color: '#fff', fontSize: 30, lineHeight: 32, marginTop: -2 }}>+</Text>
-      </TouchableOpacity>
-    </Screen>
+    </View>
   )
 }
 
@@ -259,16 +214,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   list: {
-    paddingBottom: 120,
-  },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 36,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingBottom: 100,
   },
 })
