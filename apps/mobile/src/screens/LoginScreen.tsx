@@ -1,20 +1,20 @@
 import { useState } from 'react'
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
   ScrollView,
 } from 'react-native'
 import { useAuth } from '../contexts/AuthContext'
+import { useTheme } from '../theme'
+import { Button, Input, Screen, Text } from '../components/ui'
 
 type Tab = 'signin' | 'signup'
 
 export default function LoginScreen() {
+  const theme = useTheme()
   const { signInWithEmail, signUpWithEmail } = useAuth()
   const [tab, setTab] = useState<Tab>('signin')
   const [email, setEmail] = useState('')
@@ -46,147 +46,153 @@ export default function LoginScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
-        <Text style={styles.logo}>Folio</Text>
-        <Text style={styles.tagline}>Your notes, everywhere.</Text>
+    <Screen>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
+          <View style={{ alignItems: 'center', marginBottom: 40 }}>
+            <Text
+              style={{
+                fontFamily: theme.fonts.displaySemibold,
+                fontSize: 52,
+                color: theme.colors.textPrimary,
+                letterSpacing: -1,
+              }}
+            >
+              Folio
+            </Text>
+            <Text variant="body" tone="secondary" center style={{ marginTop: 6 }}>
+              Your notes, beautifully organized.
+            </Text>
+          </View>
 
-        <View style={styles.tabs}>
-          <TouchableOpacity
-            style={[styles.tab, tab === 'signin' && styles.tabActive]}
-            onPress={() => { setTab('signin'); setError(null); setSuccessMsg(null) }}
+          <View style={styles.tabs}>
+            <TouchableOpacity
+              style={styles.tab}
+              onPress={() => {
+                setTab('signin')
+                setError(null)
+                setSuccessMsg(null)
+              }}
+              hitSlop={6}
+            >
+              <Text
+                variant="label"
+                tone={tab === 'signin' ? 'primary' : 'muted'}
+                weight={tab === 'signin' ? 'semibold' : 'regular'}
+              >
+                Sign in
+              </Text>
+              <View
+                style={[
+                  styles.tabIndicator,
+                  { backgroundColor: tab === 'signin' ? theme.colors.accent : 'transparent' },
+                ]}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.tab}
+              onPress={() => {
+                setTab('signup')
+                setError(null)
+                setSuccessMsg(null)
+              }}
+              hitSlop={6}
+            >
+              <Text
+                variant="label"
+                tone={tab === 'signup' ? 'primary' : 'muted'}
+                weight={tab === 'signup' ? 'semibold' : 'regular'}
+              >
+                Sign up
+              </Text>
+              <View
+                style={[
+                  styles.tabIndicator,
+                  { backgroundColor: tab === 'signup' ? theme.colors.accent : 'transparent' },
+                ]}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View style={{ gap: 12 }}>
+            <Input
+              placeholder="Email"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <Input
+              placeholder="Password"
+              secureTextEntry
+              autoComplete={tab === 'signup' ? 'new-password' : 'current-password'}
+              value={password}
+              onChangeText={setPassword}
+              onSubmitEditing={handleSubmit}
+              returnKeyType="go"
+            />
+          </View>
+
+          {error ? (
+            <Text variant="small" tone="danger" center style={{ marginTop: 14 }}>
+              {error}
+            </Text>
+          ) : null}
+          {successMsg ? (
+            <Text variant="small" tone="success" center style={{ marginTop: 14 }}>
+              {successMsg}
+            </Text>
+          ) : null}
+
+          <View style={{ height: 20 }} />
+
+          <Button
+            label={tab === 'signin' ? 'Sign in' : 'Create account'}
+            onPress={handleSubmit}
+            loading={loading}
+            size="lg"
+            fullWidth
+          />
+
+          <Text
+            variant="micro"
+            tone="muted"
+            center
+            style={{ marginTop: 32, fontFamily: theme.fonts.display, fontStyle: 'italic' }}
           >
-            <Text style={[styles.tabText, tab === 'signin' && styles.tabTextActive]}>Sign in</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, tab === 'signup' && styles.tabActive]}
-            onPress={() => { setTab('signup'); setError(null); setSuccessMsg(null) }}
-          >
-            <Text style={[styles.tabText, tab === 'signup' && styles.tabTextActive]}>Sign up</Text>
-          </TouchableOpacity>
-        </View>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#888"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          autoComplete="email"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#888"
-          secureTextEntry
-          autoComplete={tab === 'signup' ? 'new-password' : 'current-password'}
-          value={password}
-          onChangeText={setPassword}
-          onSubmitEditing={handleSubmit}
-          returnKeyType="go"
-        />
-
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        {successMsg ? <Text style={styles.success}>{successMsg}</Text> : null}
-
-        <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>{tab === 'signin' ? 'Sign in' : 'Create account'}</Text>
-          )}
-        </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
+            A quiet place for your thoughts.
+          </Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </Screen>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0f0f0f',
-  },
   inner: {
     flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: 24,
     paddingVertical: 48,
   },
-  logo: {
-    fontSize: 40,
-    fontWeight: '700',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  tagline: {
-    fontSize: 15,
-    color: '#888',
-    textAlign: 'center',
-    marginBottom: 40,
-  },
   tabs: {
     flexDirection: 'row',
-    borderRadius: 10,
-    backgroundColor: '#1a1a1a',
-    marginBottom: 24,
-    padding: 4,
+    gap: 24,
+    marginBottom: 28,
+    justifyContent: 'center',
   },
   tab: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
     alignItems: 'center',
+    paddingVertical: 6,
   },
-  tabActive: {
-    backgroundColor: '#2a2a2a',
-  },
-  tabText: {
-    color: '#888',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  tabTextActive: {
-    color: '#fff',
-  },
-  input: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    color: '#fff',
-    fontSize: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#2a2a2a',
-  },
-  error: {
-    color: '#f87171',
-    fontSize: 14,
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  success: {
-    color: '#4ade80',
-    fontSize: 14,
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  button: {
-    backgroundColor: '#e07a8a',
-    borderRadius: 10,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  tabIndicator: {
+    marginTop: 6,
+    height: 2,
+    width: 28,
+    borderRadius: 2,
   },
 })

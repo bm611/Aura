@@ -1,25 +1,53 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
   Alert,
-  ActivityIndicator,
-  Platform,
 } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
 import * as SecureStore from 'expo-secure-store'
 import { useAuth } from '../contexts/AuthContext'
+import { useTheme, useThemeController, type ThemePreference } from '../theme'
+import { Button, Card, Input, Screen, Text } from '../components/ui'
 
 const OPENROUTER_KEY_STORE = 'openrouter_api_key'
 
+const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
+  { value: 'dark', label: 'Dark' },
+  { value: 'light', label: 'Light' },
+  { value: 'system', label: 'System' },
+]
+
 export default function SettingsScreen() {
+  const theme = useTheme()
+  const navigation = useNavigation()
+  const { preference, setPreference } = useThemeController()
   const { user, signOut } = useAuth()
   const [apiKey, setApiKey] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerStyle: { backgroundColor: theme.colors.bgDeep },
+      headerTintColor: theme.colors.textPrimary,
+      headerShadowVisible: false,
+      headerTitle: () => (
+        <Text
+          style={{
+            fontFamily: theme.fonts.displaySemibold,
+            fontSize: 18,
+            color: theme.colors.textPrimary,
+          }}
+        >
+          Settings
+        </Text>
+      ),
+    })
+  }, [navigation, theme])
 
   useEffect(() => {
     SecureStore.getItemAsync(OPENROUTER_KEY_STORE).then((key) => {
@@ -40,7 +68,7 @@ export default function SettingsScreen() {
     }
   }
 
-  async function handleSignOut() {
+  function handleSignOut() {
     Alert.alert('Sign out?', undefined, [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -58,113 +86,155 @@ export default function SettingsScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.sectionHeader}>AI (OpenRouter)</Text>
-      <View style={styles.card}>
-        <Text style={styles.label}>API Key</Text>
-        <Text style={styles.hint}>
-          Used for AI chat. Get a free key at openrouter.ai.
-        </Text>
-        <TextInput
-          style={styles.input}
-          value={apiKey}
-          onChangeText={setApiKey}
-          placeholder="sk-or-..."
-          placeholderTextColor="#555"
-          secureTextEntry
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSaveKey} disabled={saving}>
-          {saving ? (
-            <ActivityIndicator color="#fff" size="small" />
-          ) : (
-            <Text style={styles.saveBtnText}>{saved ? 'Saved ✓' : 'Save Key'}</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+    <Screen>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
+        <SectionLabel>Appearance</SectionLabel>
+        <Card elevated style={{ gap: 10 }}>
+          <Text variant="body" weight="semibold">
+            Theme
+          </Text>
+          <Text variant="small" tone="muted">
+            Choose how Folio looks on this device.
+          </Text>
+          <View
+            style={[
+              styles.segmented,
+              { backgroundColor: theme.colors.bgElevated, borderColor: theme.colors.borderSubtle },
+            ]}
+          >
+            {THEME_OPTIONS.map((opt) => {
+              const active = preference === opt.value
+              return (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[
+                    styles.segment,
+                    active && {
+                      backgroundColor: theme.colors.bgSurface,
+                      borderColor: theme.colors.accent,
+                    },
+                  ]}
+                  onPress={() => setPreference(opt.value)}
+                  activeOpacity={0.8}
+                >
+                  <Text
+                    variant="label"
+                    tone={active ? 'primary' : 'muted'}
+                    weight={active ? 'semibold' : 'regular'}
+                  >
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              )
+            })}
+          </View>
+        </Card>
 
-      <Text style={styles.sectionHeader}>Account</Text>
-      <View style={styles.card}>
-        <Text style={styles.accountEmail}>{user?.email}</Text>
-        <TouchableOpacity style={styles.signOutBtn} onPress={handleSignOut}>
-          <Text style={styles.signOutText}>Sign out</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+        <SectionLabel>AI (OpenRouter)</SectionLabel>
+        <Card elevated style={{ gap: 10 }}>
+          <Text variant="body" weight="semibold">
+            API Key
+          </Text>
+          <Text variant="small" tone="muted">
+            Used for AI chat. Get a free key at openrouter.ai.
+          </Text>
+          <Input
+            value={apiKey}
+            onChangeText={setApiKey}
+            placeholder="sk-or-..."
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            style={{ fontFamily: theme.fonts.mono, fontSize: 13 }}
+          />
+          <Button
+            label={saved ? 'Saved ✓' : 'Save key'}
+            onPress={handleSaveKey}
+            loading={saving}
+            size="md"
+          />
+        </Card>
+
+        <SectionLabel>Account</SectionLabel>
+        <Card elevated style={{ gap: 14 }}>
+          <View>
+            <Text variant="small" tone="muted">
+              Signed in as
+            </Text>
+            <Text variant="body" style={{ marginTop: 2 }}>
+              {user?.email}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={[
+              styles.signOutBtn,
+              {
+                borderColor: theme.colors.danger,
+                backgroundColor: theme.colors.dangerMuted,
+                borderRadius: theme.radius.md,
+              },
+            ]}
+            onPress={handleSignOut}
+            activeOpacity={0.8}
+          >
+            <Text variant="label" tone="danger" weight="semibold">
+              Sign out
+            </Text>
+          </TouchableOpacity>
+        </Card>
+
+        <Text
+          variant="micro"
+          tone="muted"
+          center
+          style={{ marginTop: 28, fontFamily: theme.fonts.display, fontStyle: 'italic' }}
+        >
+          Folio · a quiet place for your thoughts
+        </Text>
+      </ScrollView>
+    </Screen>
+  )
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  const theme = useTheme()
+  return (
+    <Text
+      variant="micro"
+      tone="muted"
+      style={{
+        marginTop: 22,
+        marginBottom: 8,
+        marginLeft: 4,
+        letterSpacing: 1.4,
+        textTransform: 'uppercase',
+        fontFamily: theme.fonts.bodyMedium,
+      }}
+    >
+      {children}
+    </Text>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0f0f0f',
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 60,
-  },
-  sectionHeader: {
-    color: '#888',
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-    marginBottom: 8,
-    marginTop: 24,
-  },
-  card: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    padding: 16,
-    gap: 10,
-  },
-  label: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  hint: {
-    color: '#666',
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  input: {
-    backgroundColor: '#0f0f0f',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    color: '#fff',
-    fontSize: 14,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  segmented: {
+    flexDirection: 'row',
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#2a2a2a',
+    padding: 3,
+    marginTop: 4,
   },
-  saveBtn: {
-    backgroundColor: '#e07a8a',
-    borderRadius: 8,
-    paddingVertical: 11,
+  segment: {
+    flex: 1,
+    paddingVertical: 9,
     alignItems: 'center',
-  },
-  saveBtnText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  accountEmail: {
-    color: '#ccc',
-    fontSize: 15,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   signOutBtn: {
-    backgroundColor: '#2a2a2a',
-    borderRadius: 8,
-    paddingVertical: 11,
+    borderWidth: 1,
+    paddingVertical: 12,
     alignItems: 'center',
   },
-  signOutText: {
-    color: '#f87171',
-    fontWeight: '600',
-    fontSize: 14,
-  },
 })
-

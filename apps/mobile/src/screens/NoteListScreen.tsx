@@ -1,9 +1,8 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useState } from 'react'
 import {
   View,
   FlatList,
   TouchableOpacity,
-  Text,
   StyleSheet,
   Alert,
   ActivityIndicator,
@@ -17,6 +16,8 @@ import type { AppStackParamList } from '../navigation/AppNavigator'
 import SearchBar from '../components/SearchBar'
 import TreeNodeRow from '../components/TreeNodeRow'
 import EmptyState from '../components/EmptyState'
+import { useTheme } from '../theme'
+import { IconButton, Screen, Text } from '../components/ui'
 
 type Props = NativeStackScreenProps<AppStackParamList, 'NoteList'>
 
@@ -37,6 +38,7 @@ function buildFlatList(nodes: TreeNode[], expandedFolders: Set<string>, depth = 
 }
 
 export default function NoteListScreen({ navigation }: Props) {
+  const theme = useTheme()
   const { tree, isLoading, isSyncing, createNote, createFolder, deleteTreeNode, renameTreeNode } = useNotes()
   const [search, setSearch] = useState('')
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
@@ -46,6 +48,10 @@ export default function NoteListScreen({ navigation }: Props) {
     () => buildFlatList(filteredTree, expandedFolders),
     [filteredTree, expandedFolders]
   )
+
+  useLayoutEffect(() => {
+    navigation.setOptions({ headerShown: false })
+  }, [navigation])
 
   function handleCreateNote() {
     const note = createNote(null)
@@ -138,23 +144,55 @@ export default function NoteListScreen({ navigation }: Props) {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerActions}>
-        <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.headerBtn}>
-          <Text style={styles.headerBtnText}>⚙</Text>
-        </TouchableOpacity>
-        {isSyncing && <ActivityIndicator color="#e07a8a" size="small" style={{ marginLeft: 8 }} />}
-        <View style={{ flex: 1 }} />
-        <TouchableOpacity onPress={handleCreateFolder} style={styles.headerBtn}>
-          <Text style={styles.headerBtnText}>📁+</Text>
-        </TouchableOpacity>
+    <Screen safeEdges={['top']}>
+      <View style={[styles.header, { paddingHorizontal: theme.spacing[4] }]}>
+        <View style={styles.brand}>
+          <Text
+            style={{
+              fontFamily: theme.fonts.displaySemibold,
+              fontSize: 28,
+              color: theme.colors.textPrimary,
+              letterSpacing: -0.5,
+            }}
+          >
+            Folio
+          </Text>
+          {isSyncing ? (
+            <View style={[styles.syncPill, { backgroundColor: theme.colors.bgElevated }]}>
+              <ActivityIndicator size="small" color={theme.colors.accent} style={{ transform: [{ scale: 0.7 }] }} />
+              <Text variant="micro" tone="muted">
+                Syncing
+              </Text>
+            </View>
+          ) : null}
+        </View>
+        <View style={styles.actions}>
+          <IconButton
+            glyph="✎"
+            onPress={handleCreateFolder}
+            accessibilityLabel="New folder"
+          />
+          <IconButton
+            glyph="⚙"
+            onPress={() => navigation.navigate('Settings')}
+            accessibilityLabel="Settings"
+          />
+        </View>
       </View>
+
+      <Text
+        variant="small"
+        tone="muted"
+        style={{ paddingHorizontal: theme.spacing[4], marginBottom: theme.spacing[2] }}
+      >
+        Your notes, beautifully organized.
+      </Text>
 
       <SearchBar value={search} onChange={setSearch} />
 
       {isLoading ? (
         <View style={styles.centered}>
-          <ActivityIndicator color="#e07a8a" size="large" />
+          <ActivityIndicator color={theme.colors.accent} size="large" />
         </View>
       ) : listData.length === 0 ? (
         <EmptyState onCreateNote={handleCreateNote} />
@@ -168,30 +206,52 @@ export default function NoteListScreen({ navigation }: Props) {
         />
       )}
 
-      {/* FAB */}
-      <TouchableOpacity style={styles.fab} onPress={handleCreateNote}>
-        <Text style={styles.fabText}>+</Text>
+      <TouchableOpacity
+        style={[
+          styles.fab,
+          {
+            backgroundColor: theme.colors.accent,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.3,
+            shadowRadius: 14,
+            elevation: 8,
+          },
+        ]}
+        onPress={handleCreateNote}
+        activeOpacity={0.85}
+        accessibilityLabel="New note"
+      >
+        <Text style={{ color: '#fff', fontSize: 30, lineHeight: 32, marginTop: -2 }}>+</Text>
       </TouchableOpacity>
-    </View>
+    </Screen>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0f0f0f',
-  },
-  headerActions: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    justifyContent: 'space-between',
     paddingTop: 8,
+    paddingBottom: 2,
   },
-  headerBtn: {
-    padding: 6,
+  brand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
-  headerBtnText: {
-    fontSize: 20,
+  syncPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 999,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: 4,
   },
   centered: {
     flex: 1,
@@ -199,27 +259,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   list: {
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   fab: {
     position: 'absolute',
     right: 20,
-    bottom: 32,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#e07a8a',
+    bottom: 36,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-  fabText: {
-    color: '#fff',
-    fontSize: 28,
-    lineHeight: 32,
   },
 })

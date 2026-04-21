@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   View,
   FlatList,
   TextInput,
   TouchableOpacity,
-  Text,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -16,10 +15,20 @@ import type { AppStackParamList } from '../navigation/AppNavigator'
 import { useNotes } from '../contexts/NotesContext'
 import { useAiChat } from '../hooks/useAiChat'
 import AiMessageBubble from '../components/AiMessageBubble'
+import { useTheme } from '../theme'
+import { Screen, Text } from '../components/ui'
 
 type Props = NativeStackScreenProps<AppStackParamList, 'AiChat'>
 
+const SUGGESTIONS = [
+  { label: 'Summarize', prompt: 'Summarize this note in 3 bullets.' },
+  { label: 'Key ideas', prompt: 'What are the key ideas in this note?' },
+  { label: 'Draft', prompt: 'Help me draft the next section.' },
+  { label: 'Brainstorm', prompt: 'Brainstorm 5 directions I could take this.' },
+]
+
 export default function AiChatScreen({ route }: Props) {
+  const theme = useTheme()
   const { noteId } = route.params ?? {}
   const navigation = useNavigation()
   const { findNote } = useNotes()
@@ -28,6 +37,26 @@ export default function AiChatScreen({ route }: Props) {
   const listRef = useRef<FlatList>(null)
 
   const note = noteId ? findNote(noteId) : null
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerStyle: { backgroundColor: theme.colors.bgDeep },
+      headerTintColor: theme.colors.textPrimary,
+      headerShadowVisible: false,
+      headerTitle: () => (
+        <Text
+          style={{
+            fontFamily: theme.fonts.displaySemibold,
+            fontSize: 18,
+            color: theme.colors.textPrimary,
+            letterSpacing: -0.2,
+          }}
+        >
+          Ask Folio
+        </Text>
+      ),
+    })
+  }, [navigation, theme])
 
   useEffect(() => {
     return () => {
@@ -49,151 +78,233 @@ export default function AiChatScreen({ route }: Props) {
     }
   }, [noApiKey, navigation])
 
-  async function handleSend() {
-    const text = input.trim()
-    if (!text || isStreaming) return
+  async function submit(text: string) {
+    const trimmed = text.trim()
+    if (!trimmed || isStreaming) return
     setInput('')
     const noteContents = note ? [{ title: note.title || note.name || 'Untitled', content: note.content || '' }] : []
-    await sendMessage(text, noteContents)
+    await sendMessage(trimmed, noteContents)
     setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100)
   }
 
+  const canSend = input.trim().length > 0 && !isStreaming
+
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-    >
-      {note && (
-        <View style={styles.contextBadge}>
-          <Text style={styles.contextText}>Context: {note.title || note.name || 'Untitled'}</Text>
-        </View>
-      )}
+    <Screen>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        {note ? (
+          <View
+            style={[
+              styles.contextBadge,
+              {
+                backgroundColor: theme.colors.bgElevated,
+                borderColor: theme.colors.borderSubtle,
+              },
+            ]}
+          >
+            <Text variant="micro" tone="accent" style={{ fontFamily: theme.fonts.mono }}>
+              Context
+            </Text>
+            <Text variant="small" tone="secondary" numberOfLines={1} style={{ flex: 1 }}>
+              {note.title || note.name || 'Untitled'}
+            </Text>
+          </View>
+        ) : null}
 
-      {messages.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>✦</Text>
-          <Text style={styles.emptyTitle}>Ask anything</Text>
-          <Text style={styles.emptySubtitle}>
-            {note ? `Chatting with context from "${note.title || note.name}"` : 'Ask a question or start a conversation.'}
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          ref={listRef}
-          data={messages}
-          keyExtractor={(m) => m.id}
-          renderItem={({ item }) => <AiMessageBubble message={item} />}
-          contentContainerStyle={styles.list}
-          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
-          keyboardShouldPersistTaps="handled"
-        />
-      )}
+        {messages.length === 0 ? (
+          <View style={styles.emptyState}>
+            <View
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 32,
+                backgroundColor: theme.colors.accentMuted,
+                borderWidth: 1,
+                borderColor: theme.colors.accent,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 20,
+              }}
+            >
+              <Text style={{ color: theme.colors.accent, fontSize: 28 }}>✦</Text>
+            </View>
+            <Text variant="heading" center weight="semibold">
+              Ask anything
+            </Text>
+            <Text variant="body" tone="secondary" center style={{ marginTop: 8, maxWidth: 280 }}>
+              {note
+                ? `Working with "${note.title || note.name || 'Untitled'}"`
+                : 'Ask a question or start a conversation.'}
+            </Text>
 
-      <View style={styles.inputRow}>
-        <TextInput
-          style={styles.input}
-          value={input}
-          onChangeText={setInput}
-          placeholder="Ask about your notes…"
-          placeholderTextColor="#555"
-          multiline
-          maxLength={2000}
-          returnKeyType="send"
-          onSubmitEditing={handleSend}
-        />
-        <TouchableOpacity
-          style={[styles.sendBtn, (!input.trim() || isStreaming) && styles.sendBtnDisabled]}
-          onPress={isStreaming ? abort : handleSend}
-          disabled={!isStreaming && !input.trim()}
+            <View style={styles.suggestGrid}>
+              {SUGGESTIONS.map((s) => (
+                <TouchableOpacity
+                  key={s.label}
+                  onPress={() => submit(s.prompt)}
+                  style={[
+                    styles.suggestChip,
+                    {
+                      backgroundColor: theme.colors.bgSurface,
+                      borderColor: theme.colors.borderSubtle,
+                      borderRadius: theme.radius.md,
+                    },
+                  ]}
+                  activeOpacity={0.7}
+                >
+                  <Text variant="label" tone="secondary">
+                    {s.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        ) : (
+          <FlatList
+            ref={listRef}
+            data={messages}
+            keyExtractor={(m) => m.id}
+            renderItem={({ item }) => <AiMessageBubble message={item} />}
+            contentContainerStyle={styles.list}
+            onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
+            keyboardShouldPersistTaps="handled"
+          />
+        )}
+
+        <View
+          style={[
+            styles.composerWrap,
+            {
+              borderTopColor: theme.colors.borderSubtle,
+              backgroundColor: theme.colors.bgDeep,
+            },
+          ]}
         >
-          <Text style={styles.sendBtnText}>{isStreaming ? '⏹' : '↑'}</Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+          <View
+            style={[
+              styles.composer,
+              {
+                backgroundColor: theme.colors.bgSurface,
+                borderColor: theme.colors.borderSubtle,
+                borderRadius: theme.radius.xl,
+              },
+            ]}
+          >
+            <TextInput
+              style={{
+                flex: 1,
+                color: theme.colors.textPrimary,
+                fontFamily: theme.fonts.body,
+                fontSize: theme.fontSize.body,
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                maxHeight: 120,
+              }}
+              value={input}
+              onChangeText={setInput}
+              placeholder="Ask about your notes…"
+              placeholderTextColor={theme.colors.textMuted}
+              selectionColor={theme.colors.accent}
+              multiline
+              maxLength={2000}
+              returnKeyType="send"
+              onSubmitEditing={() => submit(input)}
+            />
+            <TouchableOpacity
+              style={[
+                styles.sendBtn,
+                {
+                  backgroundColor:
+                    isStreaming
+                      ? theme.colors.danger
+                      : canSend
+                      ? theme.colors.accent
+                      : theme.colors.bgElevated,
+                },
+              ]}
+              onPress={isStreaming ? abort : () => submit(input)}
+              disabled={!isStreaming && !canSend}
+              activeOpacity={0.85}
+            >
+              <Text
+                style={{
+                  color: canSend || isStreaming ? '#fff' : theme.colors.textMuted,
+                  fontSize: 18,
+                  fontFamily: theme.fonts.bodySemibold,
+                }}
+              >
+                {isStreaming ? '■' : '↑'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </Screen>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0f0f0f',
-  },
   contextBadge: {
-    backgroundColor: '#1a1a1a',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#2a2a2a',
-  },
-  contextText: {
-    color: '#888',
-    fontSize: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginHorizontal: 16,
+    marginTop: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderRadius: 999,
+    alignSelf: 'flex-start',
   },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: 32,
     paddingBottom: 60,
   },
-  emptyIcon: {
-    fontSize: 36,
-    color: '#e07a8a',
-    marginBottom: 12,
+  suggestGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 28,
+    maxWidth: 320,
   },
-  emptyTitle: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    color: '#666',
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 20,
+  suggestChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
   },
   list: {
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingBottom: 8,
   },
-  inputRow: {
+  composerWrap: {
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 14,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  composer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#2a2a2a',
-    backgroundColor: '#0f0f0f',
-    gap: 8,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    color: '#fff',
-    fontSize: 15,
-    maxHeight: 120,
     borderWidth: 1,
-    borderColor: '#2a2a2a',
+    paddingLeft: 2,
+    paddingRight: 6,
+    paddingVertical: 4,
   },
   sendBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#e07a8a',
-    justifyContent: 'center',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
-  },
-  sendBtnDisabled: {
-    backgroundColor: '#2a2a2a',
-  },
-  sendBtnText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '700',
+    justifyContent: 'center',
+    marginBottom: 4,
+    marginRight: 2,
   },
 })

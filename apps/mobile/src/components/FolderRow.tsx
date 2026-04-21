@@ -1,5 +1,7 @@
-import { TouchableOpacity, View, Text, StyleSheet } from 'react-native'
+import { TouchableOpacity, View, StyleSheet } from 'react-native'
 import type { NoteFolder } from '@folio/shared'
+import { useTheme } from '../theme'
+import { Text } from './ui'
 
 interface Props {
   folder: NoteFolder
@@ -10,16 +12,36 @@ interface Props {
 }
 
 export default function FolderRow({ folder, depth, isExpanded, onPress, onLongPress }: Props) {
+  const theme = useTheme()
   return (
     <TouchableOpacity
-      style={[styles.container, { paddingLeft: 16 + depth * 16 }]}
+      style={[
+        styles.container,
+        {
+          paddingLeft: theme.spacing[4] + depth * theme.spacing[4],
+          paddingRight: theme.spacing[4],
+          paddingVertical: theme.spacing[3] + 2,
+          borderBottomColor: theme.colors.borderSubtle,
+        },
+      ]}
       onPress={onPress}
       onLongPress={onLongPress}
-      activeOpacity={0.7}
+      activeOpacity={0.65}
     >
-      <Text style={styles.chevron}>{isExpanded ? '▾' : '▸'}</Text>
-      <Text style={styles.icon}>📁</Text>
-      <Text style={styles.name} numberOfLines={1}>{folder.name}</Text>
+      <View style={styles.chevronWrap}>
+        <Text variant="small" tone="muted">
+          {isExpanded ? '▾' : '▸'}
+        </Text>
+      </View>
+      <Text
+        variant="body"
+        weight="medium"
+        tone="secondary"
+        style={{ flex: 1, fontFamily: theme.fonts.display, letterSpacing: -0.1 }}
+        numberOfLines={1}
+      >
+        {folder.name}
+      </Text>
     </TouchableOpacity>
   )
 }
@@ -28,24 +50,11 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: 16,
-    paddingVertical: 13,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#1e1e1e',
-    gap: 6,
+    gap: 10,
   },
-  chevron: {
-    color: '#555',
-    fontSize: 12,
+  chevronWrap: {
     width: 14,
-  },
-  icon: {
-    fontSize: 16,
-  },
-  name: {
-    flex: 1,
-    color: '#ccc',
-    fontSize: 15,
-    fontWeight: '500',
+    alignItems: 'center',
   },
 })

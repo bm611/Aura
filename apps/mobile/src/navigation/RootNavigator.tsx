@@ -7,16 +7,25 @@ import { useAuth } from '../contexts/AuthContext'
 import LoginScreen from '../screens/LoginScreen'
 import AppNavigator from './AppNavigator'
 import { NotesProvider } from '../contexts/NotesContext'
+import { useTheme } from '../theme'
 
 const Stack = createNativeStackNavigator()
 
 export default function RootNavigator() {
+  const theme = useTheme()
   const { user, loading } = useAuth()
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f0f0f' }}>
-        <ActivityIndicator color="#e07a8a" size="large" />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: theme.colors.bgDeep,
+        }}
+      >
+        <ActivityIndicator color={theme.colors.accent} size="large" />
       </View>
     )
   }

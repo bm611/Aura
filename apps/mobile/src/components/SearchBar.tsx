@@ -1,4 +1,6 @@
-import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native'
+import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native'
+import { useTheme } from '../theme'
+import { Text } from './ui'
 
 interface Props {
   value: string
@@ -7,21 +9,48 @@ interface Props {
 }
 
 export default function SearchBar({ value, onChange, placeholder = 'Search notes…' }: Props) {
+  const theme = useTheme()
+
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.colors.bgSurface,
+          borderColor: theme.colors.borderSubtle,
+          borderRadius: theme.radius.md,
+          marginHorizontal: theme.spacing[4],
+          marginTop: theme.spacing[2],
+          marginBottom: theme.spacing[3],
+        },
+      ]}
+    >
+      <Text variant="body" tone="muted" style={{ paddingLeft: theme.spacing[3], fontSize: 15 }}>
+        ⌕
+      </Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            color: theme.colors.textPrimary,
+            fontFamily: theme.fonts.body,
+            fontSize: theme.fontSize.body,
+          },
+        ]}
         value={value}
         onChangeText={onChange}
         placeholder={placeholder}
-        placeholderTextColor="#666"
+        placeholderTextColor={theme.colors.textMuted}
+        selectionColor={theme.colors.accent}
         autoCapitalize="none"
         autoCorrect={false}
         clearButtonMode="never"
       />
       {value.length > 0 && (
-        <TouchableOpacity onPress={() => onChange('')} style={styles.clear}>
-          <Text style={styles.clearText}>✕</Text>
+        <TouchableOpacity onPress={() => onChange('')} style={styles.clear} hitSlop={8}>
+          <Text variant="label" tone="muted">
+            ✕
+          </Text>
         </TouchableOpacity>
       )}
     </View>
@@ -32,24 +61,17 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
-    borderRadius: 10,
-    marginHorizontal: 16,
-    marginVertical: 10,
-    paddingHorizontal: 12,
+    paddingRight: 12,
+    borderWidth: 1,
   },
   input: {
     flex: 1,
-    color: '#fff',
-    fontSize: 15,
-    paddingVertical: 10,
+    paddingVertical: 11,
+    paddingLeft: 10,
+    paddingRight: 4,
   },
   clear: {
-    paddingLeft: 8,
+    paddingHorizontal: 6,
     paddingVertical: 4,
-  },
-  clearText: {
-    color: '#666',
-    fontSize: 14,
   },
 })

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import {
   View,
   StyleSheet,
@@ -16,96 +16,107 @@ import {
   PlaceholderBridge,
   DEFAULT_TOOLBAR_ITEMS,
 } from '@10play/tentap-editor'
+import { useTheme, type Theme } from '../theme'
 
-const DARK_EDITOR_CSS = `
+function buildEditorCss(theme: Theme) {
+  const c = theme.colors
+  return `
   * { box-sizing: border-box; }
   html, body {
     margin: 0;
     padding: 0;
-    background: #0f0f0f;
-    color: #e8e8e8;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: ${c.bgPrimary};
+    color: ${c.textPrimary};
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 16px;
-    line-height: 1.625;
+    line-height: 1.65;
     -webkit-font-smoothing: antialiased;
   }
   .ProseMirror {
     outline: none;
-    padding: 0 16px 40px;
-    caret-color: #e8e8e8;
+    padding: 16px 20px 60px;
+    caret-color: ${c.accent};
     min-height: 100vh;
   }
-  .ProseMirror p { margin: 0 0 12px; }
+  .ProseMirror p { margin: 0 0 14px; }
   .ProseMirror h1, .ProseMirror h2, .ProseMirror h3 {
-    margin: 20px 0 10px;
+    font-family: 'Fraunces', Georgia, serif;
     font-weight: 600;
-    line-height: 1.3;
+    letter-spacing: -0.3px;
+    margin: 24px 0 10px;
+    line-height: 1.25;
   }
-  .ProseMirror h1 { font-size: 26px; }
-  .ProseMirror h2 { font-size: 22px; }
-  .ProseMirror h3 { font-size: 18px; }
+  .ProseMirror h1 { font-size: 30px; color: ${c.colorH1}; }
+  .ProseMirror h2 { font-size: 24px; color: ${c.colorH2}; }
+  .ProseMirror h3 { font-size: 19px; color: ${c.colorH3}; }
   .ProseMirror ul, .ProseMirror ol {
     padding-left: 24px;
-    margin: 8px 0;
+    margin: 8px 0 14px;
   }
   .ProseMirror li { margin: 4px 0; }
   .ProseMirror li > p { margin: 0; }
   .ProseMirror blockquote {
-    border-left: 3px solid #333;
-    margin: 12px 0;
-    padding-left: 14px;
-    color: #aaa;
+    border-left: 3px solid ${c.accent};
+    margin: 16px 0;
+    padding: 4px 0 4px 16px;
+    color: ${c.textSecondary};
     font-style: italic;
+    font-family: 'Fraunces', Georgia, serif;
   }
   .ProseMirror pre {
-    background: #1a1a1a;
-    padding: 14px;
-    border-radius: 8px;
+    background: ${c.bgSurface};
+    padding: 14px 16px;
+    border-radius: 12px;
     overflow-x: auto;
-    margin: 12px 0;
+    margin: 14px 0;
+    border: 1px solid ${c.borderSubtle};
   }
   .ProseMirror pre code {
     background: transparent;
     padding: 0;
-    font-size: 14px;
-    color: #e8e8e8;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13.5px;
+    color: ${c.textPrimary};
   }
   .ProseMirror code {
-    background: #1a1a1a;
+    background: ${c.bgSurface};
     padding: 2px 6px;
-    border-radius: 4px;
-    font-family: 'Menlo', monospace;
-    font-size: 14px;
-    color: #e07a8a;
+    border-radius: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13.5px;
+    color: ${c.accent};
+    border: 1px solid ${c.borderSubtle};
   }
   .ProseMirror a {
-    color: #4a9eff;
+    color: ${c.accent};
     text-decoration: none;
+    border-bottom: 1px solid ${c.accentMuted};
   }
   .ProseMirror hr {
     border: none;
-    border-top: 1px solid #2a2a2a;
-    margin: 20px 0;
+    border-top: 1px solid ${c.borderSubtle};
+    margin: 24px 0;
   }
   .ProseMirror table {
     border-collapse: collapse;
     width: 100%;
-    margin: 12px 0;
+    margin: 14px 0;
     font-size: 14px;
   }
   .ProseMirror th, .ProseMirror td {
-    border: 1px solid #2a2a2a;
+    border: 1px solid ${c.borderSubtle};
     padding: 8px 10px;
     text-align: left;
   }
   .ProseMirror th {
-    background: #1a1a1a;
+    background: ${c.bgSurface};
     font-weight: 600;
+    color: ${c.textPrimary};
   }
-  .ProseMirror tr:nth-child(even) {
-    background: #141414;
+  .ProseMirror tr:nth-child(even) td {
+    background: ${c.bgSurface};
   }
-  ::selection { background: #264f78; color: #fff; }
+  ::selection { background: ${c.accentMuted}; color: ${c.textPrimary}; }
   ul[data-type="taskList"] {
     list-style: none;
     padding-left: 0;
@@ -115,24 +126,23 @@ const DARK_EDITOR_CSS = `
     align-items: flex-start;
     gap: 8px;
   }
-  ul[data-type="taskList"] li > label {
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
+  ul[data-type="taskList"] li > label { flex-shrink: 0; margin-top: 2px; }
   ul[data-type="taskList"] li > div { flex: 1; }
   ul[data-type="taskList"] input[type="checkbox"] {
-    accent-color: #e07a8a;
-    width: 16px;
-    height: 16px;
+    accent-color: ${c.accent};
+    width: 16px; height: 16px;
   }
   .ProseMirror p.is-editor-empty:first-child::before {
     content: attr(data-placeholder);
     float: left;
-    color: #444;
+    color: ${c.textMuted};
     pointer-events: none;
     height: 0;
+    font-family: 'Fraunces', Georgia, serif;
+    font-style: italic;
   }
 `
+}
 
 interface TenTapEditorProps {
   initialContent: string
@@ -149,7 +159,9 @@ export default function TenTapEditor({
   placeholder = 'Start writing…',
   style,
 }: TenTapEditorProps) {
-  // Prefer contentDoc (Tiptap JSON) when available, fall back to HTML/text
+  const theme = useTheme()
+  const css = useMemo(() => buildEditorCss(theme), [theme])
+
   const startContent = initialContentDoc ?? initialContent ?? '<p></p>'
 
   const editor = useEditorBridge({
@@ -159,7 +171,7 @@ export default function TenTapEditor({
     bridgeExtensions: [
       ...TenTapStartKit,
       PlaceholderBridge.configureExtension({ placeholder }),
-      CoreBridge.configureCSS(DARK_EDITOR_CSS),
+      CoreBridge.configureCSS(css),
     ],
   })
 
@@ -175,16 +187,13 @@ export default function TenTapEditor({
   }, [htmlContent, jsonContent, onChange])
 
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, { backgroundColor: theme.colors.bgPrimary }, style]}>
       <RichText editor={editor} style={styles.richText} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.toolbarWrapper}
       >
-        <Toolbar
-          editor={editor}
-          items={DEFAULT_TOOLBAR_ITEMS}
-        />
+        <Toolbar editor={editor} items={DEFAULT_TOOLBAR_ITEMS} />
       </KeyboardAvoidingView>
     </View>
   )
@@ -193,13 +202,8 @@ export default function TenTapEditor({
 export { useEditorBridge }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0f0f0f',
-  },
-  richText: {
-    flex: 1,
-  },
+  container: { flex: 1 },
+  richText: { flex: 1 },
   toolbarWrapper: {
     position: 'absolute',
     width: '100%',
