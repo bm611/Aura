@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { View, TextInput, StyleSheet } from 'react-native'
+import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native'
 import type { NoteFile } from '@folio/shared'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { AppStackParamList } from '../navigation/AppNavigator'
 import { useNotes } from '../contexts/NotesContext'
 import TenTapEditor from '../components/TenTapEditor'
 import { useTheme } from '../theme'
-import { Screen, Text, IconButton } from '../components/ui'
+import { Screen, Text } from '../components/ui'
 import { docToMarkdown, markdownToHtml } from '../lib/markdown'
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Editor'>
@@ -41,23 +41,8 @@ export default function EditorScreen({ route, navigation }: Props) {
   )
 
   useLayoutEffect(() => {
-    navigation.setOptions({
-      headerStyle: { backgroundColor: theme.colors.bgDeep },
-      headerTintColor: theme.colors.textPrimary,
-      headerTitle: '',
-      headerShadowVisible: false,
-      headerBackTitle: '',
-      headerRight: () => (
-        <IconButton
-          glyph="✦"
-          tone="accent"
-          variant="ghost"
-          onPress={() => navigation.navigate('HomeTabs', { screen: 'AiTab', params: { noteId } })}
-          accessibilityLabel="AI chat"
-        />
-      ),
-    })
-  }, [navigation, theme, noteId])
+    navigation.setOptions({ headerShown: false })
+  }, [navigation])
 
   useEffect(() => {
     return () => {
@@ -94,7 +79,7 @@ export default function EditorScreen({ route, navigation }: Props) {
 
   if (!note) {
     return (
-      <Screen>
+      <Screen safeEdges={['top']}>
         <View style={styles.notFound}>
           <Text variant="heading" tone="secondary" center>
             Note not found
@@ -108,7 +93,39 @@ export default function EditorScreen({ route, navigation }: Props) {
   const readTime = Math.max(1, Math.round(words / 220))
 
   return (
-    <Screen surface="primary">
+    <Screen surface="primary" safeEdges={['top']}>
+      <View style={[styles.topBar, { paddingHorizontal: theme.spacing[5] }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={10}>
+          <Text
+            style={{
+              fontFamily: theme.fonts.bodyMedium,
+              fontSize: 15,
+              color: theme.colors.accent,
+            }}
+          >
+            Done
+          </Text>
+        </TouchableOpacity>
+
+        <View style={styles.topActions}>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate('HomeTabs', { screen: 'AiTab', params: { noteId } })
+            }
+            hitSlop={10}
+            style={[
+              styles.iconBtn,
+              {
+                backgroundColor: theme.colors.pastelSage,
+                borderColor: 'rgba(22,52,40,0.08)',
+              },
+            ]}
+          >
+            <Text style={{ fontSize: 15, color: theme.colors.pastelSageInk }}>✦</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <View style={{ paddingHorizontal: theme.spacing[5], paddingTop: theme.spacing[2] }}>
         <TextInput
           value={title}
@@ -120,7 +137,7 @@ export default function EditorScreen({ route, navigation }: Props) {
             color: theme.colors.textPrimary,
             fontFamily: theme.fonts.displaySemibold,
             fontSize: 30,
-            letterSpacing: -0.5,
+            letterSpacing: -0.4,
             paddingVertical: 6,
           }}
           placeholder="Untitled"
@@ -133,18 +150,49 @@ export default function EditorScreen({ route, navigation }: Props) {
         <View
           style={[
             styles.statsRow,
-            { borderBottomColor: theme.colors.borderSubtle, paddingVertical: theme.spacing[2] },
+            {
+              paddingVertical: theme.spacing[2],
+            },
           ]}
         >
-          <Text variant="micro" tone="muted" style={{ fontFamily: theme.fonts.mono }}>
-            {words} words
-          </Text>
-          <Text variant="micro" tone="muted" style={{ fontFamily: theme.fonts.mono }}>
-            ·
-          </Text>
-          <Text variant="micro" tone="muted" style={{ fontFamily: theme.fonts.mono }}>
-            {readTime} min read
-          </Text>
+          <View
+            style={[
+              styles.chip,
+              {
+                backgroundColor: theme.colors.pastelSage,
+                borderColor: 'rgba(22,52,40,0.08)',
+              },
+            ]}
+          >
+            <Text
+              style={{
+                fontSize: 11,
+                color: theme.colors.pastelSageInk,
+                fontFamily: theme.fonts.bodySemibold,
+              }}
+            >
+              {words} words
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.chip,
+              {
+                backgroundColor: theme.colors.pastelPeach,
+                borderColor: 'rgba(22,52,40,0.08)',
+              },
+            ]}
+          >
+            <Text
+              style={{
+                fontSize: 11,
+                color: theme.colors.pastelPeachInk,
+                fontFamily: theme.fonts.bodySemibold,
+              }}
+            >
+              {readTime} min read
+            </Text>
+          </View>
         </View>
       </View>
 
@@ -163,10 +211,34 @@ const styles = StyleSheet.create({
   editor: {
     flex: 1,
   },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 10,
+    paddingBottom: 2,
+  },
+  topActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  iconBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
   statsRow: {
     flexDirection: 'row',
     gap: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  chip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    borderWidth: 1,
   },
   notFound: {
     flex: 1,

@@ -13,14 +13,24 @@ export default function EmptyState({ onCreateNote }: Props) {
       <View
         style={[
           styles.badge,
-          { backgroundColor: theme.colors.accentMuted, borderColor: theme.colors.accent },
+          {
+            backgroundColor: theme.colors.pastelSage,
+            borderColor: 'rgba(22,52,40,0.08)',
+          },
         ]}
       >
-        <Text variant="title" style={{ color: theme.colors.accent, fontFamily: theme.fonts.displaySemibold }}>
-          ✎
-        </Text>
+        <Text style={{ fontSize: 34 }}>🦊</Text>
       </View>
-      <Text variant="heading" center weight="semibold" style={{ marginTop: 20 }}>
+      <Text
+        style={{
+          fontFamily: theme.fonts.displaySemibold,
+          fontSize: 22,
+          color: theme.colors.textPrimary,
+          marginTop: 20,
+          textAlign: 'center',
+          letterSpacing: -0.2,
+        }}
+      >
         A blank page awaits
       </Text>
       <Text
@@ -46,9 +56,9 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   badge: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 84,
+    height: 84,
+    borderRadius: 42,
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',

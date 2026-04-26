@@ -11,7 +11,7 @@ import {
 import { useTheme } from '../../theme'
 import Text from './Text'
 
-export type ButtonVariant = 'primary' | 'ghost' | 'subtle' | 'danger'
+export type ButtonVariant = 'primary' | 'ghost' | 'subtle' | 'danger' | 'pastel'
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
 interface Props extends Omit<PressableProps, 'style'> {
@@ -23,6 +23,8 @@ interface Props extends Omit<PressableProps, 'style'> {
   leading?: React.ReactNode
   trailing?: React.ReactNode
   style?: StyleProp<ViewStyle>
+  /** Shape override: default pill on primary/pastel, rounded otherwise */
+  pill?: boolean
 }
 
 export default function Button({
@@ -35,18 +37,22 @@ export default function Button({
   trailing,
   disabled,
   style,
+  pill,
   children,
   ...rest
 }: Props) {
   const theme = useTheme()
   const scale = useRef(new Animated.Value(1)).current
 
+  const isPill = pill ?? (variant === 'primary' || variant === 'pastel')
+  const radius = isPill ? theme.radius.pill : theme.radius.md
+
   const sizeStyle: ViewStyle =
     size === 'sm'
-      ? { paddingVertical: 8, paddingHorizontal: 14, borderRadius: theme.radius.sm }
+      ? { paddingVertical: 10, paddingHorizontal: 18, borderRadius: radius }
       : size === 'lg'
-      ? { paddingVertical: 16, paddingHorizontal: 22, borderRadius: theme.radius.md }
-      : { paddingVertical: 12, paddingHorizontal: 18, borderRadius: theme.radius.md }
+      ? { paddingVertical: 18, paddingHorizontal: 26, borderRadius: radius }
+      : { paddingVertical: 14, paddingHorizontal: 22, borderRadius: radius }
 
   const variantStyle: ViewStyle =
     variant === 'primary'
@@ -54,17 +60,23 @@ export default function Button({
       : variant === 'danger'
       ? { backgroundColor: theme.colors.dangerMuted, borderWidth: 1, borderColor: theme.colors.danger }
       : variant === 'subtle'
-      ? { backgroundColor: theme.colors.bgElevated, borderWidth: 1, borderColor: theme.colors.borderSubtle }
+      ? { backgroundColor: theme.colors.bgSurface, borderWidth: 1, borderColor: theme.colors.borderSubtle }
+      : variant === 'pastel'
+      ? { backgroundColor: theme.colors.pastelSage }
       : {
           backgroundColor: 'transparent',
           borderWidth: 1,
           borderColor: theme.colors.borderDefault,
         }
 
-  const textTone: 'primary' | 'accent' | 'danger' =
-    variant === 'primary' ? 'primary' : variant === 'danger' ? 'danger' : variant === 'ghost' ? 'primary' : 'primary'
-
-  const textColor = variant === 'primary' ? '#fff' : undefined
+  const textColor =
+    variant === 'primary'
+      ? theme.colors.accentContrast
+      : variant === 'pastel'
+      ? theme.colors.pastelSageInk
+      : variant === 'danger'
+      ? theme.colors.danger
+      : theme.colors.textPrimary
 
   function onPressIn() {
     Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 40, bounciness: 0 }).start()
@@ -78,6 +90,7 @@ export default function Button({
       style={[
         { transform: [{ scale }] },
         fullWidth ? { alignSelf: 'stretch' } : null,
+        variant === 'primary' ? theme.shadow.button : null,
       ]}
     >
       <Pressable
@@ -99,7 +112,7 @@ export default function Button({
         ]}
       >
         {loading ? (
-          <ActivityIndicator color={variant === 'primary' ? '#fff' : theme.colors.accent} />
+          <ActivityIndicator color={variant === 'primary' ? theme.colors.accentContrast : theme.colors.accent} />
         ) : (
           <>
             {leading ? <View>{leading}</View> : null}
@@ -108,8 +121,7 @@ export default function Button({
                 <Text
                   variant={size === 'sm' ? 'label' : 'body'}
                   weight="semibold"
-                  tone={textTone}
-                  style={textColor ? { color: textColor } : undefined}
+                  style={{ color: textColor }}
                 >
                   {label}
                 </Text>

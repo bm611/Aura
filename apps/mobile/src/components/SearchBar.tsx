@@ -16,16 +16,22 @@ export default function SearchBar({ value, onChange, placeholder = 'Search notes
       style={[
         styles.container,
         {
-          backgroundColor: theme.colors.bgSurface,
+          backgroundColor: theme.colors.bgElevated,
           borderColor: theme.colors.borderSubtle,
-          borderRadius: theme.radius.md,
-          marginHorizontal: theme.spacing[4],
+          borderRadius: theme.radius.pill,
+          marginHorizontal: theme.spacing[5],
           marginTop: theme.spacing[2],
           marginBottom: theme.spacing[3],
         },
       ]}
     >
-      <Text variant="body" tone="muted" style={{ paddingLeft: theme.spacing[3], fontSize: 15 }}>
+      <Text
+        style={{
+          paddingLeft: theme.spacing[4],
+          fontSize: 16,
+          color: theme.colors.textMuted,
+        }}
+      >
         ⌕
       </Text>
       <TextInput
@@ -61,7 +67,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: 12,
+    paddingRight: 14,
     borderWidth: 1,
   },
   input: {

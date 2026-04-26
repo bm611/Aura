@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import * as Haptics from 'expo-haptics'
@@ -15,7 +16,7 @@ import SearchBar from '../components/SearchBar'
 import TreeNodeRow from '../components/TreeNodeRow'
 import EmptyState from '../components/EmptyState'
 import { useTheme } from '../theme'
-import { IconButton, Text } from '../components/ui'
+import { Text } from '../components/ui'
 
 interface FlatItem {
   node: TreeNode
@@ -40,7 +41,8 @@ function buildFlatList(nodes: TreeNode[], expandedFolders: Set<string>, depth = 
 export default function NoteListScreen({ onNoteOpen }: NoteListScreenProps) {
   const theme = useTheme()
   const navigation = useNavigation<any>()
-  const { tree, isLoading, isSyncing, createNote, createFolder, deleteTreeNode, renameTreeNode } = useNotes()
+  const { tree, isLoading, isSyncing, createNote, createFolder, deleteTreeNode, renameTreeNode } =
+    useNotes()
   const [search, setSearch] = useState('')
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
 
@@ -144,27 +146,57 @@ export default function NoteListScreen({ onNoteOpen }: NoteListScreenProps) {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.bgDeep }}>
-      <View style={[styles.header, { paddingHorizontal: theme.spacing[4] }]}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.bgPrimary }}>
+      <View style={[styles.header, { paddingHorizontal: theme.spacing[5] }]}>
         {isSyncing ? (
-          <View style={[styles.syncPill, { backgroundColor: theme.colors.bgElevated }]}>
-            <ActivityIndicator size="small" color={theme.colors.accent} style={{ transform: [{ scale: 0.7 }] }} />
-            <Text variant="micro" tone="muted">
+          <View
+            style={[
+              styles.syncPill,
+              { backgroundColor: theme.colors.pastelSage, borderColor: 'rgba(22,52,40,0.08)' },
+            ]}
+          >
+            <ActivityIndicator
+              size="small"
+              color={theme.colors.accent}
+              style={{ transform: [{ scale: 0.7 }] }}
+            />
+            <Text variant="micro" style={{ color: theme.colors.pastelSageInk, fontFamily: theme.fonts.bodyMedium }}>
               Syncing
             </Text>
           </View>
-        ) : <View />}
+        ) : (
+          <View />
+        )}
         <View style={styles.actions}>
-          <IconButton
-            glyph="✎"
+          <TouchableOpacity
             onPress={handleCreateFolder}
-            accessibilityLabel="New folder"
-          />
-          <IconButton
-            glyph="+"
+            activeOpacity={0.8}
+            style={[
+              styles.chip,
+              { backgroundColor: theme.colors.bgSurface, borderColor: theme.colors.borderSubtle },
+            ]}
+          >
+            <Text style={{ fontSize: 12, color: theme.colors.textSecondary }}>＋ Folder</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
             onPress={handleCreateNote}
-            accessibilityLabel="New note"
-          />
+            activeOpacity={0.85}
+            style={[
+              styles.chip,
+              { backgroundColor: theme.colors.accent },
+              theme.shadow.button,
+            ]}
+          >
+            <Text
+              style={{
+                fontSize: 12,
+                color: theme.colors.accentContrast,
+                fontFamily: theme.fonts.bodySemibold,
+              }}
+            >
+              ＋ Note
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -185,7 +217,6 @@ export default function NoteListScreen({ onNoteOpen }: NoteListScreenProps) {
           keyboardShouldPersistTaps="handled"
         />
       )}
-
     </View>
   )
 }
@@ -196,24 +227,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: 8,
-    paddingBottom: 2,
-  },
-  brand: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    paddingBottom: 6,
   },
   syncPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: 999,
+    borderWidth: 1,
   },
   actions: {
     flexDirection: 'row',
-    gap: 4,
+    gap: 8,
+  },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   centered: {
     flex: 1,
@@ -222,5 +256,6 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingBottom: 100,
+    paddingTop: 4,
   },
 })

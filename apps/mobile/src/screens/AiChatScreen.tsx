@@ -19,7 +19,7 @@ import { Screen, Text } from '../components/ui'
 const SUGGESTIONS = [
   { label: 'Summarize', prompt: 'Summarize this note in 3 bullets.' },
   { label: 'Key ideas', prompt: 'What are the key ideas in this note?' },
-  { label: 'Draft', prompt: 'Help me draft the next section.' },
+  { label: 'Draft next section', prompt: 'Help me draft the next section.' },
   { label: 'Brainstorm', prompt: 'Brainstorm 5 directions I could take this.' },
 ]
 
@@ -35,24 +35,8 @@ export default function AiChatScreen({ route }: any) {
   const note = noteId ? findNote(noteId) : null
 
   useLayoutEffect(() => {
-    navigation.setOptions({
-      headerStyle: { backgroundColor: theme.colors.bgDeep },
-      headerTintColor: theme.colors.textPrimary,
-      headerShadowVisible: false,
-      headerTitle: () => (
-        <Text
-          style={{
-            fontFamily: theme.fonts.displaySemibold,
-            fontSize: 18,
-            color: theme.colors.textPrimary,
-            letterSpacing: -0.2,
-          }}
-        >
-          Ask Folio
-        </Text>
-      ),
-    })
-  }, [navigation, theme])
+    navigation.setOptions({ headerShown: false })
+  }, [navigation])
 
   useEffect(() => {
     return () => {
@@ -86,26 +70,72 @@ export default function AiChatScreen({ route }: any) {
   const canSend = input.trim().length > 0 && !isStreaming
 
   return (
-    <Screen>
+    <Screen safeEdges={['top']}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
+        {/* Header */}
+        <View style={styles.header}>
+          <View
+            style={[
+              styles.mascot,
+              {
+                backgroundColor: theme.colors.pastelSage,
+                borderColor: 'rgba(22,52,40,0.08)',
+              },
+            ]}
+          >
+            <Text style={{ fontSize: 20 }}>🦊</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{
+                fontFamily: theme.fonts.displaySemibold,
+                fontSize: 20,
+                color: theme.colors.textPrimary,
+                letterSpacing: -0.2,
+              }}
+            >
+              Ask Folio
+            </Text>
+            <Text variant="small" tone="muted">
+              Your gentle writing companion
+            </Text>
+          </View>
+        </View>
+
         {note ? (
           <View
             style={[
               styles.contextBadge,
               {
-                backgroundColor: theme.colors.bgElevated,
-                borderColor: theme.colors.borderSubtle,
+                backgroundColor: theme.colors.pastelLavender,
+                borderColor: 'rgba(22,52,40,0.08)',
               },
             ]}
           >
-            <Text variant="micro" tone="accent" style={{ fontFamily: theme.fonts.mono }}>
+            <Text
+              style={{
+                fontFamily: theme.fonts.bodySemibold,
+                fontSize: 11,
+                letterSpacing: 1.2,
+                textTransform: 'uppercase',
+                color: theme.colors.pastelLavenderInk,
+              }}
+            >
               Context
             </Text>
-            <Text variant="small" tone="secondary" numberOfLines={1} style={{ flex: 1 }}>
+            <Text
+              style={{
+                fontFamily: theme.fonts.body,
+                fontSize: 13,
+                color: theme.colors.pastelLavenderInk,
+                flex: 1,
+              }}
+              numberOfLines={1}
+            >
               {note.title || note.name || 'Untitled'}
             </Text>
           </View>
@@ -114,27 +144,31 @@ export default function AiChatScreen({ route }: any) {
         {messages.length === 0 ? (
           <View style={styles.emptyState}>
             <View
+              style={[
+                styles.emptyIcon,
+                {
+                  backgroundColor: theme.colors.pastelSage,
+                  borderColor: 'rgba(22,52,40,0.08)',
+                },
+              ]}
+            >
+              <Text style={{ fontSize: 34 }}>🦊</Text>
+            </View>
+            <Text
               style={{
-                width: 64,
-                height: 64,
-                borderRadius: 32,
-                backgroundColor: theme.colors.accentMuted,
-                borderWidth: 1,
-                borderColor: theme.colors.accent,
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 20,
+                fontFamily: theme.fonts.displaySemibold,
+                fontSize: 22,
+                color: theme.colors.textPrimary,
+                marginTop: 18,
+                letterSpacing: -0.2,
               }}
             >
-              <Text style={{ color: theme.colors.accent, fontSize: 28 }}>✦</Text>
-            </View>
-            <Text variant="heading" center weight="semibold">
               Ask anything
             </Text>
             <Text variant="body" tone="secondary" center style={{ marginTop: 8, maxWidth: 280 }}>
               {note
                 ? `Working with "${note.title || note.name || 'Untitled'}"`
-                : 'Ask a question or start a conversation.'}
+                : 'Start a gentle conversation about your notes.'}
             </Text>
 
             <View style={styles.suggestGrid}>
@@ -145,14 +179,19 @@ export default function AiChatScreen({ route }: any) {
                   style={[
                     styles.suggestChip,
                     {
-                      backgroundColor: theme.colors.bgSurface,
+                      backgroundColor: theme.colors.bgElevated,
                       borderColor: theme.colors.borderSubtle,
-                      borderRadius: theme.radius.md,
                     },
                   ]}
-                  activeOpacity={0.7}
+                  activeOpacity={0.75}
                 >
-                  <Text variant="label" tone="secondary">
+                  <Text
+                    style={{
+                      fontFamily: theme.fonts.bodyMedium,
+                      fontSize: 13,
+                      color: theme.colors.textSecondary,
+                    }}
+                  >
                     {s.label}
                   </Text>
                 </TouchableOpacity>
@@ -174,17 +213,14 @@ export default function AiChatScreen({ route }: any) {
         <View
           style={[
             styles.composerWrap,
-            {
-              borderTopColor: theme.colors.borderSubtle,
-              backgroundColor: theme.colors.bgDeep,
-            },
+            { backgroundColor: theme.colors.bgPrimary },
           ]}
         >
           <View
             style={[
               styles.composer,
               {
-                backgroundColor: theme.colors.bgSurface,
+                backgroundColor: theme.colors.bgElevated,
                 borderColor: theme.colors.borderSubtle,
                 borderRadius: theme.radius.xl,
               },
@@ -196,8 +232,8 @@ export default function AiChatScreen({ route }: any) {
                 color: theme.colors.textPrimary,
                 fontFamily: theme.fonts.body,
                 fontSize: theme.fontSize.body,
-                paddingHorizontal: 16,
-                paddingVertical: 10,
+                paddingHorizontal: 18,
+                paddingVertical: 12,
                 maxHeight: 120,
               }}
               value={input}
@@ -214,13 +250,13 @@ export default function AiChatScreen({ route }: any) {
               style={[
                 styles.sendBtn,
                 {
-                  backgroundColor:
-                    isStreaming
-                      ? theme.colors.danger
-                      : canSend
-                      ? theme.colors.accent
-                      : theme.colors.bgElevated,
+                  backgroundColor: isStreaming
+                    ? theme.colors.danger
+                    : canSend
+                    ? theme.colors.accent
+                    : theme.colors.bgSurface,
                 },
+                canSend || isStreaming ? theme.shadow.button : null,
               ]}
               onPress={isStreaming ? abort : () => submit(input)}
               disabled={!isStreaming && !canSend}
@@ -228,7 +264,10 @@ export default function AiChatScreen({ route }: any) {
             >
               <Text
                 style={{
-                  color: canSend || isStreaming ? '#fff' : theme.colors.textMuted,
+                  color:
+                    canSend || isStreaming
+                      ? theme.colors.accentContrast
+                      : theme.colors.textMuted,
                   fontSize: 18,
                   fontFamily: theme.fonts.bodySemibold,
                 }}
@@ -244,24 +283,49 @@ export default function AiChatScreen({ route }: any) {
 }
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 8,
+  },
+  mascot: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
   contextBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginHorizontal: 16,
-    marginTop: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    marginHorizontal: 20,
+    marginTop: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderWidth: 1,
     borderRadius: 999,
     alignSelf: 'flex-start',
+    maxWidth: '92%',
   },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 32,
-    paddingBottom: 60,
+    paddingBottom: 80,
+  },
+  emptyIcon: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   suggestGrid: {
     flexDirection: 'row',
@@ -269,12 +333,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     marginTop: 28,
-    maxWidth: 320,
+    maxWidth: 340,
   },
   suggestChip: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 10,
     borderWidth: 1,
+    borderRadius: 999,
   },
   list: {
     paddingVertical: 14,
@@ -282,9 +347,8 @@ const styles = StyleSheet.create({
   },
   composerWrap: {
     paddingHorizontal: 12,
-    paddingTop: 10,
-    paddingBottom: 14,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: 8,
+    paddingBottom: 100,
   },
   composer: {
     flexDirection: 'row',
@@ -295,9 +359,9 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   sendBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,

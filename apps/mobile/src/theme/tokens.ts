@@ -17,6 +17,7 @@ export interface ThemeColors {
   accent: string
   accentHover: string
   accentMuted: string
+  accentContrast: string
 
   danger: string
   dangerMuted: string
@@ -27,6 +28,18 @@ export interface ThemeColors {
   colorH1: string
   colorH2: string
   colorH3: string
+
+  // "Sunrise Pastels" — used for category cards, tag chips, mood backgrounds
+  pastelSage: string
+  pastelSageInk: string
+  pastelPeach: string
+  pastelPeachInk: string
+  pastelLavender: string
+  pastelLavenderInk: string
+  pastelSky: string
+  pastelSkyInk: string
+  pastelCream: string
+  pastelCreamInk: string
 }
 
 export interface Theme {
@@ -82,65 +95,92 @@ export interface Theme {
     card: object
     elevated: object
     button: object
+    cloud: object
   }
 }
 
-const darkColors: ThemeColors = {
-  bgDeep: '#1a1814',
-  bgPrimary: '#211e19',
-  bgSurface: '#2a2620',
-  bgElevated: '#332f28',
-  bgHover: '#3d382f',
+// Light "Forest Floor" — the primary Folio canvas
+const lightColors: ThemeColors = {
+  bgDeep: '#faf9f7',
+  bgPrimary: '#faf9f7',
+  bgSurface: '#f4f4f1',
+  bgElevated: '#ffffff',
+  bgHover: '#eeeeeb',
 
-  borderSubtle: '#332f28',
-  borderDefault: '#3d382f',
+  borderSubtle: '#e3e2e0',
+  borderDefault: '#c1c8c3',
 
-  textPrimary: '#f0ece4',
-  textSecondary: '#c8bfb0',
-  textMuted: '#8a8178',
+  textPrimary: '#163428',
+  textSecondary: '#424844',
+  textMuted: '#727974',
 
-  accent: '#d4714a',
-  accentHover: '#e08560',
-  accentMuted: 'rgba(212, 113, 74, 0.15)',
+  accent: '#2d4b3e',
+  accentHover: '#466557',
+  accentMuted: 'rgba(45, 75, 62, 0.08)',
+  accentContrast: '#ffffff',
 
-  danger: '#e05c5c',
-  dangerMuted: 'rgba(224, 92, 92, 0.12)',
-  success: '#6aafca',
-  successMuted: 'rgba(106, 175, 202, 0.12)',
-  warning: '#c89640',
+  danger: '#ba1a1a',
+  dangerMuted: 'rgba(186, 26, 26, 0.08)',
+  success: '#4b7d5e',
+  successMuted: 'rgba(75, 125, 94, 0.10)',
+  warning: '#b47a2a',
 
-  colorH1: '#d4714a',
-  colorH2: '#c8a070',
-  colorH3: '#7a9e8a',
+  colorH1: '#163428',
+  colorH2: '#2d4b3e',
+  colorH3: '#586059',
+
+  pastelSage: '#dde5db',
+  pastelSageInk: '#2d4b3e',
+  pastelPeach: '#f6dcc8',
+  pastelPeachInk: '#7a4a28',
+  pastelLavender: '#e4dcec',
+  pastelLavenderInk: '#4c3d66',
+  pastelSky: '#d9e4ec',
+  pastelSkyInk: '#32556e',
+  pastelCream: '#f5e9d0',
+  pastelCreamInk: '#6b5632',
 }
 
-const lightColors: ThemeColors = {
-  bgDeep: '#e8e2d8',
-  bgPrimary: '#faf8f4',
-  bgSurface: '#f0ece4',
-  bgElevated: '#faf8f4',
-  bgHover: '#e4ddd4',
+// Dark "Moonlit Forest" — warm dark counterpart
+const darkColors: ThemeColors = {
+  bgDeep: '#1a1c1b',
+  bgPrimary: '#1f2220',
+  bgSurface: '#272a28',
+  bgElevated: '#2f3230',
+  bgHover: '#353835',
 
-  borderSubtle: '#ddd8d0',
-  borderDefault: '#ccc4b8',
+  borderSubtle: '#2f3230',
+  borderDefault: '#414543',
 
-  textPrimary: '#2a2420',
-  textSecondary: '#5c5248',
-  textMuted: '#8c8278',
+  textPrimary: '#f1f1ee',
+  textSecondary: '#c7cbc6',
+  textMuted: '#878b88',
 
-  accent: '#b85c38',
-  accentHover: '#cc7048',
-  accentMuted: 'rgba(184, 92, 56, 0.10)',
+  accent: '#adcebd',
+  accentHover: '#c8ead8',
+  accentMuted: 'rgba(173, 206, 189, 0.14)',
+  accentContrast: '#012116',
 
-  danger: '#c84040',
-  dangerMuted: 'rgba(200, 64, 64, 0.08)',
-  success: '#4b829c',
-  successMuted: 'rgba(75, 130, 156, 0.08)',
-  warning: '#a07830',
+  danger: '#ff9a94',
+  dangerMuted: 'rgba(255, 154, 148, 0.12)',
+  success: '#9cc8ac',
+  successMuted: 'rgba(156, 200, 172, 0.12)',
+  warning: '#e6b56b',
 
-  colorH1: '#b85c38',
-  colorH2: '#8a7050',
-  colorH3: '#5a8070',
+  colorH1: '#adcebd',
+  colorH2: '#c9cec3',
+  colorH3: '#a7b4a5',
+
+  pastelSage: '#2d4b3e',
+  pastelSageInk: '#c8ead8',
+  pastelPeach: '#4a3a2e',
+  pastelPeachInk: '#f6dcc8',
+  pastelLavender: '#3b3445',
+  pastelLavenderInk: '#e4dcec',
+  pastelSky: '#2a3a45',
+  pastelSkyInk: '#c5d6e0',
+  pastelCream: '#3d352a',
+  pastelCreamInk: '#f2e3c2',
 }
 
 const FONTS = {
@@ -157,65 +197,80 @@ const FONT_SIZES = {
   micro: 11,
   small: 13,
   label: 14,
-  body: 15,
-  bodyLarge: 16,
-  title: 20,
-  heading: 24,
+  body: 16,
+  bodyLarge: 18,
+  title: 22,
+  heading: 26,
   display: 32,
   displayLarge: 44,
 }
 
-const RADIUS = { xs: 4, sm: 6, md: 12, lg: 16, xl: 20, xxl: 24, pill: 999 }
+const RADIUS = { xs: 6, sm: 10, md: 14, lg: 20, xl: 26, xxl: 32, pill: 999 }
 
-const SPACING = { 0: 0, 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 7: 28, 8: 32, 10: 40 }
+const SPACING = { 0: 0, 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 7: 32, 8: 40, 10: 56 }
 
-const DURATION = { fast: 120, normal: 150, slow: 350 }
+const DURATION = { fast: 120, normal: 180, slow: 360 }
 
 const darkShadow = {
   card: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
     elevation: 4,
   },
   elevated: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 24,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.42,
+    shadowRadius: 28,
+    elevation: 10,
   },
   button: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
+    elevation: 5,
+  },
+  cloud: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.5,
+    shadowRadius: 28,
+    elevation: 12,
   },
 }
 
+// "Ambient Softness" — diffused, low-opacity forest tint on the light canvas
 const lightShadow = {
   card: {
-    shadowColor: '#000',
+    shadowColor: '#2d4b3e',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
+    elevation: 1,
+  },
+  elevated: {
+    shadowColor: '#2d4b3e',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 22,
+    elevation: 3,
+  },
+  button: {
+    shadowColor: '#2d4b3e',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 2,
   },
-  elevated: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 24,
-    elevation: 6,
-  },
-  button: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
+  cloud: {
+    shadowColor: '#2d4b3e',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.14,
+    shadowRadius: 28,
+    elevation: 8,
   },
 }
 

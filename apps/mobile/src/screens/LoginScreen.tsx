@@ -64,7 +64,7 @@ export default function LoginScreen({ navigation, route }: any) {
           {navigation?.canGoBack?.() ? (
             <TouchableOpacity
               onPress={() => navigation.goBack()}
-              hitSlop={8}
+              hitSlop={10}
               style={{ alignSelf: 'flex-start', marginBottom: 24 }}
             >
               <Text variant="small" tone="muted">
@@ -73,74 +73,85 @@ export default function LoginScreen({ navigation, route }: any) {
             </TouchableOpacity>
           ) : null}
 
-          <View style={{ alignItems: 'center', marginBottom: 40 }}>
+          <View style={{ alignItems: 'center', marginBottom: 36 }}>
+            <View
+              style={[
+                styles.hero,
+                {
+                  backgroundColor: theme.colors.pastelSage,
+                  borderColor: 'rgba(22,52,40,0.08)',
+                },
+              ]}
+            >
+              <Text style={{ fontSize: 34 }}>🦊</Text>
+            </View>
             <Text
               style={{
                 fontFamily: theme.fonts.displaySemibold,
-                fontSize: 50,
-                lineHeight: 60,
+                fontSize: 44,
+                lineHeight: 52,
                 color: theme.colors.textPrimary,
-                letterSpacing: -1,
+                letterSpacing: -0.8,
                 paddingVertical: 6,
+                marginTop: 14,
               }}
             >
               Folio
             </Text>
-            <Text variant="body" tone="secondary" center style={{ marginTop: 6 }}>
-              Your notes, beautifully organized.
+            <Text
+              style={{
+                fontFamily: theme.fonts.display,
+                fontSize: 16,
+                color: theme.colors.textSecondary,
+                textAlign: 'center',
+                marginTop: 4,
+                letterSpacing: -0.1,
+              }}
+            >
+              Markdown notes, beautifully simple.
             </Text>
           </View>
 
-          <View style={styles.tabs}>
-            <TouchableOpacity
-              style={styles.tab}
-              onPress={() => {
-                setTab('signin')
-                setError(null)
-                setSuccessMsg(null)
-              }}
-              hitSlop={6}
-            >
-              <Text
-                variant="label"
-                tone={tab === 'signin' ? 'primary' : 'muted'}
-                weight={tab === 'signin' ? 'semibold' : 'regular'}
-              >
-                Sign in
-              </Text>
-              <View
-                style={[
-                  styles.tabIndicator,
-                  { backgroundColor: tab === 'signin' ? theme.colors.accent : 'transparent' },
-                ]}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.tab}
-              onPress={() => {
-                setTab('signup')
-                setError(null)
-                setSuccessMsg(null)
-              }}
-              hitSlop={6}
-            >
-              <Text
-                variant="label"
-                tone={tab === 'signup' ? 'primary' : 'muted'}
-                weight={tab === 'signup' ? 'semibold' : 'regular'}
-              >
-                Sign up
-              </Text>
-              <View
-                style={[
-                  styles.tabIndicator,
-                  { backgroundColor: tab === 'signup' ? theme.colors.accent : 'transparent' },
-                ]}
-              />
-            </TouchableOpacity>
+          <View
+            style={[
+              styles.segment,
+              { backgroundColor: theme.colors.bgSurface, borderColor: theme.colors.borderSubtle },
+            ]}
+          >
+            {(['signin', 'signup'] as const).map((t) => {
+              const active = tab === t
+              return (
+                <TouchableOpacity
+                  key={t}
+                  style={[
+                    styles.segmentItem,
+                    active && {
+                      backgroundColor: theme.colors.bgElevated,
+                      ...theme.shadow.button,
+                    },
+                  ]}
+                  onPress={() => {
+                    setTab(t)
+                    setError(null)
+                    setSuccessMsg(null)
+                  }}
+                  activeOpacity={0.85}
+                >
+                  <Text
+                    style={{
+                      fontFamily: active ? theme.fonts.bodySemibold : theme.fonts.bodyMedium,
+                      fontSize: 14,
+                      color: active ? theme.colors.textPrimary : theme.colors.textMuted,
+                    }}
+                  >
+                    {t === 'signin' ? 'Sign in' : 'Sign up'}
+                  </Text>
+                </TouchableOpacity>
+              )
+            })}
           </View>
 
-          <View style={{ gap: 12 }}>
+          <View style={{ gap: 12, marginTop: 18 }}>
             <Input
               placeholder="Email"
               autoCapitalize="none"
@@ -185,7 +196,12 @@ export default function LoginScreen({ navigation, route }: any) {
             variant="micro"
             tone="muted"
             center
-            style={{ marginTop: 32, fontFamily: theme.fonts.display, fontStyle: 'italic' }}
+            style={{
+              marginTop: 32,
+              fontFamily: theme.fonts.display,
+              fontStyle: 'italic',
+              fontSize: 13,
+            }}
           >
             A quiet place for your thoughts.
           </Text>
@@ -202,20 +218,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 36,
   },
-  tabs: {
-    flexDirection: 'row',
-    gap: 24,
-    marginBottom: 28,
+  hero: {
+    width: 76,
+    height: 76,
+    borderRadius: 22,
+    borderWidth: 1,
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  tab: {
-    alignItems: 'center',
-    paddingVertical: 6,
+  segment: {
+    flexDirection: 'row',
+    padding: 4,
+    borderRadius: 999,
+    borderWidth: 1,
   },
-  tabIndicator: {
-    marginTop: 6,
-    height: 2,
-    width: 28,
-    borderRadius: 2,
+  segmentItem: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 999,
   },
 })

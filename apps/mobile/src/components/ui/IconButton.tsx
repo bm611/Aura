@@ -7,7 +7,7 @@ interface Props extends Omit<PressableProps, 'style'> {
   glyph?: string
   size?: number
   tone?: 'default' | 'accent' | 'muted' | 'danger'
-  variant?: 'solid' | 'ghost'
+  variant?: 'solid' | 'ghost' | 'soft'
   style?: StyleProp<ViewStyle>
   children?: React.ReactNode
 }
@@ -30,12 +30,16 @@ export default function IconButton({
       ? tone === 'accent'
         ? theme.colors.accent
         : theme.colors.bgElevated
+      : variant === 'soft'
+      ? tone === 'accent'
+        ? theme.colors.pastelSage
+        : theme.colors.bgSurface
       : 'transparent'
 
   const fg =
     tone === 'accent'
       ? variant === 'solid'
-        ? '#fff'
+        ? theme.colors.accentContrast
         : theme.colors.accent
       : tone === 'danger'
       ? theme.colors.danger
@@ -44,7 +48,7 @@ export default function IconButton({
       : theme.colors.textPrimary
 
   function onPressIn() {
-    Animated.spring(scale, { toValue: 0.92, useNativeDriver: true, speed: 40, bounciness: 0 }).start()
+    Animated.spring(scale, { toValue: 0.9, useNativeDriver: true, speed: 40, bounciness: 0 }).start()
   }
   function onPressOut() {
     Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 40, bounciness: 4 }).start()
@@ -67,13 +71,14 @@ export default function IconButton({
             backgroundColor: bg,
             opacity: disabled ? 0.4 : 1,
           },
+          variant === 'solid' && tone === 'accent' ? theme.shadow.button : null,
           style,
         ]}
         hitSlop={8}
       >
         {children ??
           (glyph ? (
-            <Text variant="bodyLarge" style={{ color: fg, fontSize: size * 0.5, lineHeight: size * 0.5 + 2 }}>
+            <Text style={{ color: fg, fontSize: size * 0.5, lineHeight: size * 0.5 + 2 }}>
               {glyph}
             </Text>
           ) : null)}

@@ -28,13 +28,13 @@ function buildEditorCss(theme: Theme) {
     background: ${c.bgPrimary};
     color: ${c.textPrimary};
     font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 16px;
-    line-height: 1.65;
+    font-size: 17px;
+    line-height: 1.7;
     -webkit-font-smoothing: antialiased;
   }
   .ProseMirror {
     outline: none;
-    padding: 16px 20px 60px;
+    padding: 20px 24px 80px;
     caret-color: ${c.accent};
     min-height: 100vh;
   }
@@ -43,32 +43,36 @@ function buildEditorCss(theme: Theme) {
     font-family: 'Fraunces', Georgia, serif;
     font-weight: 600;
     letter-spacing: -0.3px;
-    margin: 24px 0 10px;
+    margin: 28px 0 10px;
     line-height: 1.25;
   }
-  .ProseMirror h1 { font-size: 30px; color: ${c.colorH1}; }
-  .ProseMirror h2 { font-size: 24px; color: ${c.colorH2}; }
-  .ProseMirror h3 { font-size: 19px; color: ${c.colorH3}; }
+  .ProseMirror h1 { font-size: 28px; color: ${c.colorH1}; }
+  .ProseMirror h2 { font-size: 22px; color: ${c.colorH2}; }
+  .ProseMirror h3 { font-size: 18px; color: ${c.colorH3}; }
   .ProseMirror ul, .ProseMirror ol {
-    padding-left: 24px;
+    padding-left: 22px;
     margin: 8px 0 14px;
   }
   .ProseMirror li { margin: 4px 0; }
   .ProseMirror li > p { margin: 0; }
+  .ProseMirror ul li::marker { color: ${c.accent}; }
+  .ProseMirror ol li::marker { color: ${c.accent}; font-family: 'Fraunces', Georgia, serif; }
   .ProseMirror blockquote {
     border-left: 3px solid ${c.accent};
-    margin: 16px 0;
-    padding: 4px 0 4px 16px;
+    margin: 18px 0;
+    padding: 6px 0 6px 18px;
     color: ${c.textSecondary};
     font-style: italic;
     font-family: 'Fraunces', Georgia, serif;
+    background: ${c.accentMuted};
+    border-radius: 0 12px 12px 0;
   }
   .ProseMirror pre {
     background: ${c.bgSurface};
-    padding: 14px 16px;
-    border-radius: 12px;
+    padding: 16px 18px;
+    border-radius: 14px;
     overflow-x: auto;
-    margin: 14px 0;
+    margin: 16px 0;
     border: 1px solid ${c.borderSubtle};
   }
   .ProseMirror pre code {
@@ -80,11 +84,11 @@ function buildEditorCss(theme: Theme) {
   }
   .ProseMirror code {
     background: ${c.bgSurface};
-    padding: 2px 6px;
-    border-radius: 6px;
+    padding: 2px 7px;
+    border-radius: 8px;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 13.5px;
-    color: ${c.accent};
+    color: ${c.accentHover};
     border: 1px solid ${c.borderSubtle};
   }
   .ProseMirror a {
@@ -95,17 +99,19 @@ function buildEditorCss(theme: Theme) {
   .ProseMirror hr {
     border: none;
     border-top: 1px solid ${c.borderSubtle};
-    margin: 24px 0;
+    margin: 28px 0;
   }
   .ProseMirror table {
     border-collapse: collapse;
     width: 100%;
-    margin: 14px 0;
+    margin: 16px 0;
     font-size: 14px;
+    border-radius: 12px;
+    overflow: hidden;
   }
   .ProseMirror th, .ProseMirror td {
     border: 1px solid ${c.borderSubtle};
-    padding: 8px 10px;
+    padding: 10px 12px;
     text-align: left;
   }
   .ProseMirror th {
@@ -124,13 +130,21 @@ function buildEditorCss(theme: Theme) {
   ul[data-type="taskList"] li {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
+    gap: 10px;
+    padding: 2px 0;
   }
-  ul[data-type="taskList"] li > label { flex-shrink: 0; margin-top: 2px; }
+  ul[data-type="taskList"] li > label { flex-shrink: 0; margin-top: 4px; }
   ul[data-type="taskList"] li > div { flex: 1; }
   ul[data-type="taskList"] input[type="checkbox"] {
     accent-color: ${c.accent};
-    width: 16px; height: 16px;
+    width: 18px;
+    height: 18px;
+    border-radius: 6px;
+  }
+  ul[data-type="taskList"] li[data-checked="true"] > div {
+    color: ${c.textMuted};
+    text-decoration: line-through;
+    text-decoration-color: ${c.accentMuted};
   }
   .ProseMirror p.is-editor-empty:first-child::before {
     content: attr(data-placeholder);

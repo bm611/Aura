@@ -5,29 +5,42 @@ import { useTheme } from '../theme'
 
 const FEATURES = [
   {
-    accent: 'Editor',
-    title: 'Write without friction',
-    description: 'Headings, lists, code, quotes, and task lists render as you type.',
+    tone: 'sage' as const,
+    glyph: '❋',
+    title: 'Write in Markdown',
+    description: 'Headings, lists, and tasks render as you type — no formatting friction.',
   },
   {
-    accent: 'Offline',
+    tone: 'peach' as const,
+    glyph: '🌱',
     title: 'Local-first by default',
-    description: 'Capture ideas instantly, then sync them across devices when you are ready.',
+    description: 'Capture ideas instantly. Sync when you\'re ready, on your terms.',
   },
   {
-    accent: 'AI',
+    tone: 'lavender' as const,
+    glyph: '✦',
     title: 'Ask AI about your notes',
-    description: 'Use your writing as context for summaries, rewrites, and brainstorming.',
+    description: 'Summaries, rewrites, and brainstorming grounded in your own words.',
   },
   {
-    accent: 'Library',
-    title: 'Keep everything organized',
-    description: 'Folders, quick note creation, and a focused sidebar keep the structure simple.',
+    tone: 'cream' as const,
+    glyph: '❀',
+    title: 'Beautifully organized',
+    description: 'Folders and a focused sidebar keep your library gentle and simple.',
   },
 ]
 
 export default function WelcomeScreen({ navigation }: any) {
   const theme = useTheme()
+
+  const getInk = (tone: 'sage' | 'peach' | 'lavender' | 'cream') =>
+    tone === 'sage'
+      ? theme.colors.pastelSageInk
+      : tone === 'peach'
+      ? theme.colors.pastelPeachInk
+      : tone === 'lavender'
+      ? theme.colors.pastelLavenderInk
+      : theme.colors.pastelCreamInk
 
   return (
     <Screen safeEdges={['top', 'bottom']}>
@@ -35,77 +48,86 @@ export default function WelcomeScreen({ navigation }: any) {
         contentContainerStyle={[
           styles.content,
           {
-            gap: theme.spacing[5],
+            gap: theme.spacing[6],
             paddingHorizontal: theme.spacing[5],
-            paddingTop: theme.spacing[6],
-            paddingBottom: theme.spacing[6],
+            paddingTop: theme.spacing[7],
+            paddingBottom: theme.spacing[7],
           },
         ]}
       >
         <View style={{ gap: theme.spacing[3] }}>
-          <Text variant="micro" tone="accent" style={{ letterSpacing: 1.6, textTransform: 'uppercase' }}>
-            Folio mobile
-          </Text>
+          <View
+            style={[
+              styles.hero,
+              {
+                backgroundColor: theme.colors.pastelSage,
+                borderColor: 'rgba(22,52,40,0.08)',
+              },
+            ]}
+          >
+            <Text style={{ fontSize: 44 }}>🦊</Text>
+          </View>
           <Text
             style={{
               color: theme.colors.textPrimary,
               fontFamily: theme.fonts.displaySemibold,
-              fontSize: 44,
-              lineHeight: 52,
-              letterSpacing: -1,
+              fontSize: 40,
+              lineHeight: 46,
+              letterSpacing: -0.8,
+              marginTop: 8,
             }}
           >
-            Notes that feel calm, fast, and yours.
+            Folio
           </Text>
-          <Text variant="bodyLarge" tone="secondary" style={{ maxWidth: 340 }}>
-            A focused note space with rich markdown, AI assistance, and optional sync across devices.
+          <Text
+            style={{
+              fontFamily: theme.fonts.display,
+              fontSize: 20,
+              lineHeight: 28,
+              color: theme.colors.textSecondary,
+              letterSpacing: -0.2,
+              maxWidth: 320,
+            }}
+          >
+            Markdown notes, beautifully simple.
+          </Text>
+          <Text variant="body" tone="secondary" style={{ maxWidth: 340, marginTop: 4 }}>
+            A quiet space for writing — rich markdown, AI assistance, and optional sync across
+            devices.
           </Text>
         </View>
 
-        <Card elevated style={{ gap: theme.spacing[3] }}>
-          <Text variant="micro" tone="muted" style={{ letterSpacing: 1.4, textTransform: 'uppercase' }}>
-            Preview
-          </Text>
-          <View style={{ gap: theme.spacing[2] }}>
-            <Text
-              style={{
-                color: theme.colors.accent,
-                fontFamily: theme.fonts.displaySemibold,
-                fontSize: 26,
-                lineHeight: 32,
-              }}
-            >
-              Weekly Planning
-            </Text>
-            <Text variant="body" tone="secondary">
-              - Ship mobile polish
-            </Text>
-            <Text variant="body" tone="secondary">
-              - Review roadmap notes
-            </Text>
-            <Text variant="body" tone="secondary">
-              {'> Keep the writing flow lightweight and readable'}
-            </Text>
-          </View>
-        </Card>
-
         <View style={{ gap: theme.spacing[3] }}>
           {FEATURES.map((feature) => (
-            <Card key={feature.title} style={{ gap: theme.spacing[2] }}>
-              <Text variant="micro" tone="accent" style={{ letterSpacing: 1.2, textTransform: 'uppercase' }}>
-                {feature.accent}
-              </Text>
+            <Card key={feature.title} tone={feature.tone} style={{ gap: 4 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View
+                  style={[
+                    styles.featureGlyph,
+                    { backgroundColor: 'rgba(255,255,255,0.55)' },
+                  ]}
+                >
+                  <Text style={{ fontSize: 16, color: getInk(feature.tone) }}>{feature.glyph}</Text>
+                </View>
+                <Text
+                  style={{
+                    fontFamily: theme.fonts.bodySemibold,
+                    fontSize: 16,
+                    color: getInk(feature.tone),
+                  }}
+                >
+                  {feature.title}
+                </Text>
+              </View>
               <Text
                 style={{
-                  color: theme.colors.textPrimary,
-                  fontFamily: theme.fonts.displaySemibold,
-                  fontSize: 22,
-                  lineHeight: 28,
+                  fontFamily: theme.fonts.body,
+                  fontSize: 14,
+                  lineHeight: 20,
+                  color: getInk(feature.tone),
+                  opacity: 0.82,
                 }}
               >
-                {feature.title}
-              </Text>
-              <Text variant="body" tone="secondary">
                 {feature.description}
               </Text>
             </Card>
@@ -135,5 +157,20 @@ export default function WelcomeScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
+  },
+  hero: {
+    width: 84,
+    height: 84,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  featureGlyph: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })

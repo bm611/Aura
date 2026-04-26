@@ -25,7 +25,7 @@ function resolveMode(pref: ThemePreference): ThemeMode {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [preference, setPreferenceState] = useState<ThemePreference>('dark')
+  const [preference, setPreferenceState] = useState<ThemePreference>('light')
   const [systemScheme, setSystemScheme] = useState(Appearance.getColorScheme())
 
   useEffect(() => {

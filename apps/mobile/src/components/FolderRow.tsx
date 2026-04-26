@@ -18,26 +18,35 @@ export default function FolderRow({ folder, depth, isExpanded, onPress, onLongPr
       style={[
         styles.container,
         {
-          paddingLeft: theme.spacing[4] + depth * theme.spacing[4],
-          paddingRight: theme.spacing[4],
-          paddingVertical: theme.spacing[3] + 2,
-          borderBottomColor: theme.colors.borderSubtle,
+          marginLeft: theme.spacing[5] + depth * theme.spacing[4],
+          marginRight: theme.spacing[5],
+          marginVertical: 3,
+          paddingHorizontal: theme.spacing[3],
+          paddingVertical: theme.spacing[3],
         },
       ]}
       onPress={onPress}
       onLongPress={onLongPress}
-      activeOpacity={0.65}
+      activeOpacity={0.75}
     >
-      <View style={styles.chevronWrap}>
-        <Text variant="small" tone="muted">
+      <View
+        style={[
+          styles.glyph,
+          { backgroundColor: theme.colors.pastelLavender },
+        ]}
+      >
+        <Text style={{ fontSize: 14, color: theme.colors.pastelLavenderInk }}>
           {isExpanded ? '▾' : '▸'}
         </Text>
       </View>
       <Text
-        variant="body"
-        weight="medium"
-        tone="secondary"
-        style={{ flex: 1, fontFamily: theme.fonts.display, letterSpacing: -0.1 }}
+        style={{
+          flex: 1,
+          fontFamily: theme.fonts.displaySemibold,
+          fontSize: 16,
+          color: theme.colors.textPrimary,
+          letterSpacing: -0.1,
+        }}
         numberOfLines={1}
       >
         {folder.name}
@@ -50,11 +59,13 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    gap: 10,
+    gap: 12,
   },
-  chevronWrap: {
-    width: 14,
+  glyph: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
     alignItems: 'center',
+    justifyContent: 'center',
   },
 })
