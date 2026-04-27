@@ -3,9 +3,7 @@ import { useEffect, useCallback, useRef, useState, useMemo } from 'react'
 import {
   ComputerTerminalIcon,
   Search01Icon,
-  Moon01Icon,
   File01Icon,
-  Sun01Icon,
   Add01Icon,
 } from '@hugeicons/core-free-icons'
 
@@ -77,6 +75,7 @@ const TREE_STORAGE_KEY_PREFIX = 'canvas-tree:'
 const PENDING_UPSERT_STORAGE_KEY_PREFIX = 'canvas-pending-upserts:'
 const PENDING_DELETE_STORAGE_KEY_PREFIX = 'canvas-pending-delete:'
 const ONBOARDING_SEEN_KEY_PREFIX = 'folio-onboarding-seen:'
+const COMPACT_LAYOUT_WIDTH = 1024
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -617,15 +616,15 @@ function AppInner() {
   const [activeView, setActiveView] = useState<'notes' | 'chat'>('notes')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     // Start collapsed on mobile
-    return window.innerWidth < 768
+    return window.innerWidth < COMPACT_LAYOUT_WIDTH
   })
   const [sidebarSearch, setSidebarSearch] = useState('')
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [commandPaletteQuery, setCommandPaletteQuery] = useState('')
-  const [theme, setTheme] = useState(() => localStorage.getItem('canvas-theme') || 'dark')
-  const [fontId, setFontId] = useState(() => localStorage.getItem('canvas-font') || 'outfit')
+  const [theme, setTheme] = useState('brutal')
+  const [fontId, setFontId] = useState('plex-mono')
   const [wideMode, setWideMode] = useState(() => localStorage.getItem('canvas-wide-mode') === 'true')
-  const [accentId, setAccentId] = useState(() => localStorage.getItem('canvas-accent') || 'rose')
+  const [accentId, setAccentId] = useState(() => localStorage.getItem('canvas-accent') || 'violet')
   const [editorReady, setEditorReady] = useState(false)
   const [deletedNote, setDeletedNote] = useState<DeletedNoteState | null>(null)
   const [showAuthPage, setShowAuthPage] = useState(false)
@@ -1102,16 +1101,13 @@ function AppInner() {
   }, [tree, user])
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('canvas-theme', theme)
+    // Brutalist single-theme look — strip any legacy data-theme attribute.
+    document.documentElement.removeAttribute('data-theme')
   }, [theme])
 
   useEffect(() => {
-    const font = FONT_OPTIONS.find((option) => option.id === fontId)
-    if (font) {
-      document.documentElement.style.setProperty('--body-font', font.value)
-    }
-    localStorage.setItem('canvas-font', fontId)
+    // Body font is locked to IBM Plex Mono in the brutalist look.
+    document.documentElement.style.removeProperty('--body-font')
   }, [fontId])
 
   useEffect(() => {
@@ -1121,14 +1117,12 @@ function AppInner() {
   useEffect(() => {
     const palette = ACCENT_COLORS.find((a) => a.id === accentId)
     if (palette) {
-      const themeMode = THEMES.find((t) => t.id === theme)?.mode ?? 'dark'
-      const c = themeMode === 'dark' ? palette.dark : palette.light
+      const c = palette.light
       document.documentElement.style.setProperty('--accent', c.accent)
       document.documentElement.style.setProperty('--accent-hover', c.accentHover)
-      document.documentElement.style.setProperty('--color-h1', c.colorH1)
     }
     localStorage.setItem('canvas-accent', accentId)
-  }, [accentId, theme])
+  }, [accentId])
 
   const openCommandPalette = useCallback(() => {
     setCommandPaletteQuery('')
@@ -1666,6 +1660,22 @@ function AppInner() {
     window.addEventListener('mouseup', up)
   }, [sbWidth])
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(`(max-width: ${COMPACT_LAYOUT_WIDTH - 1}px)`)
+    const handleChange = (event: MediaQueryListEvent | MediaQueryList) => {
+      if (event.matches) {
+        setSidebarCollapsed(true)
+      }
+    }
+
+    handleChange(mediaQuery)
+    mediaQuery.addEventListener('change', handleChange)
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange)
+    }
+  }, [])
+
   // Swipe-from-left-edge to open sidebar
   useEffect(() => {
     let startX = 0
@@ -1674,7 +1684,7 @@ function AppInner() {
 
     const onTouchStart = (e: TouchEvent) => {
       const touch = e.touches[0]
-      if (touch && touch.clientX < 24 && sidebarCollapsed) {
+      if (touch && touch.clientX < 24 && sidebarCollapsed && window.innerWidth < COMPACT_LAYOUT_WIDTH) {
         startX = touch.clientX
         startY = touch.clientY
         tracking = true
@@ -1822,15 +1832,6 @@ function AppInner() {
       run: () => handleNewNote(),
     },
     {
-      id: 'action-toggle-theme',
-      section: 'Actions',
-      title: 'Cycle theme',
-      subtitle: 'Cycle through all themes',
-      icon: THEMES.find((t) => t.id === theme)?.mode === 'dark' ? <Icon icon={Sun01Icon} size={16} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={16} strokeWidth={1.5} />,
-      keywords: ['theme', 'color', 'dark', 'light', 'catppuccin', 'ayu', 'tokyo'],
-      run: () => cycleTheme(),
-    },
-    {
       id: 'action-focus-search',
       section: 'Actions',
       title: 'Reveal sidebar search',
@@ -1923,7 +1924,8 @@ function AppInner() {
 
   return (
     <>
-      <div className="grain flex h-[100dvh] overflow-hidden bg-[var(--bg-deep)] text-[var(--text-primary)]">
+      <div className="app-frame">
+        <div className="app-grid flex overflow-hidden text-[var(--text-primary)]">
         <Sidebar
           tree={tree}
           activeNoteId={activeNoteId}
@@ -1954,7 +1956,7 @@ function AppInner() {
           }}
         />
 
-        <div className="flex flex-1 min-w-0 transition-[padding] duration-300 p-0 md:p-2 md:pl-0">
+        <div className="flex flex-1 min-w-0 w-full max-w-full lg:border-l-[1.5px] border-[var(--ink)]">
           {activeView === 'chat' ? (
             <AiChatPage
               notes={notes.filter((n): n is NoteFile => n.type === 'file' && !n.deletedAt)}
@@ -2018,6 +2020,7 @@ function AppInner() {
             />
           )}
         </div>
+        </div>
       </div>
 
       <CommandPalette
@@ -2035,14 +2038,14 @@ function AppInner() {
 
       {deletedNote && (
         <div
-          className="fixed bottom-20 md:bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-5 py-3"
-          style={{ boxShadow: 'var(--neu-shadow)' }}
+          className="fixed bottom-20 md:bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 panel-bordered px-5 py-3"
+          style={{ boxShadow: 'var(--stamp-shadow-lg)' }}
         >
-          <span className="text-sm text-[var(--text-secondary)]">{deletedNote.node.type === 'folder' ? 'Folder deleted' : 'Note deleted'}</span>
+          <span className="label-mono-strong">{deletedNote.node.type === 'folder' ? 'Folder deleted' : 'Note deleted'}</span>
           <button
             type="button"
             onClick={handleUndoDelete}
-            className="rounded-full bg-[var(--accent)] px-4 py-1.5 text-sm font-medium text-white transition-[transform,filter] duration-150 ease-out hover:brightness-110 active:scale-[0.96]"
+            className="btn-stamp btn-stamp-accent"
           >
             Undo
           </button>
@@ -2051,14 +2054,14 @@ function AppInner() {
 
       {syncToast && (
         <div
-          className={`fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-[var(--border-subtle)] px-4 py-2 text-xs text-[var(--text-primary)] ${
+          className={`fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 px-4 py-2 label-mono-strong border-[1.5px] border-[var(--ink)] ${
             syncToast.variant === 'error'
-              ? 'bg-[color-mix(in_srgb,var(--danger)_14%,var(--bg-elevated))]'
+              ? 'bg-[color-mix(in_srgb,var(--danger)_22%,var(--bg-elevated))]'
               : syncToast.variant === 'info'
-              ? 'bg-[color-mix(in_srgb,var(--warning)_14%,var(--bg-elevated))]'
-              : 'bg-[color-mix(in_srgb,var(--success)_14%,var(--bg-elevated))]'
+              ? 'bg-[color-mix(in_srgb,var(--warning)_22%,var(--bg-elevated))]'
+              : 'bg-[color-mix(in_srgb,var(--success)_22%,var(--bg-elevated))]'
           }`}
-          style={{ boxShadow: 'var(--neu-shadow)' }}
+          style={{ boxShadow: 'var(--stamp-shadow)' }}
         >
           {syncToast.message}
         </div>

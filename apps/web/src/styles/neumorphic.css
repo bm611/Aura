@@ -1,87 +1,69 @@
 /* ═══════════════════════════════════════════════
-   Neumorphic Components (→ Glass-migrated)
+   Neumorphic classes — brutalist re-mapping
+   Existing components reference these; resolve to flat
+   bordered surfaces with stamp shadows.
    ═══════════════════════════════════════════════ */
 
 .neu-btn-primary {
-  /* Retained for backward compat — now delegates to glass-accent */
-  position: relative;
-  overflow: hidden;
   background: var(--accent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.20), var(--glass-glow);
-  will-change: transform, box-shadow, filter;
-  transition: transform var(--duration-fast) var(--ease-out-quart),
-              box-shadow var(--duration-fast),
-              filter var(--duration-fast);
+  color: var(--accent-text);
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  box-shadow: var(--stamp-shadow);
+  transition: transform 80ms var(--ease-out-quart),
+              box-shadow 80ms,
+              background-color 80ms;
 }
 
-/* Shimmer sweep on hover */
-.neu-btn-primary::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.12) 50%, transparent 60%);
-  transform: translateX(-100%);
-  transition: transform 0.5s ease-out;
-  pointer-events: none;
-}
+.neu-btn-primary::before { content: none; }
 
 @media (hover: hover) and (pointer: fine) {
   .neu-btn-primary:hover {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), var(--glass-glow-hover);
-  }
-
-  .neu-btn-primary:hover::before {
-    transform: translateX(100%);
+    background: var(--accent-hover);
+    transform: translate(-1px, -1px);
+    box-shadow: var(--stamp-shadow-hover);
   }
 }
 
 .neu-btn-primary:active {
-  transform: scale(0.97);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), var(--glass-glow-active);
+  transform: translate(2px, 2px);
+  box-shadow: var(--stamp-shadow-active);
 }
 
 .neu-icon-btn {
-  background: var(--glass-bg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-glow);
-  will-change: transform, box-shadow;
-  transition: transform var(--duration-fast) var(--ease-out-quart),
-              box-shadow var(--duration-fast),
-              background-color var(--duration-fast),
-              border-color var(--duration-fast);
+  background: var(--bg-surface);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  transition: background-color 80ms, color 80ms;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .neu-icon-btn:hover {
-    transform: none;
-    background: var(--glass-bg-hover);
-    border-color: var(--glass-border-hover);
-    box-shadow: var(--glass-glow-hover);
+    background: var(--bg-hover);
   }
 }
 
 .neu-icon-btn:active {
-  transform: scale(0.97);
-  background: var(--glass-bg-active);
-  box-shadow: var(--glass-glow-active);
+  background: var(--bg-deep);
 }
 
 .neu-card {
-  box-shadow: var(--neu-shadow);
+  background: var(--bg-surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  box-shadow: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .neu-card:hover {
-    box-shadow: var(--neu-shadow-hover);
+    background: var(--bg-hover);
   }
 }
 
 .neu-card:active {
-  transform: scale(0.97);
-  box-shadow: var(--neu-shadow-active);
+  transform: translate(1px, 1px);
 }

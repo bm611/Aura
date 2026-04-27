@@ -37,7 +37,8 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const current = ACCENT_COLORS.find((a) => a.id === accentId) ?? ACCENT_COLORS[0]!
-  const currentSwatch = (theme === 'light' ? current.light : current.dark).accent
+  const currentSwatch = current.light.accent
+  void theme
 
   // Close on outside click — check both the trigger container and the portaled dropdown
   useEffect(() => {
@@ -69,9 +70,9 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
     : 'hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.96]'
 
   const triggerClassName = mobile
-    ? 'relative flex h-10 w-10 items-center justify-center rounded-full border-none bg-transparent p-0 text-[var(--text-muted)] cursor-pointer transition-transform duration-150 ease-out after:absolute after:-inset-4 active:scale-[0.96]'
+    ? 'relative flex h-10 w-10 items-center justify-center border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] p-0 text-[var(--ink)] cursor-pointer transition-transform duration-100 active:scale-[0.96]'
     : desktopClasses
-  const dropdownBaseClassName = 'fixed z-[9999] rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2.5'
+  const dropdownBaseClassName = 'fixed z-[9999] border-[1.5px] border-[var(--ink)] bg-[var(--bg-elevated)] p-3'
 
   const handleOpen = () => {
     if (!open && buttonRef.current) {
@@ -111,22 +112,16 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
           <>
             <span className="settings-icon-wrap">
               <span
-                className="h-[14px] w-[14px] rounded-full transition-[background-color,box-shadow] duration-200"
-                style={{
-                  backgroundColor: currentSwatch,
-                  boxShadow: `0 0 0 1.5px var(--bg-surface), 0 0 0 3px ${currentSwatch}55`,
-                }}
+                className="h-[14px] w-[14px] border-[1.5px] border-[var(--ink)] transition-[background-color,box-shadow] duration-100"
+                style={{ backgroundColor: currentSwatch }}
               />
             </span>
             <span className="settings-item-label">{label}</span>
           </>
         ) : (
           <span
-            className="h-[14px] w-[14px] rounded-full transition-[background-color,box-shadow] duration-200 shrink-0"
-            style={{
-              backgroundColor: currentSwatch,
-              boxShadow: `0 0 0 1.5px var(--bg-primary), 0 0 0 3px ${currentSwatch}55`,
-            }}
+            className="h-[14px] w-[14px] border-[1.5px] border-[var(--ink)] shrink-0"
+            style={{ backgroundColor: currentSwatch }}
           />
         )}
       </button>
@@ -161,13 +156,11 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
                     : { top: dropdownPos.top, right: dropdownPos.right }),
               }}
             >
-              <p className="mb-2 px-0.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)] select-none">
-                Accent
-              </p>
+              <p className="mb-2 px-0.5 label-mono-strong">Accent</p>
 
-              <div className="grid grid-cols-5 gap-0.5">
+              <div className="grid grid-cols-4 gap-2">
                 {ACCENT_COLORS.map((color: AccentColor) => {
-                  const swatch = (theme === 'light' ? color.light : color.dark).accent
+                  const swatch = color.light.accent
                   const isActive = color.id === accentId
 
                   return (
@@ -180,22 +173,21 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
                         onAccentChange(color.id)
                         setOpen(false)
                       }}
-                      className="group flex flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 transition-[transform,background-color] duration-100 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.96]"
+                      className="group flex flex-col items-center gap-1 px-1 py-1 hover:bg-[var(--bg-hover)] active:translate-x-[1px] active:translate-y-[1px] transition-transform"
                       title={color.label}
                     >
                       <span
-                        className="h-5 w-5 rounded-full transition-[box-shadow] duration-150 ring-1 ring-black/10"
+                        className="h-7 w-7 border-[1.5px] border-[var(--ink)]"
                         style={{
                           backgroundColor: swatch,
-                          boxShadow: isActive
-                            ? `0 0 0 2px var(--bg-elevated), 0 0 0 3.5px ${swatch}`
-                            : undefined,
+                          outline: isActive ? '2.5px solid var(--ink)' : 'none',
+                          outlineOffset: '2px',
                         }}
                       />
                       {!hideName && (
                         <span
-                          className="text-[9px] leading-none transition-colors duration-100"
-                          style={{ color: isActive ? swatch : 'var(--text-muted)' }}
+                          className="text-[9px] leading-none uppercase tracking-wider font-mono"
+                          style={{ color: isActive ? 'var(--ink)' : 'var(--text-muted)' }}
                         >
                           {color.label}
                         </span>

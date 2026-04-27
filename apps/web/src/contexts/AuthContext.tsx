@@ -11,6 +11,7 @@ interface AuthContextValue {
   signInWithEmail: (email: string, password: string) => Promise<unknown>
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
+  updateDisplayName: (name: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -75,8 +76,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error
   }
 
+  async function updateDisplayName(name: string) {
+    const { data, error } = await supabase.auth.updateUser({ data: { display_name: name.trim() } })
+    if (error) throw error
+    if (data.user) setUser(data.user)
+  }
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUpWithEmail, signInWithEmail, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signUpWithEmail, signInWithEmail, signInWithGoogle, signOut, updateDisplayName }}>
       {children}
     </AuthContext.Provider>
   )

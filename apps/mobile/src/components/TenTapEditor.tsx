@@ -201,15 +201,13 @@ export default function TenTapEditor({
   }, [htmlContent, jsonContent, onChange])
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.bgPrimary }, style]}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={[styles.container, { backgroundColor: theme.colors.bgPrimary }, style]}
+    >
+      <Toolbar editor={editor} items={DEFAULT_TOOLBAR_ITEMS} />
       <RichText editor={editor} style={styles.richText} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.toolbarWrapper}
-      >
-        <Toolbar editor={editor} items={DEFAULT_TOOLBAR_ITEMS} />
-      </KeyboardAvoidingView>
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 
@@ -218,9 +216,4 @@ export { useEditorBridge }
 const styles = StyleSheet.create({
   container: { flex: 1 },
   richText: { flex: 1 },
-  toolbarWrapper: {
-    position: 'absolute',
-    width: '100%',
-    bottom: 0,
-  },
 })

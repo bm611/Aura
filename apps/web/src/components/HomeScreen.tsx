@@ -1,20 +1,17 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 
-import { motion, AnimatePresence } from 'framer-motion';
 import {
-	Calendar01Icon,
 	SidebarLeftIcon,
 	Add01Icon,
-	Logout01Icon,
 	CloudUploadIcon,
-	StarIcon,
-	FireIcon,
-	Clock01Icon,
+	Calendar01Icon,
+	ArrowRight01Icon,
 } from '@hugeicons/core-free-icons';
 
 import Icon from './Icon';
-import { EmptyStateFox } from './EmptyStateFox';
 import SettingsMenu from './SettingsMenu';
+import ProfilePanel from './ProfilePanel';
 import { countBodyWords, getNoteDisplayTitle } from '../utils/noteMeta';
 import { useAuth } from '../contexts/AuthContext';
 import type { NoteFile, TreeNode } from '../types';
@@ -24,10 +21,7 @@ import {
 	compareRecentNotes,
 	getTimeGreeting,
 	getMotivationalMessage,
-	formatDailyTitle,
 } from './noteEditorUtils';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface HomeScreenProps {
 	notes: TreeNode[];
@@ -51,198 +45,165 @@ interface HomeScreenProps {
 	onFontChange: (id: string) => void;
 }
 
-// ── Favorites empty state ────────────────────────────────────────────────────
-function FavoritesEmptyPrompt() {
+function compactNumber(n: number): string {
+	if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, '')}k`;
+	return String(n);
+}
+
+function isPinned(note: NoteFile): boolean {
+	return Array.isArray(note.tags) && note.tags.some((t) => t === 'favorite' || t === 'pinned');
+}
+
+function plainTextPreview(content: string | undefined, max = 280): string {
+	if (!content) return '';
+	const stripped = content
+		.replace(/^---[\s\S]*?---/, '')
+		.replace(/^#{1,6}\s+/gm, '')
+		.replace(/\*\*(.+?)\*\*/g, '$1')
+		.replace(/\*(.+?)\*/g, '$1')
+		.replace(/`([^`]+)`/g, '$1')
+		.replace(/\[(.+?)\]\(.+?\)/g, '$1')
+		.replace(/\n{2,}/g, '\n\n')
+		.trim();
+	return stripped.length > max ? stripped.slice(0, max) + '…' : stripped;
+}
+
+function CompactHeroPanel({
+	greeting,
+	dateLabel,
+	motto,
+	noteCount,
+}: {
+	greeting: string;
+	dateLabel: string;
+	motto: string;
+	noteCount: number;
+}) {
 	return (
-		<motion.div
-			initial={{ opacity: 0, y: 24, scale: 0.95 }}
-			animate={{ opacity: 1, y: 0, scale: 1 }}
-			transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
-			className="flex flex-col items-center justify-center py-12 px-4 gap-6 select-none h-full"
-		>
-			{/* Animated illustration */}
-			<div className="relative w-48 h-44">
-				<svg
-					viewBox="0 0 192 176"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
-					className="w-full h-full"
-					aria-hidden="true"
-				>
-					{/* Glow backdrop */}
-					<motion.ellipse
-						cx="96"
-						cy="110"
-						rx="64"
-						ry="18"
-						fill="var(--accent)"
-						initial={{ opacity: 0, scaleX: 0.4 }}
-						animate={{ opacity: [0.06, 0.12, 0.06], scaleX: [0.8, 1, 0.8] }}
-						transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-					/>
-
-					{/* Back star — tilted left */}
-					<motion.g
-						initial={{ opacity: 0, y: 14, rotate: -10 }}
-						animate={{ opacity: 1, y: 0, rotate: -6 }}
-						transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 1, 0.5, 1] }}
-						style={{ transformOrigin: '96px 95px' }}
-					>
-						<motion.path
-							d="M 96 34 L 108.9 63.8 L 140 66.2 L 116.3 87 L 123.6 117.4 L 96 100.8 L 68.4 117.4 L 75.6 87 L 52 66.2 L 83 63.8 Z"
-							fill="var(--bg-elevated)"
-							stroke="var(--border-subtle)"
-							strokeWidth="1.2"
-							animate={{ y: [0, -3, 0] }}
-							transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
-						/>
-					</motion.g>
-
-					{/* Front star — slight right tilt */}
-					<motion.g
-						initial={{ opacity: 0, y: 20, rotate: 8 }}
-						animate={{ opacity: 1, y: 0, rotate: 4 }}
-						transition={{ duration: 0.65, delay: 0.55, ease: [0.25, 1, 0.5, 1] }}
-						style={{ transformOrigin: '96px 95px' }}
-					>
-						<motion.path
-							d="M 96 34 L 108.9 63.8 L 140 66.2 L 116.3 87 L 123.6 117.4 L 96 100.8 L 68.4 117.4 L 75.6 87 L 52 66.2 L 83 63.8 Z"
-							fill="var(--bg-surface)"
-							stroke="var(--border-default)"
-							strokeWidth="1.2"
-							strokeLinejoin="round"
-							animate={{ y: [0, -5, 0], rotate: [4, 5.5, 4] }}
-							transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-							style={{ transformOrigin: '96px 78px' }}
-						/>
-						{/* Accent inner shape */}
-						<motion.path
-							d="M 96 34 L 108.9 63.8 L 140 66.2 L 116.3 87 L 123.6 117.4 L 96 100.8 L 68.4 117.4 L 75.6 87 L 52 66.2 L 83 63.8 Z"
-							fill="var(--accent)"
-							opacity="0.18"
-							animate={{ opacity: [0.18, 0.28, 0.18], scale: [0.95, 1, 0.95] }}
-							transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-							style={{ transformOrigin: '96px 78px' }}
-						/>
-					</motion.g>
-
-					{/* Orbiting sparkle ring */}
-					<motion.g
-						animate={{ rotate: 360 }}
-						transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-						style={{ transformOrigin: '96px 78px' }}
-					>
-						{[0, 72, 144, 216, 288].map((deg, i) => {
-							const rad = (deg * Math.PI) / 180;
-							const r = 66;
-							const cx = 96 + r * Math.cos(rad);
-							const cy = 78 + r * Math.sin(rad);
-							return (
-								<motion.circle
-									key={deg}
-									cx={cx}
-									cy={cy}
-									r={i % 2 === 0 ? 2.5 : 1.5}
-									fill={i % 2 === 0 ? 'var(--accent)' : 'var(--color-h2)'}
-									animate={{ opacity: [0.2, 0.7, 0.2], scale: [0.8, 1.2, 0.8] }}
-									transition={{
-										duration: 2.5,
-										repeat: Infinity,
-										ease: 'easeInOut',
-										delay: i * 0.4
-									}}
-									style={{ transformOrigin: `${cx}px ${cy}px` }}
-								/>
-							);
-						})}
-					</motion.g>
-
-					{/* Floating ink drops */}
-					{[
-						{ x: 32, y: 44, delay: 0.8, color: 'var(--accent)' },
-						{ x: 158, y: 58, delay: 1.4, color: 'var(--color-h2)' },
-						{ x: 148, y: 128, delay: 2.1, color: 'var(--success)' }
-					].map(({ x, y, delay, color }, i) => (
-						<motion.circle
-							key={i}
-							cx={x}
-							cy={y}
-							r="3.5"
-							fill={color}
-							initial={{ opacity: 0, scale: 0 }}
-							animate={{ opacity: [0, 0.6, 0], scale: [0, 1, 0], y: [0, -12, -20] }}
-							transition={{
-								duration: 2.8,
-								delay,
-								repeat: Infinity,
-								repeatDelay: 2,
-								ease: 'easeOut'
-							}}
-						/>
-					))}
-				</svg>
+		<section className="border-b-[1.5px] border-[var(--ink)]">
+			<div className="grid grid-cols-[88px_minmax(0,1fr)]">
+				<div className="flex flex-col justify-between gap-6 border-r-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-3 py-4">
+					<span className="label-mono-strong">Issue</span>
+					<span className="font-mono text-[32px] font-bold leading-none text-[var(--ink)]">
+						{String(noteCount).padStart(2, '0')}
+					</span>
+					<span className="label-mono">Pocket</span>
+				</div>
+				<div className="px-5 py-5">
+					<p className="label-mono-strong">Field desk</p>
+					<h1 className="title-script mt-3 text-[clamp(3rem,14vw,4.75rem)] leading-[0.88]">
+						{greeting}.
+					</h1>
+					<p className="mt-4 max-w-[26ch] font-[var(--font-prose)] text-[15px] leading-[1.45] text-[var(--text-secondary)]">
+						{motto}
+					</p>
+					<p className="mt-4 label-mono">{dateLabel}</p>
+				</div>
 			</div>
-
-			{/* Text */}
-			<motion.div
-				className="flex flex-col items-center gap-2 text-center"
-				initial={{ opacity: 0, y: 8 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.5, delay: 0.8 }}
-			>
-				<p
-					className="text-[22px] font-semibold text-[var(--text-primary)] tracking-tight leading-[1.15]"
-					style={{ fontFamily: 'var(--font-display)' }}
-				>
-					No favorites yet.
-				</p>
-				<p className="text-[15px] text-[var(--text-muted)] max-w-[240px] leading-relaxed" style={{ fontFamily: 'var(--font-body)' }}>
-					Star your most important notes to keep them handy here.
-				</p>
-			</motion.div>
-		</motion.div>
+		</section>
 	);
 }
 
-// ── First-note empty state ───────────────────────────────────────────────────
-function FirstNotePrompt() {
+function CompactStatCell({ label, value }: { label: string; value: string }) {
 	return (
-		<motion.div
-			initial={{ opacity: 0, y: 24, scale: 0.95 }}
-			animate={{ opacity: 1, y: 0, scale: 1 }}
-			transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
-			className="flex flex-col items-center justify-center py-12 px-4 gap-6 select-none h-full"
-		>
-			{/* Fox mascot */}
-			<motion.div
-				initial={{ opacity: 0, scale: 0.9, y: 12 }}
-				animate={{ opacity: 1, scale: 1, y: 0 }}
-				transition={{ duration: 0.6, delay: 0.3, ease: [0.25, 1, 0.5, 1] }}
-			>
-				<EmptyStateFox className="w-40 h-44" />
-			</motion.div>
-
-			{/* Text */}
-			<motion.div
-				className="flex flex-col items-center gap-2 text-center"
-				initial={{ opacity: 0, y: 8 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.5, delay: 0.6 }}
-			>
-				<p
-					className="text-[22px] font-semibold text-[var(--text-primary)] tracking-tight leading-[1.15]"
-					style={{ fontFamily: 'var(--font-display)' }}
-				>
-					Nothing here yet.
-				</p>
-				<p className="text-[15px] text-[var(--text-muted)] max-w-[240px] leading-relaxed" style={{ fontFamily: 'var(--font-body)' }}>
-					Write your first note. Every good thing starts small.
-				</p>
-			</motion.div>
-		</motion.div>
+		<div className="flex flex-col gap-2 border-r-[1.5px] last:border-r-0 border-[var(--ink)] bg-[var(--bg-surface)] px-4 py-4">
+			<span className="font-mono text-[28px] font-bold leading-none text-[var(--ink)]">{value}</span>
+			<span className="label-mono">{label}</span>
+		</div>
 	);
 }
-// ─── HomeScreen Component ─────────────────────────────────────────────────────
+
+function CompactFeaturedNote({ note, onOpen }: { note: NoteFile; onOpen: () => void }) {
+	const updated = formatRelativeTime(new Date(note.updatedAt || note.createdAt));
+	const preview = plainTextPreview(note.content, 220).replace(/\s+/g, ' ').trim();
+	const wordCount = compactNumber(countBodyWords(note.content));
+
+	return (
+		<section className="border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-elevated)]">
+			<div className="flex items-center justify-between border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-5 py-3">
+				<span className="label-mono-strong">{isPinned(note) ? 'Pinned note' : 'Lead note'}</span>
+				<span className="label-mono">{updated}</span>
+			</div>
+			<button
+				type="button"
+				onClick={onOpen}
+				className="group block w-full text-left px-5 py-5 transition-colors hover:bg-[var(--bg-hover)]"
+			>
+				<div className="flex items-start justify-between gap-4">
+					<div className="min-w-0">
+						<p className="label-mono">{wordCount} words</p>
+						<h2 className="title-script mt-3 text-[42px] leading-[0.9] text-[var(--ink)]">
+							{getNoteDisplayTitle(note)}
+						</h2>
+					</div>
+					<span className="surface-inverse flex h-10 w-10 flex-shrink-0 items-center justify-center border-[1.5px] border-[var(--ink)] transition-transform group-hover:-translate-y-0.5">
+						<Icon icon={ArrowRight01Icon} size={16} strokeWidth={2} />
+					</span>
+				</div>
+				<p className="mt-4 font-[var(--font-prose)] text-[15px] leading-relaxed text-[var(--text-secondary)]">
+					{preview || 'Blank page. Tap to start writing.'}
+				</p>
+			</button>
+		</section>
+	);
+}
+
+function CompactRecentRow({
+	note,
+	index,
+	onOpen,
+}: {
+	note: NoteFile;
+	index: number;
+	onOpen: () => void;
+}) {
+	const updated = formatRelativeTime(new Date(note.updatedAt || note.createdAt));
+	const preview = plainTextPreview(note.content, 120).replace(/\s+/g, ' ').trim();
+
+	return (
+		<button
+			type="button"
+			onClick={onOpen}
+			className="grid w-full grid-cols-[64px_minmax(0,1fr)] text-left transition-colors hover:bg-[var(--bg-hover)]"
+		>
+			<div className="flex flex-col items-center justify-center gap-1 border-r-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-2 py-4">
+				<span className="font-mono text-[18px] font-bold leading-none text-[var(--ink)]">
+					{String(index).padStart(2, '0')}
+				</span>
+				<span className={isPinned(note) ? 'label-mono-strong text-[var(--accent)]' : 'label-mono'}>
+					{isPinned(note) ? 'Pin' : 'Recent'}
+				</span>
+			</div>
+			<div className="px-4 py-4">
+				<div className="flex items-start justify-between gap-3">
+					<span className="min-w-0 font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-tight text-[var(--ink)]">
+						{getNoteDisplayTitle(note)}
+					</span>
+					<span className="label-mono shrink-0">{updated}</span>
+				</div>
+				<p className="mt-2 font-[var(--font-prose)] text-[13px] leading-[1.45] text-[var(--text-secondary)]">
+					{preview || 'Blank page. Open it.'}
+				</p>
+			</div>
+		</button>
+	);
+}
+
+function CompactEmptyState({ onNewNote }: { onNewNote: () => void }) {
+	return (
+		<section className="border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-elevated)] px-5 py-12">
+			<div className="panel-bordered inline-flex px-4 py-2 label-mono-strong">[ Blank desk ]</div>
+			<h2 className="title-script mt-6 text-[42px] leading-[0.92] text-[var(--ink)]">Start here.</h2>
+			<p className="mt-4 max-w-[30ch] font-[var(--font-prose)] text-[15px] leading-relaxed text-[var(--text-secondary)]">
+				Your mobile home is ready for the first page. Create a note and this desk turns into a live queue.
+			</p>
+			<button type="button" onClick={onNewNote} className="btn-stamp btn-stamp-accent mt-6 h-12 px-5">
+				<Icon icon={Add01Icon} size={14} strokeWidth={2} />
+				New note
+			</button>
+		</section>
+	);
+}
 
 export default function HomeScreen({
 	notes,
@@ -251,12 +212,10 @@ export default function HomeScreen({
 	onSelectNote,
 	theme,
 	onSetTheme,
-	onCycleTheme: _onCycleTheme,
 	accentId,
 	onAccentChange,
 	sidebarCollapsed,
 	onToggleSidebar,
-	onOpenCommandPalette: _onOpenCommandPalette,
 	onOpenAuthModal,
 	syncing,
 	syncStatus,
@@ -264,9 +223,14 @@ export default function HomeScreen({
 	fontId,
 	onFontChange,
 }: HomeScreenProps) {
-	const { user, signOut } = useAuth();
+	const { user } = useAuth();
+	const [profileOpen, setProfileOpen] = useState(false);
+	const profileAnchorRef = useRef<HTMLDivElement>(null);
 
-	const fileNotes = useMemo(() => notes.filter((n): n is NoteFile => n.type === 'file'), [notes]);
+	const fileNotes = useMemo(
+		() => notes.filter((n): n is NoteFile => n.type === 'file' && !n.deletedAt),
+		[notes],
+	);
 
 	const { streak, totalWords } = useMemo(() => {
 		const today = new Date();
@@ -275,10 +239,10 @@ export default function HomeScreen({
 		const sortedNotes = [...fileNotes].sort(
 			(a, b) =>
 				new Date(b.updatedAt || b.createdAt).getTime() -
-				new Date(a.updatedAt || a.createdAt).getTime()
+				new Date(a.updatedAt || a.createdAt).getTime(),
 		);
 
-		let streak = 0;
+		let streakCount = 0;
 		const currentDate = new Date(today);
 
 		for (let i = 0; i < 365; i++) {
@@ -286,97 +250,64 @@ export default function HomeScreen({
 			const dayEnd = new Date(currentDate);
 			dayEnd.setHours(23, 59, 59, 999);
 
-			const hasActivityOnDay = sortedNotes.some((note) => {
-				const noteDate = new Date(note.updatedAt || note.createdAt);
-				return noteDate >= dayStart && noteDate <= dayEnd;
+			const hasActivity = sortedNotes.some((note) => {
+				const nd = new Date(note.updatedAt || note.createdAt);
+				return nd >= dayStart && nd <= dayEnd;
 			});
 
-			if (hasActivityOnDay) {
-				streak++;
+			if (hasActivity) {
+				streakCount++;
 				currentDate.setDate(currentDate.getDate() - 1);
 			} else {
 				break;
 			}
 		}
 
-		const totalWords = sortedNotes.reduce((sum, note) => sum + countBodyWords(note.content), 0);
-
-		return { streak, totalWords };
+		const total = sortedNotes.reduce((sum, n) => sum + countBodyWords(n.content), 0);
+		return { streak: streakCount, totalWords: total };
 	}, [fileNotes]);
 
-	const last7DaysActivity = useMemo(() => {
-		return Array.from({ length: 7 }, (_, i) => {
-			const d = new Date()
-			d.setDate(d.getDate() - (6 - i))
-			d.setHours(0, 0, 0, 0)
-			const end = new Date(d)
-			end.setHours(23, 59, 59, 999)
-			const wordsOnDay = fileNotes.reduce((sum, n) => {
-				const nd = new Date(n.updatedAt || n.createdAt)
-				return nd >= d && nd <= end ? sum + countBodyWords(n.content) : sum
-			}, 0)
-			return { active: wordsOnDay > 0, intensity: Math.min(wordsOnDay / 200, 1) }
-		})
-	}, [fileNotes])
-
-	const [homeTab, setHomeTab] = useState<'recent' | 'favorites'>('recent');
-	const [favExpanded, setFavExpanded] = useState(false);
-
-	const recentNotes = useMemo(() => [...fileNotes].sort(compareRecentNotes).slice(0, 5), [fileNotes]);
-
-	const favoriteNotes = useMemo(() => {
-		return [...fileNotes]
-			.filter(
-				(n) => n.tags?.includes('favorite') || (n as NoteFile & { isFavorite?: boolean }).isFavorite
-			)
-			.sort(compareRecentNotes)
-			.slice(0, 6);
+	const recentAndPinned = useMemo(() => {
+		const sorted = [...fileNotes].sort(compareRecentNotes);
+		const pinned = sorted.filter((n) => isPinned(n));
+		const others = sorted.filter((n) => !isPinned(n));
+		return [...pinned, ...others].slice(0, 8);
 	}, [fileNotes]);
+
+	const [hoveredId, setHoveredId] = useState<string | null>(null);
+	const previewNote = useMemo(() => {
+		if (hoveredId) return fileNotes.find((n) => n.id === hoveredId) ?? null;
+		return recentAndPinned[0] ?? null;
+	}, [hoveredId, fileNotes, recentAndPinned]);
+
+	const today = new Date();
+	const dateLabel = today
+		.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+		.toUpperCase()
+		.replace(',', ' ·');
+
+	const greeting = getTimeGreeting();
+	const motto = getMotivationalMessage(streak);
+	const featuredCompactNote = recentAndPinned[0] ?? null;
+	const compactQueue = featuredCompactNote ? recentAndPinned.slice(1, 7) : [];
 
 	return (
-		<motion.div
-			key="home"
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			exit={{ opacity: 0 }}
-			transition={{ duration: 0.2 }}
-			className="flex flex-1 min-w-0 flex-col max-md:rounded-none rounded-2xl bg-[var(--bg-primary)]"
-		>
-			{/* Top bar */}
-			<div className="flex items-center justify-between px-4 py-2 md:px-6">
-				{/* Mobile: always show sidebar button */}
+		<div className="flex flex-1 min-w-0 flex-col bg-[var(--bg-primary)] overflow-hidden">
+			{/* ── Top utility bar ── */}
+			<div className="flex items-center justify-between px-4 py-2 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
 				<button
 					type="button"
 					onClick={onToggleSidebar}
-					className="glass-icon md:hidden relative flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.96]"
-					title="Open sidebar"
+					className={`btn-cell ${sidebarCollapsed ? '' : 'lg:hidden'}`}
+					title="Toggle sidebar"
+					aria-label="Toggle sidebar"
 				>
-					<Icon
-						icon={SidebarLeftIcon}
-						size={22}
-						strokeWidth={1.5}
-						style={{ transform: 'scaleX(-1)' }}
-					/>
+					<Icon icon={SidebarLeftIcon} size={16} strokeWidth={1.5} />
 				</button>
-				{/* Desktop: show only when collapsed */}
-				{sidebarCollapsed ? (
-					<button
-						type="button"
-						onClick={onToggleSidebar}
-						className="glass-icon hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.96]"
-						title="Open sidebar (Cmd+B)"
-					>
-						<Icon
-							icon={SidebarLeftIcon}
-							size={22}
-							strokeWidth={1.5}
-							style={{ transform: 'scaleX(-1)' }}
-						/>
-					</button>
-				) : (
-					<div className="hidden md:block w-10" />
-				)}
-				<div className="ml-auto flex items-center gap-1.5 md:gap-2">
+				{!sidebarCollapsed && <div className="hidden lg:block w-9" />}
+
+				<div className="ml-auto flex items-center gap-2 pr-1">
+					{/* Settings pill */}
 					<SettingsMenu
 						theme={theme}
 						onSetTheme={onSetTheme}
@@ -389,627 +320,286 @@ export default function HomeScreen({
 						onFontChange={onFontChange}
 						className="!block"
 					/>
+
+					{/* User pill / Sign in pill */}
 					{user ? (
-						<div className="auth-group">
-							<div
-								className="auth-pill auth-pill--signed-in"
-								title={`Signed in as ${user.email}`}
-							>
-								{user.user_metadata?.avatar_url ? (
-									<img src={user.user_metadata.avatar_url} alt="" className="auth-pill__avatar" referrerPolicy="no-referrer" />
-								) : (
-									<span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
-								)}
-							</div>
+						<div ref={profileAnchorRef} className="relative">
 							<button
 								type="button"
-								onClick={signOut}
-								className="auth-signout-btn"
-								title="Sign out"
+								onClick={() => setProfileOpen((v) => !v)}
+								className="btn-pill gap-2"
+								title="Profile"
+								aria-expanded={profileOpen}
 							>
-								<Icon icon={Logout01Icon} size={19} strokeWidth={2} />
+								<div className="flex items-center justify-center w-5 h-5 bg-[var(--accent)] text-[var(--accent-text)] text-[10px] font-bold flex-shrink-0 overflow-hidden" style={{ borderRadius: '50%' }}>
+									{user.user_metadata?.avatar_url ? (
+										<img src={user.user_metadata.avatar_url} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+									) : (
+										user.email?.[0]?.toUpperCase() || '?'
+									)}
+								</div>
+								<span className="hidden max-w-[96px] truncate min-[400px]:inline">
+									{user.user_metadata?.display_name || user.email?.split('@')[0]}
+								</span>
 							</button>
+							<AnimatePresence>
+								{profileOpen && (
+									<ProfilePanel onClose={() => setProfileOpen(false)} />
+								)}
+							</AnimatePresence>
 						</div>
 					) : (
 						<button
 							type="button"
 							onClick={onOpenAuthModal}
-							className="auth-pill auth-pill--signed-out h-10 px-4"
+							className="btn-pill btn-pill-accent"
 							title="Sign in to sync your notes"
-							style={{ fontFamily: 'var(--font-body)' }}
 						>
-							<Icon icon={CloudUploadIcon} size={18} strokeWidth={2} />
-							<span>Sign in</span>
+							<Icon icon={CloudUploadIcon} size={14} strokeWidth={1.5} />
+							<span className="hidden min-[400px]:inline">Sign in</span>
 						</button>
 					)}
 				</div>
 			</div>
 
-			{/* Welcome content */}
-			<div className="flex flex-1 flex-col items-center px-6 pt-3 md:pt-4 pb-6 overflow-y-auto">
-				<div className="flex flex-col items-center text-center">
-					{/* Greeting — strengthened hierarchy */}
-					<motion.h1
-						className="text-[36px] sm:text-[48px] md:text-[52px] font-bold tracking-tight leading-[1.05] mb-1.5"
-						style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
-						initial={{ opacity: 0, y: 16 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
-					>
-						{getTimeGreeting()}
-					</motion.h1>
+			<div className="lg:hidden flex-1 overflow-y-auto">
+				<CompactHeroPanel greeting={greeting} dateLabel={dateLabel} motto={motto} noteCount={fileNotes.length} />
 
-					{/* Motivational message — refined */}
-					<motion.p
-						className="text-[15px] sm:text-[16px] mb-5 max-w-[300px] leading-relaxed font-light"
-						style={{ fontFamily: 'var(--font-body)', color: 'var(--text-secondary)' }}
-						initial={{ opacity: 0, y: 8 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.5, delay: 0.15, ease: [0.25, 1, 0.5, 1] }}
-					>
-						{getMotivationalMessage(streak)}
-					</motion.p>
-
-					{/* Stats row */}
-					<motion.div
-						className="grid grid-cols-3 gap-1.5 sm:gap-2 mb-5 w-full max-w-[300px]"
-						style={{ fontFamily: 'var(--font-body)' }}
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						transition={{ duration: 0.4, delay: 0.3 }}
-					>
-						{[
-							{ value: fileNotes.length, label: fileNotes.length === 1 ? 'note' : 'notes', accent: false, delay: 0.35 },
-							{ value: streak, label: 'day streak', accent: true, delay: 0.42 },
-							{ value: totalWords >= 1000 ? `${(totalWords / 1000).toFixed(1)}k` : totalWords, label: 'words', accent: false, delay: 0.49 },
-						].map((stat) => (
-							<motion.div
-								key={stat.label}
-								className="flex flex-col items-center justify-center rounded-lg px-2 py-2"
-								style={{
-									background: 'var(--glass-bg)',
-									boxShadow: '0 0 0 1px color-mix(in srgb, var(--text-primary) 6%, transparent), 0 1px 2px color-mix(in srgb, var(--text-primary) 4%, transparent)',
-								}}
-								initial={{ opacity: 0, y: 6 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ duration: 0.4, delay: stat.delay, ease: [0.25, 1, 0.5, 1] }}
-							>
-								<span
-									className="text-[22px] sm:text-[26px] font-bold tracking-tight"
-									style={{
-										color: stat.accent ? 'var(--accent)' : 'var(--text-primary)',
-										fontVariantNumeric: 'tabular-nums',
-									}}
-								>
-									{stat.value}
-								</span>
-								<span
-									className="text-[11px] sm:text-[12px] font-medium mt-0.5"
-									style={{ color: 'var(--text-muted)', fontFamily: "'Outfit', sans-serif" }}
-								>
-									{stat.label}
-								</span>
-							</motion.div>
-						))}
-					</motion.div>
-
-					{/* 7-day activity strip */}
-					<motion.div
-						className="flex items-end gap-[6px] mb-4"
-						title="Writing activity — last 7 days"
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						transition={{ duration: 0.3, delay: 0.45 }}
-					>
-						{last7DaysActivity.map(({ active, intensity }, i) => {
-							const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
-							const todayDow = new Date().getDay()
-							const label = DAY_LABELS[((todayDow - 6 + i) % 7 + 7) % 7]
-							const isToday = i === 6
-							const accentPct = active ? Math.round(15 + intensity * 30) : 0
-							const borderPct = active ? Math.round(25 + intensity * 25) : 0
-							return (
-								<div key={i} className="flex flex-col items-center gap-[5px]">
-									<motion.div
-										className="w-[30px] h-[30px] rounded-lg flex items-center justify-center"
-										style={{
-											background: active
-												? `color-mix(in srgb, var(--accent) ${accentPct}%, transparent)`
-												: 'var(--glass-bg)',
-											border: `1.5px solid ${active
-												? `color-mix(in srgb, var(--accent) ${borderPct}%, transparent)`
-												: isToday
-													? 'color-mix(in srgb, var(--accent) 30%, var(--glass-border))'
-													: 'var(--glass-border)'}`,
-											backdropFilter: 'blur(var(--glass-blur))',
-											WebkitBackdropFilter: 'blur(var(--glass-blur))',
-										}}
-										initial={{ scale: 0.85, opacity: 0 }}
-										animate={isToday && !active 
-											? { scale: [1, 1.06, 1], opacity: 1 }
-											: { scale: 1, opacity: 1 }
-										}
-										transition={isToday && !active
-											? { scale: { duration: 3, repeat: Infinity, ease: 'easeInOut' }, opacity: { duration: 0.35 } }
-											: { delay: i * 0.06, duration: 0.35, ease: [0.25, 1, 0.5, 1] }
-										}
-									>
-										{active && (
-											<motion.span
-												initial={{ scale: 0 }}
-												animate={{ scale: 1 }}
-												transition={{ delay: i * 0.06 + 0.15, type: 'spring', stiffness: 420, damping: 18 }}
-											>
-												<Icon icon={FireIcon} size={13} strokeWidth={2} style={{ color: 'var(--accent)', opacity: 0.6 + intensity * 0.4 }} />
-											</motion.span>
-										)}
-									</motion.div>
-									<span
-										className="text-[10px] font-semibold uppercase tracking-wider"
-										style={{
-											fontFamily: 'var(--font-body)',
-											color: isToday ? 'var(--accent)' : 'var(--text-muted)',
-											opacity: isToday ? 1 : 0.5,
-										}}
-									>
-										{label}
-									</span>
-								</div>
-							)
-						})}
-					</motion.div>
+				<div className="grid grid-cols-3 border-b-[1.5px] border-[var(--ink)]">
+					<CompactStatCell label="Notes" value={compactNumber(fileNotes.length)} />
+					<CompactStatCell label="Streak" value={String(streak)} />
+					<CompactStatCell label="Words" value={compactNumber(totalWords)} />
 				</div>
 
-				<div className="animate-fade-in-up-delay-2 mt-3 mb-5 flex items-center justify-center w-full max-w-md">
-					<div className="flex items-center gap-3 w-full justify-center px-4 sm:px-0">
-						<motion.button
-							onClick={() => onNewNote?.()}
-							whileHover={{ scale: 1.03, y: -1 }}
-							whileTap={{ scale: 0.95, y: 1 }}
-							className="glass-accent group relative inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] px-3 py-4 text-[14px] font-medium text-white transition-[transform,filter,box-shadow] duration-300 hover:brightness-110 active:scale-[0.96] sm:px-6 sm:text-[15px]"
-							style={{ fontFamily: 'var(--font-body)' }}
-						>
-							<Icon
-								icon={Add01Icon}
-								size={20}
-								strokeWidth={2.5}
-								className="shrink-0 transition-transform duration-300 group-hover:rotate-90"
-								style={{ filter: 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.6))' }}
-							/>
-							<span className="truncate tracking-wide">New Note</span>
-						</motion.button>
-						<motion.button
-							onClick={() => onCreateDailyNote?.()}
-							whileHover={{ scale: 1.03, y: -1 }}
-							whileTap={{ scale: 0.95, y: 1 }}
-							className="glass-ghost group relative inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl px-3 py-4 text-[14px] font-medium text-[var(--accent)] transition-[transform,background-color,border-color,box-shadow] duration-300 hover:bg-[var(--accent)]/15 hover:border-[var(--accent)]/30 active:scale-[0.96] sm:px-6 sm:text-[15px]"
-							style={{ fontFamily: 'var(--font-body)' }}
-						>
-							<Icon
-								icon={Calendar01Icon}
-								size={20}
-								strokeWidth={2}
-								className="shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5"
-							/>
-							<span className="truncate tracking-wide">Daily Note</span>
-						</motion.button>
+				<div className="grid grid-cols-2 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+					<button
+						type="button"
+						onClick={onNewNote}
+						className="btn-stamp btn-stamp-inverse h-14 rounded-none border-r-[1.5px] border-[var(--ink)] !shadow-none"
+					>
+						<Icon icon={Add01Icon} size={14} strokeWidth={2} />
+						New note
+					</button>
+					<button
+						type="button"
+						onClick={onCreateDailyNote}
+						className="btn-stamp btn-stamp-accent h-14 rounded-none border-[var(--ink)] !shadow-none"
+					>
+						<Icon icon={Calendar01Icon} size={14} strokeWidth={2} />
+						Daily
+					</button>
+				</div>
+
+				{featuredCompactNote ? (
+					<CompactFeaturedNote note={featuredCompactNote} onOpen={() => onSelectNote(featuredCompactNote.id)} />
+				) : (
+					<CompactEmptyState onNewNote={onNewNote} />
+				)}
+
+				<section className="border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-primary)]">
+					<div className="flex items-center justify-between border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-5 py-3">
+						<span className="label-mono-strong">Queue</span>
+						<span className="label-mono">{compactNumber(recentAndPinned.length)} files</span>
 					</div>
-				</div>
+					{compactQueue.length > 0 ? (
+						compactQueue.map((note, index) => (
+							<div key={note.id} className="border-b border-[var(--border-subtle)] last:border-b-0">
+								<CompactRecentRow note={note} index={index + 2} onOpen={() => onSelectNote(note.id)} />
+							</div>
+						))
+					) : featuredCompactNote ? (
+						<div className="px-5 py-5">
+							<p className="label-mono">No other recent notes yet.</p>
+						</div>
+					) : (
+						<div className="px-5 py-5">
+							<p className="label-mono">Your queue will build itself as soon as you start writing.</p>
+						</div>
+					)}
+				</section>
+			</div>
 
-				{/* ── Mobile Tab View ─────────────────────────────────── */}
-				<div
-					className="animate-fade-in-up-delay-2 mt-4 w-full px-4 md:hidden"
-					style={{ fontFamily: 'var(--font-body)' }}
-				>
-					{/* Tab bar — editorial treatment */}
-					<div className="relative mb-8 flex">
+			<div className="hidden lg:flex lg:flex-1 lg:min-h-0 lg:flex-col">
+				{/* ── Dashboard grid: greeting | stats ── */}
+				<div className="grid grid-cols-1 md:grid-cols-[1fr_minmax(280px,420px)] border-b-[1.5px] border-[var(--ink)]">
+					{/* Greeting */}
+					<div className="px-6 py-8 md:py-10 border-b md:border-b-0 md:border-r-[1.5px] border-[var(--ink)] bg-[var(--bg-primary)]">
+						<h1 className="title-script text-[56px] md:text-[72px] leading-none mb-3">
+							{greeting}.
+						</h1>
+						<p className="label-mono">
+							{dateLabel} — {motto}
+						</p>
+					</div>
+
+					{/* Stats + Actions */}
+					<div className="grid grid-cols-3 grid-rows-[1fr_auto] bg-[var(--bg-surface)] self-stretch">
+						<StatBlock label="Notes" value={compactNumber(fileNotes.length)} />
+						<StatBlock label="Streak" value={String(streak)} />
+						<StatBlock label="Words" value={compactNumber(totalWords)} />
+
 						<button
 							type="button"
-							onClick={() => setHomeTab('recent')}
-							className="relative flex flex-1 items-center justify-center gap-2 pb-3 text-[14px] font-semibold tracking-wide transition-colors duration-150"
-							style={{
-								color: homeTab === 'recent' ? 'var(--text-primary)' : 'var(--text-muted)',
-								fontFamily: 'var(--font-display)',
-							}}
+							onClick={onNewNote}
+							className="btn-stamp btn-stamp-ghost border-r-[1.5px] border-t-[1.5px] border-[var(--ink)] !shadow-none rounded-none h-12 col-span-1"
 						>
-							<Icon
-								icon={Clock01Icon}
-								size={17}
-								strokeWidth={2}
-								style={{
-									color: homeTab === 'recent' ? 'var(--accent)' : 'var(--text-muted)',
-									transition: 'color 150ms'
-								}}
-							/>
-							Recent
-							{homeTab === 'recent' && (
-								<motion.div
-									layoutId="home-tab-underline"
-									className="absolute bottom-0 left-[10%] right-[10%] h-[2px] rounded-full bg-[var(--accent)]"
-									transition={{ type: 'spring', duration: 0.4, bounce: 0.15 }}
-								/>
-							)}
+							<Icon icon={Add01Icon} size={14} strokeWidth={2} />
+							New
 						</button>
 						<button
 							type="button"
-							onClick={() => setHomeTab('favorites')}
-							className="relative flex flex-1 items-center justify-center gap-2 pb-3 text-[14px] font-semibold tracking-wide transition-colors duration-150"
-							style={{
-								color: homeTab === 'favorites' ? 'var(--text-primary)' : 'var(--text-muted)',
-								fontFamily: 'var(--font-display)',
-							}}
+							onClick={onCreateDailyNote}
+							className="btn-stamp btn-stamp-accent border-t-[1.5px] border-[var(--ink)] !shadow-none rounded-none h-12 col-span-2 justify-center"
 						>
-							<Icon
-								icon={StarIcon}
-								size={17}
-								strokeWidth={2}
-								style={{
-									color: homeTab === 'favorites' ? 'var(--warning)' : 'var(--text-muted)',
-									transition: 'color 150ms'
-								}}
-							/>
-							Favorites
-							{homeTab === 'favorites' && (
-								<motion.div
-									layoutId="home-tab-underline"
-									className="absolute bottom-0 left-[10%] right-[10%] h-[2px] rounded-full bg-[var(--accent)]"
-									transition={{ type: 'spring', duration: 0.4, bounce: 0.15 }}
-								/>
-							)}
+							<Icon icon={Calendar01Icon} size={14} strokeWidth={2} />
+							Daily
 						</button>
 					</div>
+				</div>
 
-					{/* Tab content with AnimatePresence crossfade */}
-					<div className="relative overflow-hidden">
-						<AnimatePresence mode="wait" initial={false}>
-							{homeTab === 'recent' ? (
-								<motion.div
-									key="recent"
-									initial={{ opacity: 0, x: -16, filter: 'blur(4px)' }}
-									animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-									exit={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
-									transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-								>
-									{recentNotes.length > 0 ? (
-										<div className="flex flex-col gap-3">
-											{recentNotes.map((n, i) => {
-												const isDaily = n.tags?.includes('daily');
-												const rawTitle = getNoteDisplayTitle(n);
-												const date = new Date(n.updatedAt || n.createdAt);
-												const displayTitle = isDaily ? formatDailyTitle(rawTitle) : rawTitle;
-												return (
-													<motion.button
-														key={n.id}
-														type="button"
-														onClick={() => onSelectNote(n.id)}
-														className="group relative w-full text-left rounded-2xl px-4 py-4 transition-[transform,background-color,box-shadow,border-color] duration-[180ms] hover:-translate-y-1.5 hover:scale-[1.02] hover:shadow-[0_8px_30px_-6px_color-mix(in_srgb,var(--accent)_25%,transparent)] hover:border-[color-mix(in_srgb,var(--accent)_60%,var(--glass-border))] hover:bg-[color-mix(in_srgb,var(--accent)_6%,var(--glass-bg))] active:scale-[0.97] active:shadow-none focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
-														initial={{ opacity: 0, y: 10 }}
-														animate={{ opacity: 1, y: 0 }}
-														transition={{
-															duration: 0.35,
-															delay: i * 0.06,
-															ease: [0.23, 1, 0.32, 1]
-														}}
-														style={{
-															WebkitTapHighlightColor: 'transparent',
-															background: 'var(--glass-bg)',
-															border: '1px solid var(--glass-border)',
-															transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
-														}}
-													>
-														{/* Accent dot for first item */}
-														{i === 0 && (
-															<div
-																className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-8 rounded-full transition-[height] duration-[180ms] group-hover:h-full"
-																style={{ background: 'var(--accent)', transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
-															/>
-														)}
-														<div className="flex min-w-0 flex-col gap-1.5">
-															<div className="flex items-baseline justify-between gap-3">
-																<span className="truncate text-[15px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-[180ms] group-hover:text-[var(--accent)]" style={{ fontFamily: 'var(--font-body)' }}>
-																	{displayTitle}
-																</span>
-																<span className="shrink-0 text-[11px] font-medium text-[var(--text-muted)] tabular-nums transition-colors duration-[180ms] group-hover:text-[var(--text-secondary)]">
-																	{formatRelativeTime(date)}
-																</span>
-															</div>
-														</div>
-													</motion.button>
-												);
-											})}
-										</div>
-									) : (
-										<div className="flex flex-col justify-center min-h-[260px]">
-											<FirstNotePrompt />
-										</div>
-									)}
-								</motion.div>
+				{/* ── Recent + Preview ── */}
+				<div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_minmax(320px,460px)] min-h-0">
+					{/* Recent / Pinned list */}
+					<div className="flex flex-col border-b md:border-b-0 md:border-r-[1.5px] border-[var(--ink)] min-h-0">
+						<div className="flex items-center justify-between px-6 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+							<span className="label-mono-strong">Recent</span>
+						</div>
+						<div className="flex-1 overflow-y-auto">
+							{recentAndPinned.length === 0 ? (
+								<EmptyRecent onNewNote={onNewNote} />
 							) : (
-								<motion.div
-									key="favorites"
-									initial={{ opacity: 0, x: 16, filter: 'blur(4px)' }}
-									animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-									exit={{ opacity: 0, x: -16, filter: 'blur(4px)' }}
-									transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-								>
-									{favoriteNotes.length > 0 ? (
-										<div className="flex flex-col gap-3">
-											{(favExpanded ? favoriteNotes : favoriteNotes.slice(0, 4)).map((n, i) => {
-												const isDaily = n.tags?.includes('daily');
-												const rawTitle = getNoteDisplayTitle(n);
-												const date = new Date(n.updatedAt || n.createdAt);
-												const displayTitle = isDaily ? formatDailyTitle(rawTitle) : rawTitle;
-												return (
-													<motion.button
-														key={n.id}
-														type="button"
-														onClick={() => onSelectNote(n.id)}
-														initial={{ opacity: 0, y: 10 }}
-														animate={{ opacity: 1, y: 0 }}
-														transition={{
-															duration: 0.35,
-															delay: i * 0.06,
-															ease: [0.23, 1, 0.32, 1]
-														}}
-														className="group relative w-full text-left rounded-2xl px-4 py-4 transition-[transform,background-color,box-shadow,border-color] duration-[180ms] hover:-translate-y-1.5 hover:scale-[1.02] hover:shadow-[0_8px_30px_-6px_color-mix(in_srgb,var(--accent)_25%,transparent)] hover:border-[color-mix(in_srgb,var(--accent)_60%,var(--glass-border))] hover:bg-[color-mix(in_srgb,var(--accent)_6%,var(--glass-bg))] active:scale-[0.97] active:shadow-none focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
-														style={{
-															WebkitTapHighlightColor: 'transparent',
-															background: 'var(--glass-bg)',
-															border: '1px solid var(--glass-border)',
-															transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
-														}}
-													>
-														<div className="flex min-w-0 flex-col gap-1.5">
-															<div className="flex items-center gap-2">
-																<Icon
-																	icon={StarIcon}
-																	size={12}
-																	strokeWidth={2.5}
-																	className="transition-[opacity,transform] duration-[180ms] group-hover:opacity-100 group-hover:scale-110"
-																	style={{ color: 'var(--warning)', opacity: 0.5 }}
-																/>
-																<span className="truncate text-[15px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-[180ms] group-hover:text-[var(--accent)]" style={{ fontFamily: 'var(--font-body)' }}>
-																	{displayTitle}
-																</span>
-															</div>
-															<div className="flex items-center gap-2 text-[11px] text-[var(--text-muted)]">
-																<span className="tabular-nums font-medium transition-colors duration-[180ms] group-hover:text-[var(--text-secondary)]">{formatRelativeTime(date)}</span>
-															</div>
-														</div>
-													</motion.button>
-												);
-											})}
-											{favoriteNotes.length > 4 && (
-												<button
-													type="button"
-													onClick={() => setFavExpanded((v) => !v)}
-													className="mt-1 w-full rounded-xl py-2.5 text-[12px] font-semibold tracking-wide text-[var(--text-muted)] transition-[color,background-color] duration-150 hover:text-[var(--text-primary)] active:scale-[0.97]"
-													style={{
-														WebkitTapHighlightColor: 'transparent',
-														fontFamily: '"Outfit", sans-serif',
-													}}
-												>
-													{favExpanded ? 'Show less' : `Show more (${favoriteNotes.length - 4})`}
-												</button>
-											)}
-										</div>
-									) : (
-										<div className="flex flex-col justify-center min-h-[260px]">
-											<FavoritesEmptyPrompt />
-										</div>
-									)}
-								</motion.div>
+								recentAndPinned.map((note) => (
+									<RecentRow
+										key={note.id}
+										note={note}
+										onSelect={() => onSelectNote(note.id)}
+										onHover={() => setHoveredId(note.id)}
+										onLeave={() => setHoveredId(null)}
+									/>
+								))
 							)}
-						</AnimatePresence>
-					</div>
-				</div>
-
-				{/* ── Desktop Two-Column View — Bolder layout ───────────────── */}
-				<div
-					className="animate-fade-in-up-delay-2 mt-12 w-full max-w-[1200px] hidden md:grid md:grid-cols-[3fr_5fr] lg:grid-cols-[3fr_5fr] gap-8 lg:gap-12 px-8"
-					style={{ fontFamily: 'var(--font-body)' }}
-				>
-					{/* ── Recent Column — Editorial timeline ────────────────── */}
-					<div className="flex flex-col">
-						{/* Section header — bold display type with accent line */}
-						<div className="mb-6 flex items-center gap-3 pb-4" style={{ borderBottom: '1px solid color-mix(in srgb, var(--border-subtle) 60%, transparent)' }}>
-							<Icon icon={Clock01Icon} size={18} strokeWidth={2} style={{ color: 'var(--accent)', opacity: 0.8 }} />
-							<h2
-								className="text-[18px] font-bold tracking-tight text-[var(--text-primary)]"
-								style={{ fontFamily: 'var(--font-display)' }}
-							>
-								Recent
-							</h2>
 						</div>
-
-						{recentNotes.length > 0 ? (
-							<div className="flex flex-col">
-								{recentNotes.map((n, i) => {
-									const isDaily = n.tags?.includes('daily');
-									const rawTitle = getNoteDisplayTitle(n);
-									const date = new Date(n.updatedAt || n.createdAt);
-									const displayTitle = isDaily ? formatDailyTitle(rawTitle) : rawTitle;
-
-									return (
-										<motion.button
-											key={n.id}
-											type="button"
-											onClick={() => onSelectNote(n.id)}
-											initial={{ opacity: 0, x: -12 }}
-											animate={{ opacity: 1, x: 0 }}
-											transition={{ duration: 0.4, delay: i * 0.07, ease: [0.23, 1, 0.32, 1] }}
-											className="group relative flex items-start gap-4 py-4 text-left transition-[background-color,transform,box-shadow] duration-[180ms] hover:bg-[color-mix(in_srgb,var(--accent)_6%,var(--glass-bg))] hover:-translate-y-1 hover:shadow-[0_6px_24px_-6px_color-mix(in_srgb,var(--accent)_20%,transparent)] active:scale-[0.97] rounded-xl px-3 focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
-											style={{ WebkitTapHighlightColor: 'transparent', transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
-										>
-											{/* Timeline dot + line */}
-											<div className="relative flex flex-col items-center shrink-0 pt-1.5">
-												{i === 0 ? (
-													<motion.div
-														className="w-2 h-2 rounded-full ring-2 ring-[var(--bg-primary)] shrink-0"
-														style={{ background: 'var(--accent)' }}
-														animate={{ scale: [1, 1.5, 1], opacity: [1, 0.7, 1] }}
-														transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-													/>
-												) : (
-													<div
-														className="w-2.5 h-2.5 rounded-full ring-2 ring-[var(--bg-primary)] shrink-0 transition-[background-color,opacity,box-shadow,transform] duration-[180ms] group-hover:scale-125 group-hover:opacity-100 group-hover:shadow-[0_0_8px_color-mix(in_srgb,var(--accent)_40%,transparent)]"
-														style={{
-															background: 'var(--text-muted)',
-															opacity: 0.4,
-															transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
-														}}
-													/>
-												)}
-												{i < recentNotes.length - 1 && (
-													<div
-														className="w-px flex-1 mt-1.5 rounded-full"
-														style={{
-															background: 'var(--border-subtle)',
-															minHeight: '32px',
-														}}
-													/>
-												)}
-											</div>
-
-											{/* Content */}
-											<div className="flex min-w-0 flex-1 flex-col gap-1 py-0.5">
-												<span
-													className="truncate text-[15px] font-semibold tracking-tight transition-colors duration-[180ms] group-hover:text-[var(--accent)]"
-													style={{
-														color: i === 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
-													}}
-												>
-													{displayTitle}
-												</span>
-												<div className="flex items-center gap-2 mt-0.5">
-													<span className="text-[10px] font-semibold uppercase tracking-wider tabular-nums transition-opacity duration-[180ms] group-hover:opacity-100" style={{ color: 'var(--accent)', opacity: 0.55 }}>
-														{formatRelativeTime(date)}
-													</span>
-												</div>
-											</div>
-
-											{/* Arrow hint */}
-											<div className="shrink-0 self-center opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-[opacity,transform] duration-[180ms]" style={{ transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}>
-												<svg
-													width="18"
-													height="18"
-													viewBox="0 0 16 16"
-													fill="none"
-													aria-hidden="true"
-													style={{ color: 'var(--accent)' }}
-												>
-													<path
-														d="M6 4l4 4-4 4"
-														stroke="currentColor"
-														strokeWidth="2"
-														strokeLinecap="round"
-														strokeLinejoin="round"
-													/>
-												</svg>
-											</div>
-										</motion.button>
-									);
-								})}
-							</div>
-						) : (
-							<div className="flex flex-1 flex-col justify-center min-h-[300px]">
-								<FirstNotePrompt />
-							</div>
-						)}
 					</div>
 
-					{/* ── Favorites Column — Statement cards ───────────────── */}
-					<div className="flex flex-col">
-						{/* Section header — bold with star accent */}
-						<div className="mb-6 flex items-center gap-3 pb-4" style={{ borderBottom: '1px solid color-mix(in srgb, var(--warning) 25%, var(--border-subtle))' }}>
-							<Icon icon={StarIcon} size={18} strokeWidth={2.5} style={{ color: 'var(--warning)', opacity: 0.85 }} />
-							<h2
-								className="text-[18px] font-bold tracking-tight text-[var(--text-primary)]"
-								style={{ fontFamily: 'var(--font-display)' }}
-							>
-								Favorites
-							</h2>
+					{/* Preview pane */}
+					<div className="flex flex-col bg-[var(--bg-primary)] min-h-0">
+						<div className="flex items-center justify-between px-6 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+							<span className="label-mono-strong">Preview</span>
+							{previewNote && (
+								<button
+									type="button"
+									onClick={() => onSelectNote(previewNote.id)}
+									className="label-mono-strong text-[var(--accent)] inline-flex items-center gap-1 hover:underline"
+								>
+									Open <Icon icon={ArrowRight01Icon} size={12} strokeWidth={2} />
+								</button>
+							)}
 						</div>
 
-						{favoriteNotes.length > 0 ? (
-							<div className="grid grid-cols-2 gap-4">
-								{favoriteNotes.map((n, i) => {
-									const isDaily = n.tags?.includes('daily');
-									const rawTitle = getNoteDisplayTitle(n);
-									const date = new Date(n.updatedAt || n.createdAt);
-									const displayTitle = isDaily ? formatDailyTitle(rawTitle) : rawTitle;
-
-									return (
-										<motion.button
-											key={n.id}
-											type="button"
-											onClick={() => onSelectNote(n.id)}
-											initial={{ opacity: 0, scale: 0.96, y: 8 }}
-											animate={{ opacity: 1, scale: 1, y: 0 }}
-											transition={{ duration: 0.4, delay: i * 0.07, ease: [0.23, 1, 0.32, 1] }}
-											className="group relative flex flex-col justify-between overflow-hidden rounded-2xl px-5 py-5 text-left shadow-md transition-[transform,box-shadow,border-color,background-color] duration-[180ms] hover:shadow-[0_12px_36px_-8px_color-mix(in_srgb,var(--accent)_30%,transparent)] hover:border-[color-mix(in_srgb,var(--accent)_60%,var(--glass-border))] hover:bg-[color-mix(in_srgb,var(--accent)_6%,var(--glass-bg))] active:scale-[0.97] active:shadow-none focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
-											style={{
-												WebkitTapHighlightColor: 'transparent',
-												minHeight: '130px',
-												background: 'var(--glass-bg)',
-												border: '1px solid var(--glass-border)',
-												backdropFilter: 'blur(var(--glass-blur))',
-												WebkitBackdropFilter: 'blur(var(--glass-blur))',
-												transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
-											}}
-											whileHover={{ y: -6, scale: 1.02, transition: { duration: 0.18, ease: [0.23, 1, 0.32, 1] } }}
-										>
-											{/* Top row: star + time */}
-											<div className="flex w-full items-center justify-between mb-3">
-												<Icon
-													icon={StarIcon}
-													size={14}
-													strokeWidth={2.5}
-													className="transition-[opacity,transform] duration-[180ms] group-hover:opacity-100 group-hover:scale-125"
-													style={{ color: 'var(--warning)', opacity: 0.45 }}
-												/>
-												<span className="text-[11px] font-semibold tabular-nums transition-[color,opacity] duration-[180ms] group-hover:opacity-100 group-hover:text-[var(--text-secondary)]" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>
-													{formatRelativeTime(date)}
-												</span>
-											</div>
-
-											{/* Title — larger, bolder */}
-											<span
-												className="relative z-10 block truncate text-[17px] font-bold tracking-tight transition-colors duration-[180ms] group-hover:text-[var(--accent)]"
-												style={{
-													color: 'var(--text-secondary)',
-													lineHeight: 1.3,
-												}}
-											>
-												{displayTitle}
-											</span>
-
-											{/* Bottom: daily badge */}
-											<div className="relative z-10 flex items-center gap-2 mt-3">
-												{isDaily && (
-													<span
-														className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-[background-color] duration-[180ms] group-hover:bg-[color-mix(in_srgb,var(--accent)_20%,transparent)]"
-														style={{
-															background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
-															color: 'var(--accent)',
-														}}
-													>
-														Daily
-													</span>
-												)}
-											</div>
-										</motion.button>
-									);
-								})}
-							</div>
+						{previewNote ? (
+							<PreviewPane note={previewNote} onOpen={() => onSelectNote(previewNote.id)} />
 						) : (
-							<div className="flex flex-1 flex-col justify-center min-h-[300px]">
-								<FavoritesEmptyPrompt />
-							</div>
+							<EmptyPreview />
 						)}
+
 					</div>
 				</div>
 			</div>
-		</motion.div>
+		</div>
+	);
+}
+
+function StatBlock({ label, value }: { label: string; value: string }) {
+	return (
+		<div className="flex flex-col items-start justify-center px-4 py-5 border-r-[1.5px] last:border-r-0 border-[var(--ink)] bg-[var(--bg-surface)]">
+			<div className="font-mono font-bold text-[28px] md:text-[34px] leading-none text-[var(--ink)]">
+				{value}
+			</div>
+			<div className="label-mono mt-2">{label}</div>
+		</div>
+	);
+}
+
+function RecentRow({
+	note,
+	onSelect,
+	onHover,
+	onLeave,
+}: {
+	note: NoteFile;
+	onSelect: () => void;
+	onHover: () => void;
+	onLeave: () => void;
+}) {
+	return (
+		<button
+			type="button"
+			onClick={onSelect}
+			onMouseEnter={onHover}
+			onMouseLeave={onLeave}
+			className="flex items-center w-full gap-3 px-6 py-4 text-left border-b border-[var(--border-subtle)] hover:bg-[var(--bg-hover)] transition-colors"
+		>
+			<span className="block w-1.5 h-1.5 border border-[var(--text-muted)] flex-shrink-0" aria-hidden />
+			<span className="flex-1 font-mono text-[14px] font-medium truncate text-[var(--ink)]">
+				{getNoteDisplayTitle(note)}
+			</span>
+			<span className="label-mono">{formatRelativeTime(new Date(note.updatedAt || note.createdAt))}</span>
+		</button>
+	);
+}
+
+function PreviewPane({ note, onOpen }: { note: NoteFile; onOpen: () => void }) {
+	const updated = formatRelativeTime(new Date(note.updatedAt || note.createdAt));
+	const preview = plainTextPreview(note.content);
+	return (
+		<div className="flex-1 overflow-y-auto">
+			{/* Title block — inverted */}
+			<button
+				type="button"
+				onClick={onOpen}
+				className="block w-full text-left px-6 py-5 surface-inverse border-b-[1.5px] border-[var(--ink)] hover:bg-[var(--ink-soft)] transition-colors"
+			>
+				<div className="title-script text-[36px] mb-1" style={{ color: 'var(--text-inverse)' }}>
+					{getNoteDisplayTitle(note)}
+				</div>
+				<div className="label-mono" style={{ color: 'rgba(245,241,230,0.6)' }}>
+					Updated {updated} ago
+				</div>
+			</button>
+
+			<div className="px-6 py-5 space-y-3">
+				{preview ? (
+					<pre className="whitespace-pre-wrap font-[var(--font-prose)] text-[14px] leading-relaxed text-[var(--text-secondary)]">
+						{preview}
+					</pre>
+				) : (
+					<p className="label-mono">No content yet.</p>
+				)}
+			</div>
+		</div>
+	);
+}
+
+function EmptyRecent({ onNewNote }: { onNewNote: () => void }) {
+	return (
+		<div className="flex flex-col items-center justify-center h-full py-16 px-6 gap-5">
+			<div className="panel-bordered px-5 py-3 label-mono-strong">[ Nothing here ]</div>
+			<p className="label-mono text-center max-w-xs">
+				Start a note and it shows up here. Pin it with <span className="text-[var(--ink)]">★</span> to keep it on top.
+			</p>
+			<button type="button" onClick={onNewNote} className="btn-stamp btn-stamp-accent">
+				<Icon icon={Add01Icon} size={14} strokeWidth={2} />
+				New note
+			</button>
+		</div>
+	);
+}
+
+function EmptyPreview() {
+	return (
+		<div className="flex-1 flex flex-col items-center justify-center px-6 gap-3">
+			<div className="title-script text-[40px] text-[var(--text-muted)]">empty.</div>
+			<p className="label-mono text-center">Hover a note to peek inside.</p>
+		</div>
 	);
 }

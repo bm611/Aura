@@ -1,8 +1,7 @@
-// ─── Accent Color Palettes ──────────────────────────────────────────────────
-// Each palette provides separate values for dark and light themes.
-// `accent`      → --accent (primary interactive color)
-// `accentHover` → --accent-hover (slightly lighter/brighter on hover)
-// `colorH1`     → --color-h1 (heading level 1 — mirrors accent by convention)
+// ─── Brutalist Accent Palette ────────────────────────────────────────────────
+// Single light-mode brutalist look. Each swatch overrides --accent on the
+// document root. Both dark/light fields kept for API compatibility but
+// resolve to the same value.
 
 interface AccentThemeValues {
   accent: string
@@ -17,71 +16,59 @@ export interface AccentColor {
   light: AccentThemeValues
 }
 
+const swatch = (accent: string, accentHover: string): AccentColor['light'] => ({
+  accent,
+  accentHover,
+  colorH1: '#0a0a0a',
+})
+
 export const ACCENT_COLORS: AccentColor[] = [
   {
-    id: 'rust',
-    label: 'Rust',
-    dark:  { accent: '#d4714a', accentHover: '#e08560', colorH1: '#d4714a' },
-    light: { accent: '#b85c38', accentHover: '#cc7048', colorH1: '#b85c38' },
+    id: 'violet',
+    label: 'Violet',
+    dark:  swatch('#5d3fd3', '#4a2fb8'),
+    light: swatch('#5d3fd3', '#4a2fb8'),
   },
   {
-    id: 'rose',
-    label: 'Rose',
-    dark:  { accent: '#e07a8a', accentHover: '#f0909f', colorH1: '#e07a8a' },
-    light: { accent: '#c4566a', accentHover: '#d87080', colorH1: '#c4566a' },
+    id: 'ink',
+    label: 'Ink',
+    dark:  swatch('#0a0a0a', '#2a2a2a'),
+    light: swatch('#0a0a0a', '#2a2a2a'),
   },
   {
-    id: 'lavender',
-    label: 'Lavender',
-    dark:  { accent: '#a893ce', accentHover: '#bcabdf', colorH1: '#a893ce' },
-    light: { accent: '#7a5ea8', accentHover: '#9070bf', colorH1: '#7a5ea8' },
+    id: 'vermilion',
+    label: 'Vermilion',
+    dark:  swatch('#c43d3d', '#a02a2a'),
+    light: swatch('#c43d3d', '#a02a2a'),
   },
   {
-    id: 'teal',
-    label: 'Teal',
-    dark:  { accent: '#5ea8c8', accentHover: '#74c2e0', colorH1: '#5ea8c8' },
-    light: { accent: '#3a7a9c', accentHover: '#4e8fb5', colorH1: '#3a7a9c' },
-  },
-  {
-    id: 'amber',
-    label: 'Amber',
-    dark:  { accent: '#d4a24e', accentHover: '#e8b860', colorH1: '#d4a24e' },
-    light: { accent: '#a07830', accentHover: '#b88c40', colorH1: '#a07830' },
+    id: 'ochre',
+    label: 'Ochre',
+    dark:  swatch('#b8821a', '#8e6510'),
+    light: swatch('#b8821a', '#8e6510'),
   },
   {
     id: 'sage',
     label: 'Sage',
-    dark:  { accent: '#7abc8a', accentHover: '#8ed0a0', colorH1: '#7abc8a' },
-    light: { accent: '#4a8a60', accentHover: '#5da070', colorH1: '#4a8a60' },
+    dark:  swatch('#3a7a52', '#285a3c'),
+    light: swatch('#3a7a52', '#285a3c'),
   },
   {
-    id: 'coral',
-    label: 'Coral',
-    dark:  { accent: '#e08a6a', accentHover: '#f0a080', colorH1: '#e08a6a' },
-    light: { accent: '#c06040', accentHover: '#d47858', colorH1: '#c06040' },
+    id: 'rose',
+    label: 'Rose',
+    dark:  swatch('#c4566a', '#a03e52'),
+    light: swatch('#c4566a', '#a03e52'),
   },
   {
-    id: 'sky',
-    label: 'Sky',
-    dark:  { accent: '#6ab0e0', accentHover: '#80c4f0', colorH1: '#6ab0e0' },
-    light: { accent: '#3a80b8', accentHover: '#5094cc', colorH1: '#3a80b8' },
+    id: 'teal',
+    label: 'Teal',
+    dark:  swatch('#1f5f5f', '#0e4040'),
+    light: swatch('#1f5f5f', '#0e4040'),
   },
   {
-    id: 'mauve',
-    label: 'Mauve',
-    dark:  { accent: '#c48abd', accentHover: '#d6a0d0', colorH1: '#c48abd' },
-    light: { accent: '#9a5e94', accentHover: '#b070a8', colorH1: '#9a5e94' },
-  },
-  {
-    id: 'mint',
-    label: 'Mint',
-    dark:  { accent: '#5ec4b0', accentHover: '#74d8c4', colorH1: '#5ec4b0' },
-    light: { accent: '#389880', accentHover: '#4cae96', colorH1: '#389880' },
-  },
-  {
-    id: 'peach',
-    label: 'Peach',
-    dark:  { accent: '#e0a080', accentHover: '#f0b494', colorH1: '#e0a080' },
-    light: { accent: '#b87858', accentHover: '#cc8e6e', colorH1: '#b87858' },
+    id: 'electric',
+    label: 'Electric',
+    dark:  swatch('#1e6dff', '#0050d8'),
+    light: swatch('#1e6dff', '#0050d8'),
   },
 ]

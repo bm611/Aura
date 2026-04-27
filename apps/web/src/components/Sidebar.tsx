@@ -514,6 +514,12 @@ function InlineCreator({ depth, type, onConfirm, onCancel }: InlineCreatorProps)
 
 // ─── Sidebar Component ────────────────────────────────────────────────────────
 
+const SIDEBAR_DOCKED_MIN_WIDTH = 1024
+
+function isCompactSidebarViewport() {
+  return typeof window !== 'undefined' && window.innerWidth < SIDEBAR_DOCKED_MIN_WIDTH
+}
+
 export default function Sidebar({
   tree,
   activeNoteId,
@@ -556,7 +562,7 @@ export default function Sidebar({
       onNewFolder?.(name, parentId)
     } else {
       const newNote = onNewNote({ title: name }, { parentId, activate: true })
-      if (newNote && window.innerWidth < 768) onToggleCollapse()
+      if (newNote && isCompactSidebarViewport()) onToggleCollapse()
     }
     setCreatingIn(null)
   }, [onNewFolder, onNewNote, onToggleCollapse])
@@ -657,20 +663,16 @@ export default function Sidebar({
     <>
       {/* Mobile backdrop — always in DOM so it can fade out */}
       <div
-        className={`fixed inset-0 z-30 md:hidden transition-[opacity,backdrop-filter] duration-300 ${collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+        className={`fixed inset-0 z-30 lg:hidden transition-[opacity,backdrop-filter] duration-300 ${collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
         style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: collapsed ? 'blur(0px)' : 'blur(4px)' }}
         onClick={onToggleCollapse}
       />
 
-      {/* On mobile this element is always 0-wide in the flex row; the aside is position:fixed and slides over the content */}
+      {/* In compact layouts this is a fixed overlay so the sidebar never squeezes the main content. */}
       <aside
-        className={`sidebar-vs
-          max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-40 max-md:h-dvh max-md:w-[80vw]
-          max-md:transition-transform max-md:duration-300 max-md:ease-out
-          ${collapsed ? 'max-md:-translate-x-full' : 'max-md:translate-x-0'}
-          md:relative md:z-auto md:h-dvh md:shrink-0 md:transition-[width] md:duration-300 md:ease-out`}
+        className={`sidebar-vs ${collapsed ? 'is-collapsed' : 'is-open'}`}
         style={{
-          width: typeof window !== 'undefined' && window.innerWidth < 768 ? undefined : (collapsed ? 0 : width),
+          width: isCompactSidebarViewport() ? undefined : (collapsed ? 0 : width),
         }}
       >
         <div className="flex flex-col h-full w-full min-w-[200px]">
@@ -697,7 +699,7 @@ export default function Sidebar({
               onClick={() => {
                 onViewChange?.('notes')
                 onSelectNote(null)
-                if (window.innerWidth < 768) onToggleCollapse()
+                if (isCompactSidebarViewport()) onToggleCollapse()
               }}
             >
               <span className="sb-nav-icon">
@@ -722,7 +724,7 @@ export default function Sidebar({
               className={`sb-nav-item${activeView === 'chat' ? ' is-active' : ''}`}
               onClick={() => {
                 onViewChange?.('chat')
-                if (window.innerWidth < 768) onToggleCollapse()
+                if (isCompactSidebarViewport()) onToggleCollapse()
               }}
             >
               <span className="sb-nav-icon">
@@ -817,7 +819,7 @@ export default function Sidebar({
                 activeId={activeNoteId}
                 onSelect={(id) => {
                   onSelectNote(id)
-                  if (window.innerWidth < 768) onToggleCollapse()
+                  if (isCompactSidebarViewport()) onToggleCollapse()
                 }}
                 onDelete={(id) => onDeleteNote(id)}
                 onRename={handleRename}
@@ -845,19 +847,7 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* Mobile close button */}
-        {!collapsed && (
-          <button
-            type="button"
-            onClick={onToggleCollapse}
-            className="absolute bottom-[calc(2.5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border border-(--border-subtle) bg-(--bg-elevated) text-(--text-primary) shadow-2xl backdrop-blur-xl transition-[transform,background-color,box-shadow] duration-150 ease-out after:absolute after:-inset-3 md:hidden active:scale-[0.92]"
-                         aria-label="Close sidebar"
-          >
-            <Icon icon={Cancel01Icon} size={24} stroke={2} />
-          </button>
-        )}
-
-        {onResizeStart && <div className="resize-handle max-md:hidden" onMouseDown={onResizeStart} />}
+        {onResizeStart && <div className="resize-handle hidden lg:block" onMouseDown={onResizeStart} />}
       </aside>
 
       <MoveToModal

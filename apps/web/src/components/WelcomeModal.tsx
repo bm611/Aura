@@ -32,16 +32,16 @@ function TipItem({
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
-      className="flex gap-4 p-4 rounded-xl bg-[var(--bg-surface)]/50 border border-[var(--border-subtle)]"
+      className="flex gap-4 p-4 panel-bordered"
     >
-      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[var(--accent)]/10 flex items-center justify-center">
-        <Icon icon={IconComponent} size={20} strokeWidth={2} style={{ color: 'var(--accent)' }} />
+      <div className="flex-shrink-0 w-10 h-10 border-[1.5px] border-[var(--ink)] bg-[var(--accent)] flex items-center justify-center">
+        <Icon icon={IconComponent} size={18} strokeWidth={2} style={{ color: 'var(--accent-text)' }} />
       </div>
       <div className="flex-1">
-        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1" style={{ fontFamily: 'var(--font-display)' }}>
+        <h3 className="text-[14px] font-semibold text-[var(--ink)] mb-1 font-mono uppercase tracking-wider">
           {title}
         </h3>
-        <p className="text-xs text-[var(--text-secondary)] leading-relaxed" style={{ fontFamily: 'var(--font-body)' }}>
+        <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-mono">
           {description}
         </p>
       </div>
@@ -73,7 +73,7 @@ export default function WelcomeModal({ open, onClose, onGetStarted }: WelcomeMod
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] bg-[rgba(10,10,10,0.4)]"
             onClick={onClose}
             aria-hidden="true"
           />
@@ -85,31 +85,32 @@ export default function WelcomeModal({ open, onClose, onGetStarted }: WelcomeMod
             role="dialog"
             aria-modal="true"
             aria-label="Welcome to Folio"
-            className="fixed left-1/2 top-1/2 z-[101] w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-2xl overflow-hidden"
+            className="fixed left-1/2 top-1/2 z-[101] w-full max-w-md -translate-x-1/2 -translate-y-1/2 border-[2px] border-[var(--ink)] bg-[var(--bg-elevated)] overflow-hidden"
+            style={{ boxShadow: 'var(--stamp-shadow-lg)' }}
           >
             <div className="p-6 sm:p-8">
               {/* Header */}
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-[var(--accent)]/10 flex items-center justify-center">
-                    <Icon icon={SparklesIcon} size={24} strokeWidth={2} style={{ color: 'var(--accent)' }} />
+                  <div className="w-12 h-12 border-[1.5px] border-[var(--ink)] bg-[var(--accent)] flex items-center justify-center">
+                    <Icon icon={SparklesIcon} size={22} strokeWidth={2} style={{ color: 'var(--accent-text)' }} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-display)' }}>
-                      Welcome to Folio!
+                    <h2 className="title-script text-[36px] leading-none">
+                      Welcome to Folio
                     </h2>
-                    <p className="text-sm text-[var(--text-secondary)]" style={{ fontFamily: 'var(--font-body)' }}>
-                      Your notes, beautifully organized.
+                    <p className="label-mono mt-1">
+                      Your notes, sharp and bordered.
                     </p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] transition-colors"
+                  className="btn-cell"
                   aria-label="Close"
                 >
-                  <Icon icon={Cancel01Icon} size={18} strokeWidth={1.5} />
+                  <Icon icon={Cancel01Icon} size={14} strokeWidth={1.5} />
                 </button>
               </div>
 
@@ -151,10 +152,9 @@ export default function WelcomeModal({ open, onClose, onGetStarted }: WelcomeMod
               <button
                 type="button"
                 onClick={handleGetStarted}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition-[transform,filter] duration-200 hover:brightness-110 active:scale-[0.96]"
-                style={{ fontFamily: 'var(--font-body)' }}
+                className="btn-stamp btn-stamp-accent w-full justify-center py-3"
               >
-                <Icon icon={SparklesIcon} size={18} strokeWidth={2} />
+                <Icon icon={SparklesIcon} size={14} strokeWidth={2} />
                 Get Started
               </button>
             </div>

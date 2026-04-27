@@ -118,38 +118,46 @@ export default function CommandPalette({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end md:items-start justify-center bg-[color-mix(in_srgb,var(--bg-deep)_60%,transparent)] px-0 md:px-4 pt-0 md:pt-[12vh] backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end md:items-start justify-center bg-[rgba(10,10,10,0.4)] px-0 md:px-4 pt-0 md:pt-[12vh]"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose()
         }
       }}
     >
-      <div className="w-full max-w-lg overflow-hidden rounded-t-2xl md:rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] max-md:max-h-[70vh] max-md:animate-[slideUpSheet_0.25s_ease-out] md:animate-ctx-fade-in" style={{ boxShadow: 'var(--dialog-shadow)', paddingBottom: 'env(safe-area-inset-bottom, 0px)', transformOrigin: 'top center' }}>
+      <div
+        className="w-full max-w-lg overflow-hidden border-[2px] border-[var(--ink)] bg-[var(--bg-elevated)] max-md:max-h-[70vh] max-md:animate-[slideUpSheet_0.18s_ease-out] md:animate-ctx-fade-in"
+        style={{
+          boxShadow: 'var(--stamp-shadow-lg)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          transformOrigin: 'top center',
+        }}
+      >
+        {/* Title strip */}
+        <div className="px-4 py-2 surface-inverse label-mono-strong" style={{ color: 'var(--text-inverse)' }}>
+          ⌘K · Command Palette
+        </div>
+
         {/* Search input */}
-        <div className="flex items-center gap-2.5 border-b border-[var(--border-subtle)] px-4 py-3">
-          <Icon icon={Search01Icon} size={15} stroke={1.5} className="shrink-0 text-[var(--text-muted)]" />
+        <div className="flex items-center gap-2.5 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-4 py-3">
+          <Icon icon={Search01Icon} size={15} stroke={1.5} className="shrink-0 text-[var(--ink)]" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="What are you looking for?"
-            className="w-full bg-transparent text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]"
+            className="w-full bg-transparent text-[13px] font-mono text-[var(--ink)] outline-none placeholder:text-[var(--text-muted)]"
           />
-          <kbd
-            className="shrink-0 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2 py-0.5 text-[10px] text-[var(--text-muted)]"
-          >
+          <kbd className="shrink-0 border-[1.5px] border-[var(--ink)] bg-[var(--bg-elevated)] px-2 py-0.5 text-[10px] uppercase tracking-wider font-mono text-[var(--ink)]">
             esc
           </kbd>
         </div>
 
         {/* Results */}
-        <div className="max-h-[50vh] overflow-y-auto p-1.5">
+        <div className="max-h-[50vh] overflow-y-auto">
           {items.length === 0 ? (
-            <div className="px-3 py-8 text-center text-sm text-[var(--text-muted)]">
-              Nothing matched — try a different search.
-            </div>
+            <div className="px-3 py-8 text-center label-mono">Nothing matched — try a different search.</div>
           ) : (
             <div>
               {sections.map((entry) => {
@@ -157,7 +165,7 @@ export default function CommandPalette({
                   return (
                     <div
                       key={entry.id}
-                      className="px-3 pt-3 pb-1 text-[10px] uppercase tracking-widest text-[var(--text-muted)]"
+                      className="px-4 pt-3 pb-1 label-mono border-t border-[var(--border-subtle)]"
                     >
                       {entry.label}
                     </div>
@@ -173,23 +181,22 @@ export default function CommandPalette({
                     type="button"
                     onMouseEnter={() => setActiveIndex(index)}
                     onClick={() => onSelectItem(item)}
-                    className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left transition-[background-color,color,border-color,box-shadow,transform] duration-150 active:scale-[0.98] ${
+                    className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors ${
                       isActive
-                        ? 'glass text-[var(--text-primary)]'
-                        : 'text-[var(--text-secondary)]'
+                        ? 'bg-[var(--bg-inverse)] text-[var(--text-inverse)]'
+                        : 'text-[var(--ink)] hover:bg-[var(--bg-hover)]'
                     }`}
                   >
                     <div className="flex min-w-0 items-center gap-2">
-                      {item.icon ? <span className="shrink-0 text-[var(--text-muted)]">{item.icon}</span> : null}
+                      {item.icon ? <span className="shrink-0">{item.icon}</span> : null}
                       <span
-                        className="truncate text-[13px] font-medium"
-                        style={{ fontFamily: '"Outfit", sans-serif' }}
+                        className="truncate text-[13px] font-mono"
                       >
                         {item.title}
                       </span>
                     </div>
                     {item.hint ? (
-                      <span className="shrink-0 text-[10px] text-[var(--text-muted)]">
+                      <span className="shrink-0 text-[10px] uppercase tracking-wider font-mono opacity-70">
                         {item.hint}
                       </span>
                     ) : null}

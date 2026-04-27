@@ -111,7 +111,7 @@ export default function HomeScreen({ navigation }: any) {
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: theme.spacing[5],
-          paddingBottom: 140,
+          paddingBottom: 110,
         }}
         showsVerticalScrollIndicator={false}
       >

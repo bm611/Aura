@@ -45,18 +45,19 @@
 .tag-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 7px 2px 8px;
-  border-radius: 999px;
-  font-family: var(--body-font);
+  gap: 6px;
+  padding: 3px 8px 3px 10px;
+  border-radius: 0;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.01em;
-  border: 1px solid;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  border: 1.5px solid var(--ink);
   cursor: default;
   user-select: none;
-  transition: opacity 150ms ease;
-  animation: tag-pop-in 0.18s var(--ease-out-quart) both;
+  transition: opacity 120ms ease;
+  animation: tag-pop-in 0.12s var(--ease-out-quart) both;
 }
 
 @media (max-width: 767px) {

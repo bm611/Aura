@@ -4,23 +4,19 @@ import { motion, AnimatePresence, useSpring, useMotionValue } from 'framer-motio
 
 import type { Editor } from '@tiptap/react';
 import {
-	Calendar01Icon,
 	CloudUploadIcon,
 	ArrowLeft01Icon,
-	StarIcon,
 	FireIcon,
 	File01Icon,
-	Download01Icon,
 	Home01Icon,
 	Folder01Icon,
 	ArrowRight01Icon,
 	SidebarLeftIcon,
-	Logout01Icon,
-	Tag01Icon,
 } from '@hugeicons/core-free-icons';
 
 import Icon from './Icon';
 import SettingsMenu from './SettingsMenu';
+import ProfilePanel from './ProfilePanel';
 import {
 	countBodyWords,
 	estimateReadTime,
@@ -114,121 +110,6 @@ interface NoteEditorProps {
 	onWideModeChange: (wide: boolean) => void;
 }
 
-// ─── Favorite Button Component ────────────────────────────────────────────────
-
-interface FavoriteButtonProps {
-	note: NoteFile;
-	onUpdateNote: (
-		id: string,
-		updates: Record<string, unknown>,
-		options?: { skipTimestamp?: boolean }
-	) => void;
-}
-
-function FavoriteButton({ note, onUpdateNote }: FavoriteButtonProps) {
-	const [isAnimating, setIsAnimating] = useState(false);
-	const isFavorite = (note.tags || []).includes('favorite');
-	
-	const sparkles = useMemo(() => {
-		return Array.from({ length: 6 }, (_, i) => ({
-			id: i,
-			angle: (i * 60) + Math.random() * 20 - 10,
-			distance: 24 + Math.random() * 8,
-			size: 2 + Math.random() * 2,
-			delay: i * 0.02,
-		}));
-	}, []);
-
-	const handleClick = () => {
-		const currentTags = note.tags || [];
-		const wasFavorite = currentTags.includes('favorite');
-		const newTags = wasFavorite
-			? currentTags.filter((t) => t !== 'favorite')
-			: [...currentTags, 'favorite'];
-		
-		onUpdateNote(note.id, { tags: newTags }, { skipTimestamp: true });
-		
-		if (!wasFavorite) {
-			setIsAnimating(true);
-			setTimeout(() => setIsAnimating(false), 600);
-		}
-	};
-
-	return (
-		<motion.button
-			type="button"
-			onClick={handleClick}
-			className="glass-icon hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg transition-[background-color,color,border-color,box-shadow] duration-150 ease-out after:absolute after:-inset-2"
-			style={{ color: isFavorite ? 'var(--warning)' : 'var(--text-muted)' }}
-			title={isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
-			whileTap={{ scale: 0.85 }}
-			animate={isAnimating ? {
-				scale: [1, 1.35, 0.95, 1.08, 1],
-				rotate: [0, -15, 12, -8, 4, 0],
-			} : {}}
-			transition={{
-				duration: 0.5,
-				ease: [0.25, 1, 0.5, 1],
-			}}
-		>
-			{/* Sparkle burst effect */}
-			<AnimatePresence>
-				{isAnimating && sparkles.map((sparkle) => (
-					<motion.span
-						key={sparkle.id}
-						className="absolute pointer-events-none rounded-full"
-						style={{
-							width: sparkle.size,
-							height: sparkle.size,
-							backgroundColor: 'var(--warning)',
-							boxShadow: '0 0 4px var(--warning), 0 0 8px var(--warning)',
-						}}
-						initial={{ 
-							opacity: 1, 
-							scale: 0.3,
-							x: 0, 
-							y: 0 
-						}}
-						animate={{ 
-							opacity: 0, 
-							scale: [0, 1.5, 0],
-							x: Math.cos((sparkle.angle * Math.PI) / 180) * sparkle.distance,
-							y: Math.sin((sparkle.angle * Math.PI) / 180) * sparkle.distance,
-						}}
-						exit={{ opacity: 0 }}
-						transition={{
-							duration: 0.5,
-							delay: sparkle.delay,
-							ease: [0.25, 1, 0.5, 1],
-						}}
-					/>
-				))}
-			</AnimatePresence>
-			
-			{/* Star icon with fill animation */}
-			<motion.span
-				className="relative"
-				animate={isAnimating ? {
-					filter: [
-						'drop-shadow(0 0 0px var(--warning))',
-						'drop-shadow(0 0 8px var(--warning))',
-						'drop-shadow(0 0 4px var(--warning))',
-						'drop-shadow(0 0 0px var(--warning))'
-					]
-				} : {}}
-				transition={{ duration: 0.5 }}
-			>
-				<Icon
-					icon={StarIcon}
-					size={21}
-					strokeWidth={1.5}
-					className={isFavorite ? 'fill-current' : ''}
-				/>
-			</motion.span>
-		</motion.button>
-	);
-}
-
 // ─── Breadcrumbs Component ──────────────────────────────────────────────────────
 
 interface BreadcrumbsProps {
@@ -251,7 +132,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 			initial={{ opacity: 0, y: -4 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-			className="inline-flex items-center gap-1 md:gap-1.5 text-[11px] md:text-[13px] text-[var(--text-muted)] mb-3 md:mb-4 px-1.5 py-0.5 md:px-2 md:py-1 rounded-md bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-sm transition-[border-color] duration-[180ms] hover:border-[color-mix(in_srgb,var(--accent)_30%,var(--glass-border))]"
+			className="inline-flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] mb-4 px-2 py-1 border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] uppercase tracking-[0.06em] font-mono"
 		>
 			{/* Folder path */}
 			{folderPath.map((folder, index) => (
@@ -407,7 +288,9 @@ export default function NoteEditor({
 	wideMode,
 	onWideModeChange,
 }: NoteEditorProps) {
-	const { user, signOut } = useAuth();
+	const { user } = useAuth();
+	const [profileOpen, setProfileOpen] = useState(false);
+	const profileAnchorRef = useRef<HTMLDivElement>(null);
 
 	const fileNotes = useMemo(() => notes.filter((n): n is NoteFile => n.type === 'file'), [notes]);
 
@@ -507,10 +390,10 @@ export default function NoteEditor({
 			animate={{ opacity: 1 }}
 			exit={{ opacity: 0 }}
 			transition={{ duration: 0.2 }}
-			className="relative flex flex-1 min-h-0 min-w-0 w-full flex-col overflow-hidden rounded-2xl bg-[var(--bg-primary)] transition-[border-radius] duration-300 max-md:rounded-none"
+			className="relative flex flex-1 min-h-0 min-w-0 w-full flex-col overflow-hidden bg-[var(--bg-primary)]"
 		>
 
-			<div className="relative z-20 flex items-center justify-between px-4 py-2.5 md:px-6 md:py-3">
+			<div className="relative z-20 flex items-center justify-between px-4 py-2 md:px-5 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
 				<div className="flex items-center gap-2.5">
 					{/* Back button — Mobile only */}
 						<button
@@ -540,23 +423,16 @@ export default function NoteEditor({
 						<div className="hidden md:block w-10" />
 					)}
 				</div>
-				<div className="flex items-center gap-2 md:gap-3">
+				<div className="flex items-center gap-2">
 					{/* Home button — desktop only */}
 					<button
 						type="button"
 						onClick={() => onSelectNote(null)}
-						className="glass-icon hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.96]"
+						className="btn-cell hidden md:inline-flex"
 						title="Home"
 					>
-						<Icon icon={Home01Icon} size={20} strokeWidth={1.5} />
+						<Icon icon={Home01Icon} size={16} strokeWidth={1.5} />
 					</button>
-
-					{note && (
-						<>
-							<FavoriteButton note={note} onUpdateNote={onUpdateNote} />
-							<div className="hidden md:block h-5 w-px bg-[var(--border-subtle)]/60" />
-						</>
-					)}
 
 					<SettingsMenu
 						theme={theme}
@@ -570,52 +446,45 @@ export default function NoteEditor({
 						onFontChange={onFontChange}
 						wideMode={wideMode}
 						onWideModeChange={onWideModeChange}
+						onExport={note ? () => exportNoteAsMarkdown(note) : undefined}
 					/>
 
-					{/* Export — direct top-bar button (desktop only) */}
-					{note && (
-						<button
-							type="button"
-							onClick={() => exportNoteAsMarkdown(note)}
-							className="glass-icon hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:bg-[var(--glass-bg-hover)] hover:text-[var(--accent)] after:absolute after:-inset-2 active:scale-[0.96]"
-							title="Export as Markdown"
-							aria-label="Export note as Markdown"
-						>
-							<Icon icon={Download01Icon} size={19} strokeWidth={1.8} />
-						</button>
-					)}
-
-					{/* Auth: show sign-in or user menu */}
+					{/* Auth: sign-in pill or user pill with ProfilePanel */}
 					{user ? (
-						<div className="auth-group">
-							<div
-								className="auth-pill auth-pill--signed-in"
-								title={`Signed in as ${user.email}`}
-							>
-								{user.user_metadata?.avatar_url ? (
-									<img src={user.user_metadata.avatar_url} alt="" className="auth-pill__avatar" referrerPolicy="no-referrer" />
-								) : (
-									<span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
-								)}
-							</div>
+						<div ref={profileAnchorRef} className="relative">
 							<button
 								type="button"
-								onClick={signOut}
-								className="auth-signout-btn"
-								title="Sign out"
+								onClick={() => setProfileOpen((v) => !v)}
+								className="btn-pill gap-2"
+								title="Profile"
+								aria-expanded={profileOpen}
 							>
-								<Icon icon={Logout01Icon} size={19} strokeWidth={2} />
+								<div className="flex items-center justify-center w-5 h-5 bg-[var(--accent)] text-[var(--accent-text)] text-[10px] font-bold flex-shrink-0 overflow-hidden" style={{ borderRadius: '50%' }}>
+									{user.user_metadata?.avatar_url ? (
+										<img src={user.user_metadata.avatar_url} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+									) : (
+										user.email?.[0]?.toUpperCase() || '?'
+									)}
+								</div>
+								<span className="max-w-[96px] truncate hidden md:inline">
+									{user.user_metadata?.display_name || user.email?.split('@')[0]}
+								</span>
 							</button>
+							<AnimatePresence>
+								{profileOpen && (
+									<ProfilePanel onClose={() => setProfileOpen(false)} />
+								)}
+							</AnimatePresence>
 						</div>
 					) : (
 						<button
 							type="button"
 							onClick={onOpenAuthModal}
-							className="relative flex h-10 px-4 auth-pill auth-pill--signed-out transition-transform duration-150 ease-out active:scale-[0.96]"
+							className="btn-pill btn-pill-accent"
 							title="Sign in to sync your notes"
 						>
-							<Icon icon={CloudUploadIcon} size={18} strokeWidth={2} />
-							<span>Sign in</span>
+							<Icon icon={CloudUploadIcon} size={14} strokeWidth={1.5} />
+							Sign in
 						</button>
 					)}
 				</div>
@@ -625,7 +494,7 @@ export default function NoteEditor({
 			<div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
 				
 
-				<div className={wideMode ? 'w-full px-4 pb-28 pt-4 sm:px-6 md:px-10 md:pb-36 md:pt-8' : 'mx-auto max-w-3xl px-4 pb-28 pt-4 sm:px-6 md:px-10 md:pb-36 md:pt-8'}>
+				<div className={wideMode ? 'w-full px-4 pb-28 pt-4 sm:px-6 md:px-10 md:pb-36 md:pt-8' : 'mx-auto max-w-4xl px-4 pb-28 pt-4 sm:px-6 md:px-10 md:pb-36 md:pt-8'}>
 					<div className="editor-stagger-1">
 						<Breadcrumbs note={note} notes={notes} tree={tree} onSelectNote={onSelectNote} />
 					</div>
@@ -642,20 +511,13 @@ export default function NoteEditor({
 									onTitleKeyDown={handleTitleKeyDown}
 								/>
 
-								<div className="flex flex-col gap-1 mt-5 md:mt-6">
-									<div className="flex items-center gap-2.5">
-										<Icon icon={Calendar01Icon} size={13} strokeWidth={1.5} style={{ color: 'var(--text-muted)', opacity: 0.6, flexShrink: 0 }} />
-										<span className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-70 w-14 shrink-0">Created</span>
-										<span className="text-[13px] text-[var(--text-secondary)]">{createdAtLabel}</span>
-									</div>
-									<div className="flex items-center gap-2.5">
-										<Icon icon={Tag01Icon} size={13} strokeWidth={1.5} style={{ color: 'var(--text-muted)', opacity: 0.6, flexShrink: 0 }} />
-										<span className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-70 w-14 shrink-0">Tags</span>
-										<TagInput
-											tags={note.tags || []}
-											onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
-										/>
-									</div>
+								<div className="flex flex-wrap items-center gap-3 mt-3">
+									<span className="label-mono">{createdAtLabel}</span>
+									<span className="text-[var(--text-muted)] opacity-40">·</span>
+									<TagInput
+										tags={note.tags || []}
+										onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
+									/>
 								</div>
 							</div>
 						</>
@@ -681,8 +543,8 @@ export default function NoteEditor({
 				</div>
 			</div>
 
-			{/* Stats bar — bottom right (minimal pill) */}
-			<div className="stats-bar-desktop hidden md:flex absolute bottom-5 right-5 z-20 items-center gap-2.5 rounded-full border border-[var(--border-subtle)]/50 bg-[var(--bg-surface)]/90 px-4 py-2 backdrop-blur-lg text-[11px] tabular-nums select-none transition-[border-color] duration-300" style={{ fontFamily: '"Outfit", sans-serif' }}>
+			{/* Stats bar — bottom strip (brutalist) */}
+			<div className="stats-bar-desktop hidden md:flex items-center gap-3 border-t-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-5 py-2 text-[11px] tabular-nums select-none uppercase tracking-[0.08em]" style={{ fontFamily: 'var(--font-mono)' }}>
 				{/* Save status */}
 				<motion.span
 					key={saveStatus.state}
@@ -750,8 +612,8 @@ export default function NoteEditor({
 				)}
 			</div>
 
-			{/* Mobile stats — minimal pill (hidden on desktop) */}
-			<div className={`stats-bar-mobile flex md:hidden fixed z-20 items-center gap-2 rounded-full border border-[var(--border-subtle)]/50 bg-[var(--bg-surface)]/90 px-3 py-1.5 backdrop-blur-lg text-[10px] tabular-nums select-none transition-opacity duration-200 ${keyboardOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`} style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 4.5rem)', left: '50%', transform: 'translateX(-50%)', fontFamily: '"Outfit", sans-serif' }}>
+			{/* Mobile stats — brutalist strip (hidden on desktop) */}
+			<div className={`stats-bar-mobile flex md:hidden fixed z-20 items-center gap-2 border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-3 py-1.5 text-[10px] tabular-nums select-none uppercase tracking-[0.08em] transition-opacity duration-200 ${keyboardOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`} style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 4.5rem)', left: '50%', transform: 'translateX(-50%)', fontFamily: 'var(--font-mono)' }}>
 				<span
 					className={`inline-flex items-center gap-1 font-medium ${getSaveTextClass(saveStatus.state)}`}
 				>

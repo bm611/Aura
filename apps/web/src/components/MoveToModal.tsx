@@ -92,12 +92,13 @@ export default function MoveToModal({
 
   return (
     <>
-      <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
+      <div className="fixed inset-0 z-[100] bg-[rgba(10,10,10,0.4)]" onClick={onClose} aria-hidden="true" />
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Move to folder"
-        className="fixed left-1/2 top-1/2 z-[101] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-2xl"
+        className="fixed left-1/2 top-1/2 z-[101] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 border-[2px] border-[var(--ink)] bg-[var(--bg-elevated)]"
+        style={{ boxShadow: 'var(--stamp-shadow-lg)' }}
       >
         <div className="mt-modal">
           <div className="mt-modal-header">
