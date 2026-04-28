@@ -11,6 +11,8 @@ import {
 	ArrowRight01Icon,
 	Sun01Icon,
 	MoonIcon,
+	PinIcon,
+	Clock03Icon,
 } from '@hugeicons/core-free-icons';
 
 import Icon from './Icon';
@@ -393,7 +395,7 @@ export default function HomeScreen({
 						{pinnedNotes.length > 0 && (
 							<section className="border-b-[1.5px] border-[var(--ink)]">
 								<div className="flex items-center justify-between px-5 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
-									<span className="label-mono-strong">Pinned</span>
+									<span className="label-mono-strong inline-flex items-center gap-1.5"><Icon icon={PinIcon} size={13} strokeWidth={2} style={{ color: 'var(--accent)' }} />Pinned</span>
 									<span className="label-mono">{pinnedNotes.length} files</span>
 								</div>
 								{pinnedNotes.map((note, index) => (
@@ -404,7 +406,7 @@ export default function HomeScreen({
 						{recentNotes.length > 0 && (
 							<section className={`border-b-[1.5px] border-[var(--ink)]${pinnedNotes.length > 0 ? ' border-t-[1.5px] mt-6' : ''}`}>
 								<div className="flex items-center justify-between px-5 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
-									<span className="label-mono-strong">Recent</span>
+									<span className="label-mono-strong inline-flex items-center gap-1.5"><Icon icon={Clock03Icon} size={13} strokeWidth={2} style={{ color: 'var(--accent)' }} />Recent</span>
 									<span className="label-mono">{recentNotes.length} files</span>
 								</div>
 								{recentNotes.map((note, index) => (
@@ -608,7 +610,7 @@ function NoteListSection({
 	return (
 		<section className={withTopBorder ? 'border-t-[1.5px] border-[var(--ink)]' : ''}>
 			<div className="flex items-center justify-between px-6 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
-				<span className="label-mono-strong">{label}</span>
+				<span className="label-mono-strong inline-flex items-center gap-1.5"><Icon icon={label === 'Pinned' ? PinIcon : Clock03Icon} size={13} strokeWidth={2} style={{ color: 'var(--accent)' }} />{label}</span>
 				<span className="label-mono">{notes.length} files</span>
 			</div>
 			<div className="[&>*:last-child]:border-b-0">
