@@ -755,7 +755,7 @@ function SectionCTA({ onStart, onSignIn }: { onStart: () => void; onSignIn: () =
         </FadeUp>
         <FadeUp delay={0.1}>
           <p className="mb-12 text-lg text-[var(--text-secondary)] sm:text-xl">
-            Your ethereal workspace. Ready when you are.
+            Local-first notes. No cloud, no clutter, no compromise.
           </p>
         </FadeUp>
         <FadeUp delay={0.18}>
@@ -854,7 +854,7 @@ export default function LandingPage({ onStart, onSignIn }: LandingPageProps) {
                 className="mb-14 max-w-lg text-lg leading-relaxed text-[var(--text-secondary)] sm:text-xl"
                 style={{ textWrap: 'pretty' }}
               >
-                Your ethereal workspace for your most important ideas. Fast, private, and beautifully restrained.
+                Write it. Own it. Local-first by default — sync to the cloud when you choose.
               </motion.p>
 
               <motion.div
