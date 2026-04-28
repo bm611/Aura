@@ -33,9 +33,9 @@
 
 @theme {
   /* ── Typography ── */
-  --font-script:  "Caveat", cursive;
+  --font-script:  "Indie Flower", cursive;
   --font-display: "Kalam", cursive;
-  --font-logo:    "Caveat", cursive;
+  --font-logo:    "Indie Flower", cursive;
   --font-body:    "IBM Plex Mono", monospace;
   --font-mono:    "IBM Plex Mono", monospace;
   --font-prose:   "IBM Plex Sans", sans-serif;
