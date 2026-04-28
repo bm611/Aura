@@ -34,6 +34,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { getEditorCommands } from './utils/editorCommands'
 import { searchNotes } from './utils/knowledgeBase'
 import { getNoteDisplayTitle, normalizeNote } from './utils/noteMeta'
+import { STARTER_NOTE, STARTER_NOTE_TAG, STARTER_TODO_NOTE } from './utils/starterNotes'
 import { fetchNotes, restoreNotes, softDeleteNotes, upsertNote } from './lib/notesDb'
 import { exportNoteAsMarkdown } from './utils/exportNote'
 import { ACCENT_COLORS } from './config/accents'
@@ -223,185 +224,6 @@ function getInitialOnlineState(): boolean {
   return navigator.onLine
 }
 
-const SAMPLE_NOTE = `# ✍️ Welcome to Folio
-
-Folio is a fast, private markdown editor designed for speed and clarity. This note is your interactive onboarding guide to help you master the editor.
-
-> [!tip] - Pro Tip
-> Press \`Cmd + K\` (or \`Ctrl + K\`) to search notes, change fonts, or switch between Dark/Light mode.
-
----
-
-## 🚀 Speed up with Slash Commands
-
-Type \`/\` on a new line to see all available components. Try these new additions:
-
-- \`/note\`, \`/tip\` or \`/warning\` — Create themed callouts instantly
-- \`/todo\` — Insert a task checkbox
-- \`/table\` — Insert a starter table
-- \`/divider\` — Add a horizontal rule
-- \`/today\` — Insert the current date
-
----
-
-## 📝 Markdown Cheat Sheet
-
-Folio supports standard markdown with some powerful enhancements:
-
-### Typography
-- **Bold**: \`**text**\`
-- *Italic*: \`*text*\`
-- ~~Strikethrough~~: \`~~text~~\`
-- \`Inline Code\`: \` \`code\` \`
-- [Links are easy](https://github.com/bm611/folio)
-
-### Nested Lists & Tasks
-Press \`Tab\` to indent and \`Shift + Tab\` to un-indent:
-- Parent bullet
-  - Nested child (circle)
-    - Deeper child (square)
-- [ ] Task lists support nesting too
-  - [x] Sub-task one
-  - [ ] Sub-task two
-1. Numbered lists have distinct styles
-  a. Alphabetic child
-    i. Roman numeral child
-
-### Code Blocks
-Type \` \` \` \` followed by a language to start a block:
-
-\`\`\`js
-function hello() {
-  console.log("Hello from Folio!");
-}
-\`\`\`
-
----
-
-## 🏗️ Premium Components
-
-### Interactive Callouts
-Folio supports high-visibility callouts for expert organization.
-
-> [!important] New Callout Controls
-> - **Change Type**: Click the icon in the top-left of any callout to cycle through types (Note, Tip, Warning, etc.).
-> - **Quick Delete**: Hover over a callout header to reveal the trash icon.
-> - **Collapsible**: Use \`> [!note]+\` or \`> [!note]-\` to make them foldable.
-
-> [!tip] - Cloud Sync
-> **Sign in** to save your notes to the cloud and access them from any device.
-
-### Tables
-| Feature | Shortcut | Status |
-| :--- | :--- | :--- |
-| Slash Menu | \`/\` | ✅ |
-| Nested Lists | \`Tab\` | ✅ |
-| Mixed Callouts | \`/tip\` | ✅ |
-
----
-
-## ⌨️ Useful Shortcuts
-
-- \`Cmd + B\` — Toggle Sidebar
-- \`Cmd + Shift + F\` — Toggle Focus Mode (distraction-free)
-- \`Cmd + K\` — Open Command Palette
-- \`Cmd + N\` — Create New Note
-
-Ready to go? Create your first note from the **Sidebar** or press \`Cmd + N\`!
-`
-
-const ONBOARDING_NOTE = `# 🎉 Welcome to Folio!
-
-You're all set up and ready to start writing. This note will help you discover Folio's powerful features.
-
-> [!tip] - Your Notes are Safe
-> Your notes are automatically saved and synced to the cloud. Access them from any device, anytime.
-
----
-
-## ✨ Quick Start
-
-### 1. Create Your First Note
-Click the **New Note** button in the sidebar or press \`Cmd + N\`.
-
-### 2. Use Slash Commands
-Type \`/\` on a new line to see what you can create:
-- \`/todo\` for task lists
-- \`/table\` for tables
-- \`/tip\`, \`/warning\`, \`/note\` for callouts
-- \`/code\` for code blocks
-
-### 3. Try Markdown
-Folio supports full markdown syntax:
-- **Bold** and *italic* text
-- [Links](https://example.com)
-- \`Inline code\` and code blocks
-- Nested lists with Tab/Shift+Tab
-
----
-
-## 📋 Example Task List
-
-Here's a sample task list to get you started:
-
-- [x] Sign up for Folio
-- [ ] Create my first note
-- [ ] Try slash commands
-- [ ] Organize notes into folders
-- [ ] Set up daily notes
-
----
-
-## 🎨 Callouts
-
-Use callouts to highlight important information:
-
-> [!note] This is a note callout
-> Great for general information and tips.
-
-> [!tip] This is a tip callout
-> Perfect for helpful suggestions and shortcuts.
-
-> [!warning] This is a warning callout
-> Use this for important reminders or cautions.
-
-> [!important] This is an important callout
-> For critical information that shouldn't be missed.
-
----
-
-## 📊 Sample Table
-
-| Feature | Description |
-| :--- | :--- |
-| Cloud Sync | Access notes anywhere |
-| Slash Commands | Quick content insertion |
-| Markdown Support | Full formatting power |
-| Daily Notes | Track your daily thoughts |
-
----
-
-## ⌨️ Keyboard Shortcuts
-
-- \`Cmd + K\` — Command Palette (search, settings, themes)
-- \`Cmd + N\` — New Note
-- \`Cmd + B\` — Toggle Sidebar
-- \`Cmd + S\` — Force Save
-- \`Cmd + /\` — Toggle Comment (in code blocks)
-
----
-
-## 🚀 Next Steps
-
-1. **Delete this note** when you're comfortable with the basics
-2. **Create folders** to organize your notes
-3. **Use tags** to categorize and filter
-4. **Try daily notes** for journaling
-5. **Explore templates** from the command palette
-
-Happy writing! ✍️
-`
-
 function matchesQuery(query: string, values: (string | undefined)[]): boolean {
   const normalizedQuery = query.trim().toLowerCase()
 
@@ -528,39 +350,23 @@ function makeSampleTree(): TreeNode[] {
       type: 'file',
       name: 'To-Do',
       title: 'To-Do',
-      content: TODO_NOTE,
-      tags: ['pinned'],
+      content: STARTER_TODO_NOTE,
+      tags: ['pinned', STARTER_NOTE_TAG],
       createdAt: now,
       updatedAt: now,
     } as NoteFile,
     {
       id: generateId(),
       type: 'file',
-      name: 'Folio Knowledge Base',
-      title: 'Folio Knowledge Base',
-      content: SAMPLE_NOTE,
-      tags: [],
+      name: 'Start Here',
+      title: 'Start Here',
+      content: STARTER_NOTE,
+      tags: [STARTER_NOTE_TAG],
       createdAt: now,
       updatedAt: now,
     } as NoteFile,
   ]
 }
-
-const TODO_NOTE = `# 📋 To-Do
-
-A pinned space for your tasks. Add items, check them off, and stay on track.
-
----
-
-- [ ] Try slash commands — type \`/todo\` for quick checkboxes
-- [ ] Organize notes into folders
-- [ ] Explore the command palette (\`Cmd + K\`)
-
----
-
-> [!tip] - This note is pinned
-> Pinned notes always stay at the top of your sidebar for quick access.
-`
 
 function makeOnboardingTree(): TreeNode[] {
   const now = new Date().toISOString()
@@ -570,18 +376,18 @@ function makeOnboardingTree(): TreeNode[] {
       type: 'file',
       name: 'To-Do',
       title: 'To-Do',
-      content: TODO_NOTE,
-      tags: ['pinned'],
+      content: STARTER_TODO_NOTE,
+      tags: ['pinned', STARTER_NOTE_TAG],
       createdAt: now,
       updatedAt: now,
     } as NoteFile,
     {
       id: generateId(),
       type: 'file',
-      name: 'Welcome to Folio',
-      title: 'Welcome to Folio',
-      content: ONBOARDING_NOTE,
-      tags: [],
+      name: 'Start Here',
+      title: 'Start Here',
+      content: STARTER_NOTE,
+      tags: [STARTER_NOTE_TAG],
       createdAt: now,
       updatedAt: now,
     } as NoteFile,

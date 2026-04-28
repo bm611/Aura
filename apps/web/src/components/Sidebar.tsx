@@ -26,6 +26,7 @@ import {
 import type { IconSvgElement } from '@hugeicons/react'
 import Icon from './Icon'
 import { CATEGORY_ICONS, CATEGORY_ICON_MAP } from '../config/categoryIcons'
+import { isStarterNote } from '../utils/starterNotes'
 import { getVisibleFiles, getParentId } from '../utils/tree'
 import type { TreeNode as TreeNodeType } from '../types'
 import MoveToModal from './MoveToModal'
@@ -541,6 +542,7 @@ export default function Sidebar({
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['1']))
   const [creatingIn, setCreatingIn] = useState<CreatingState | null>(null)
   const [searchFocused, setSearchFocused] = useState(false)
+  const [showSecondaryNav, setShowSecondaryNav] = useState(activeView === 'chat')
   const [moveToNode, setMoveToNode] = useState<string | null>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
@@ -612,6 +614,22 @@ export default function Sidebar({
     }
     return sortNodes(filterNodes(tree))
   }, [tree, searchQuery])
+
+  const userNoteCount = useMemo(() => {
+    const countUserNotes = (nodes: TreeNodeType[]): number => {
+      return nodes.reduce((count, node) => {
+        if (node.type === 'folder') {
+          return count + countUserNotes(node.children || [])
+        }
+
+        return count + (node.deletedAt || isStarterNote(node) ? 0 : 1)
+      }, 0)
+    }
+
+    return countUserNotes(tree)
+  }, [tree])
+
+  const secondaryNavVisible = userNoteCount > 0 || showSecondaryNav || activeView === 'chat'
 
   
   const searchExpanded = searchFocused || searchQuery.length > 0
@@ -688,7 +706,7 @@ export default function Sidebar({
             </button>
           </div>
 
-          {/* Nav items — Home, Search, Sync */}
+          {/* Nav items — primary first, extra tools on demand */}
           <div className="sb-nav-items">
             {/* Home */}
             <button
@@ -703,31 +721,6 @@ export default function Sidebar({
                 <Icon icon={Home01Icon} size={19} stroke={1.5} />
               </span>
               <span className="sb-nav-label">Home</span>
-            </button>
-
-            {/* Templates */}
-            <button
-              className="sb-nav-item"
-              onClick={onOpenTemplateGallery}
-            >
-              <span className="sb-nav-icon">
-                <Icon icon={StickyNoteIcon} size={19} stroke={1.5} />
-              </span>
-              <span className="sb-nav-label">Templates</span>
-            </button>
-
-            {/* Chat */}
-            <button
-              className={`sb-nav-item${activeView === 'chat' ? ' is-active' : ''}`}
-              onClick={() => {
-                onViewChange?.('chat')
-                if (isCompactSidebarViewport()) onToggleCollapse()
-              }}
-            >
-              <span className="sb-nav-icon">
-                <Icon icon={SparklesIcon} size={19} stroke={1.5} />
-              </span>
-              <span className="sb-nav-label">Chat</span>
             </button>
 
             {/* Search — expands inline on click */}
@@ -776,6 +769,47 @@ export default function Sidebar({
                 <span className="sb-nav-label">Search</span>
               )}
             </div>
+
+            {secondaryNavVisible ? (
+              <>
+                {/* Templates */}
+                <button
+                  className="sb-nav-item"
+                  onClick={onOpenTemplateGallery}
+                >
+                  <span className="sb-nav-icon">
+                    <Icon icon={StickyNoteIcon} size={19} stroke={1.5} />
+                  </span>
+                  <span className="sb-nav-label">Templates</span>
+                </button>
+
+                {/* Chat */}
+                <button
+                  className={`sb-nav-item${activeView === 'chat' ? ' is-active' : ''}`}
+                  onClick={() => {
+                    onViewChange?.('chat')
+                    if (isCompactSidebarViewport()) onToggleCollapse()
+                  }}
+                >
+                  <span className="sb-nav-icon">
+                    <Icon icon={SparklesIcon} size={19} stroke={1.5} />
+                  </span>
+                  <span className="sb-nav-label">Chat</span>
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="sb-nav-item"
+                onClick={() => setShowSecondaryNav(true)}
+                aria-expanded={showSecondaryNav}
+              >
+                <span className="sb-nav-icon">
+                  <Icon icon={MoreHorizontalIcon} size={19} stroke={1.5} />
+                </span>
+                <span className="sb-nav-label">More tools</span>
+              </button>
+            )}
           </div>
 
           {/* Tree list */}

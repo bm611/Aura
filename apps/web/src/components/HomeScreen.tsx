@@ -13,6 +13,7 @@ import Icon from './Icon';
 import SettingsMenu from './SettingsMenu';
 import ProfilePanel from './ProfilePanel';
 import { countBodyWords, getNoteDisplayTitle } from '../utils/noteMeta';
+import { isStarterNote } from '../utils/starterNotes';
 import { useAuth } from '../contexts/AuthContext';
 import type { NoteFile, TreeNode } from '../types';
 import type { SyncStatus } from './noteEditorUtils';
@@ -69,6 +70,7 @@ function plainTextPreview(content: string | undefined, max = 280): string {
 function CompactHeroPanel({
 	dayOfWeek,
 	dateLabel,
+	isGettingStarted,
 	noteCount,
 	streak,
 	totalWords,
@@ -77,6 +79,7 @@ function CompactHeroPanel({
 }: {
 	dayOfWeek: string;
 	dateLabel: string;
+	isGettingStarted: boolean;
 	noteCount: number;
 	streak: number;
 	totalWords: number;
@@ -93,24 +96,33 @@ function CompactHeroPanel({
 				<p className="label-mono mt-2">{dateLabel}</p>
 
 				<div className="mt-5 border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
-					<div className="grid grid-cols-3">
-						<div className="flex flex-col gap-1 px-4 py-4 border-r-[1.5px] border-[var(--ink)]">
-							<span className="font-mono text-[22px] font-bold leading-none text-[var(--ink)]">
-								{compactNumber(noteCount)}
-							</span>
-							<span className="label-mono">Notes</span>
+					{isGettingStarted ? (
+						<div className="px-4 py-5">
+							<div className="label-mono-strong">Getting started</div>
+							<p className="mt-3 max-w-[28ch] font-[var(--font-prose)] text-[14px] leading-relaxed text-[var(--text-secondary)]">
+								Start with a fresh note or capture today&apos;s entry. Your writing stats show up once you have notes of your own.
+							</p>
 						</div>
-						<div className="flex flex-col gap-1 px-4 py-4 border-r-[1.5px] border-[var(--ink)]">
-							<span className="font-mono text-[22px] font-bold leading-none text-[var(--ink)]">{streak}</span>
-							<span className="label-mono">Streak</span>
+					) : (
+						<div className="grid grid-cols-3">
+							<div className="flex flex-col gap-1 px-4 py-4 border-r-[1.5px] border-[var(--ink)]">
+								<span className="font-mono text-[22px] font-bold leading-none text-[var(--ink)]">
+									{compactNumber(noteCount)}
+								</span>
+								<span className="label-mono">Notes</span>
+							</div>
+							<div className="flex flex-col gap-1 px-4 py-4 border-r-[1.5px] border-[var(--ink)]">
+								<span className="font-mono text-[22px] font-bold leading-none text-[var(--ink)]">{streak}</span>
+								<span className="label-mono">Streak</span>
+							</div>
+							<div className="flex flex-col gap-1 px-4 py-4">
+								<span className="font-mono text-[22px] font-bold leading-none text-[var(--ink)]">
+									{compactNumber(totalWords)}
+								</span>
+								<span className="label-mono">Words</span>
+							</div>
 						</div>
-						<div className="flex flex-col gap-1 px-4 py-4">
-							<span className="font-mono text-[22px] font-bold leading-none text-[var(--ink)]">
-								{compactNumber(totalWords)}
-							</span>
-							<span className="label-mono">Words</span>
-						</div>
-					</div>
+					)}
 
 					<div className="grid grid-cols-1 min-[360px]:grid-cols-2 border-t-[1.5px] border-[var(--ink)]">
 						<button
@@ -127,7 +139,7 @@ function CompactHeroPanel({
 							className="flex items-center justify-center gap-2 min-h-12 px-4 py-3 bg-[var(--accent)] text-[var(--accent-text)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] transition-colors hover:opacity-90"
 						>
 							<Icon icon={Calendar01Icon} size={13} strokeWidth={2} />
-							Daily
+							Today&apos;s entry
 						</button>
 					</div>
 				</div>
@@ -202,12 +214,17 @@ export default function HomeScreen({
 		() => notes.filter((n): n is NoteFile => n.type === 'file' && !n.deletedAt),
 		[notes],
 	);
+	const userNotes = useMemo(
+		() => fileNotes.filter((note) => !isStarterNote(note)),
+		[fileNotes],
+	);
+	const isGettingStarted = userNotes.length === 0;
 
 	const { streak, totalWords } = useMemo(() => {
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
 
-		const sortedNotes = [...fileNotes].sort(
+		const sortedNotes = [...userNotes].sort(
 			(a, b) =>
 				new Date(b.updatedAt || b.createdAt).getTime() -
 				new Date(a.updatedAt || a.createdAt).getTime(),
@@ -236,7 +253,7 @@ export default function HomeScreen({
 
 		const total = sortedNotes.reduce((sum, n) => sum + countBodyWords(n.content), 0);
 		return { streak: streakCount, totalWords: total };
-	}, [fileNotes]);
+	}, [userNotes]);
 
 	const recentAndPinned = useMemo(() => {
 		const sorted = [...fileNotes].sort(compareRecentNotes);
@@ -244,12 +261,26 @@ export default function HomeScreen({
 		const others = sorted.filter((n) => !isPinned(n));
 		return [...pinned, ...others].slice(0, 8);
 	}, [fileNotes]);
+	const pinnedNotes = useMemo(
+		() => recentAndPinned.filter(isPinned),
+		[recentAndPinned],
+	);
+	const recentNotes = useMemo(
+		() => recentAndPinned.filter((note) => !isPinned(note)),
+		[recentAndPinned],
+	);
 
 	const [hoveredId, setHoveredId] = useState<string | null>(null);
 	const previewNote = useMemo(() => {
 		if (hoveredId) return fileNotes.find((n) => n.id === hoveredId) ?? null;
-		return recentAndPinned[0] ?? null;
-	}, [hoveredId, fileNotes, recentAndPinned]);
+		return (
+			recentNotes.find((note) => !isStarterNote(note)) ??
+			pinnedNotes.find((note) => !isStarterNote(note)) ??
+			recentNotes[0] ??
+			pinnedNotes[0] ??
+			null
+		);
+	}, [hoveredId, fileNotes, recentNotes, pinnedNotes]);
 
 	const today = new Date();
 	const dayOfWeek = today.toLocaleDateString('en-US', { weekday: 'long' });
@@ -339,43 +370,40 @@ export default function HomeScreen({
 				<CompactHeroPanel
 					dayOfWeek={dayOfWeek}
 					dateLabel={dateLabel}
-					noteCount={fileNotes.length}
+					isGettingStarted={isGettingStarted}
+					noteCount={userNotes.length}
 					streak={streak}
 					totalWords={totalWords}
 					onNewNote={onNewNote}
 					onCreateDailyNote={onCreateDailyNote}
 				/>
 
-				{recentAndPinned.length > 0 ? (() => {
-					const pinned = recentAndPinned.filter(isPinned);
-					const recent = recentAndPinned.filter((n) => !isPinned(n));
-					return (
-						<>
-							{pinned.length > 0 && (
-								<section className="border-b-[1.5px] border-[var(--ink)]">
-									<div className="flex items-center justify-between px-5 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
-										<span className="label-mono-strong">Pinned</span>
-										<span className="label-mono">{pinned.length} files</span>
-									</div>
-									{pinned.map((note, index) => (
-										<CompactRecentRow key={note.id} note={note} index={index + 1} onOpen={() => onSelectNote(note.id)} />
-									))}
-								</section>
-							)}
-							{recent.length > 0 && (
-								<section className="border-b-[1.5px] border-[var(--ink)] mt-6">
-									<div className="flex items-center justify-between px-5 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
-										<span className="label-mono-strong">Recent</span>
-										<span className="label-mono">{recent.length} files</span>
-									</div>
-									{recent.map((note, index) => (
-										<CompactRecentRow key={note.id} note={note} index={index + 1} onOpen={() => onSelectNote(note.id)} />
-									))}
-								</section>
-							)}
-						</>
-					);
-				})() : (
+				{recentAndPinned.length > 0 ? (
+					<>
+						{pinnedNotes.length > 0 && (
+							<section className="border-b-[1.5px] border-[var(--ink)]">
+								<div className="flex items-center justify-between px-5 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+									<span className="label-mono-strong">Pinned</span>
+									<span className="label-mono">{pinnedNotes.length} files</span>
+								</div>
+								{pinnedNotes.map((note, index) => (
+									<CompactRecentRow key={note.id} note={note} index={index + 1} onOpen={() => onSelectNote(note.id)} />
+								))}
+							</section>
+						)}
+						{recentNotes.length > 0 && (
+							<section className="border-b-[1.5px] border-[var(--ink)] mt-6">
+								<div className="flex items-center justify-between px-5 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+									<span className="label-mono-strong">Recent</span>
+									<span className="label-mono">{recentNotes.length} files</span>
+								</div>
+								{recentNotes.map((note, index) => (
+									<CompactRecentRow key={note.id} note={note} index={index + 1} onOpen={() => onSelectNote(note.id)} />
+								))}
+							</section>
+						)}
+					</>
+				) : (
 					<CompactEmptyState onNewNote={onNewNote} />
 				)}
 			</div>
@@ -394,54 +422,93 @@ export default function HomeScreen({
 					</div>
 
 					{/* Stats + Actions */}
-					<div className="grid grid-cols-3 grid-rows-[1fr_auto] bg-[var(--bg-surface)] self-stretch">
-						<StatBlock label="Notes" value={compactNumber(fileNotes.length)} />
-						<StatBlock label="Streak" value={String(streak)} />
-						<StatBlock label="Words" value={compactNumber(totalWords)} />
+					{isGettingStarted ? (
+						<div className="flex flex-col bg-[var(--bg-surface)] self-stretch">
+							<div className="flex-1 px-5 py-6 border-b-[1.5px] border-[var(--ink)]">
+								<div className="label-mono-strong">Getting started</div>
+								<p className="mt-4 max-w-[28ch] font-[var(--font-prose)] text-[15px] leading-relaxed text-[var(--text-secondary)]">
+									Start with a fresh note or capture today&apos;s entry. Your writing stats show up once you have notes of your own.
+								</p>
+							</div>
 
-						<div className="col-span-3 grid grid-cols-3 border-t-[1.5px] border-[var(--ink)]">
-							<button
-								type="button"
-								onClick={onNewNote}
-								className="flex items-center justify-center gap-2 h-12 col-span-1 border-r-[1.5px] border-[var(--ink)] bg-transparent text-[var(--ink)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] cursor-pointer hover:bg-[var(--bg-hover)] transition-colors active:bg-[var(--bg-deep)]"
-							>
-								<Icon icon={Add01Icon} size={13} strokeWidth={2} />
-								New
-							</button>
-							<button
-								type="button"
-								onClick={onCreateDailyNote}
-								className="flex items-center justify-center gap-2 h-12 col-span-2 bg-[var(--accent)] text-[var(--accent-text)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] cursor-pointer hover:bg-[var(--accent-hover)] transition-colors"
-							>
-								<Icon icon={Calendar01Icon} size={13} strokeWidth={2} />
-								Daily
-							</button>
+							<div className="grid grid-cols-2">
+								<button
+									type="button"
+									onClick={onNewNote}
+									className="flex items-center justify-center gap-2 h-12 border-r-[1.5px] border-[var(--ink)] bg-transparent text-[var(--ink)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] cursor-pointer hover:bg-[var(--bg-hover)] transition-colors active:bg-[var(--bg-deep)]"
+								>
+									<Icon icon={Add01Icon} size={13} strokeWidth={2} />
+									New note
+								</button>
+								<button
+									type="button"
+									onClick={onCreateDailyNote}
+									className="flex items-center justify-center gap-2 h-12 bg-[var(--accent)] text-[var(--accent-text)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] cursor-pointer hover:bg-[var(--accent-hover)] transition-colors"
+								>
+									<Icon icon={Calendar01Icon} size={13} strokeWidth={2} />
+									Today&apos;s entry
+								</button>
+							</div>
 						</div>
-					</div>
+					) : (
+						<div className="grid grid-cols-3 grid-rows-[1fr_auto] bg-[var(--bg-surface)] self-stretch">
+							<StatBlock label="Notes" value={compactNumber(userNotes.length)} />
+							<StatBlock label="Streak" value={String(streak)} />
+							<StatBlock label="Words" value={compactNumber(totalWords)} />
+
+							<div className="col-span-3 grid grid-cols-3 border-t-[1.5px] border-[var(--ink)]">
+								<button
+									type="button"
+									onClick={onNewNote}
+									className="flex items-center justify-center gap-2 h-12 col-span-1 border-r-[1.5px] border-[var(--ink)] bg-transparent text-[var(--ink)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] cursor-pointer hover:bg-[var(--bg-hover)] transition-colors active:bg-[var(--bg-deep)]"
+								>
+									<Icon icon={Add01Icon} size={13} strokeWidth={2} />
+									New note
+								</button>
+								<button
+									type="button"
+									onClick={onCreateDailyNote}
+									className="flex items-center justify-center gap-2 h-12 col-span-2 bg-[var(--accent)] text-[var(--accent-text)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] cursor-pointer hover:bg-[var(--accent-hover)] transition-colors"
+								>
+									<Icon icon={Calendar01Icon} size={13} strokeWidth={2} />
+									Today&apos;s entry
+								</button>
+							</div>
+						</div>
+					)}
 				</div>
 
-				{/* ── Recent + Preview ── */}
+				{/* ── Recent / Pinned ── */}
 				<div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_minmax(300px,420px)] min-h-0">
-					{/* Recent / Pinned list */}
+					{/* Pinned + Recent list */}
 					<div className="flex flex-col border-b md:border-b-0 md:border-r-[1.5px] border-[var(--ink)] min-h-0">
-						<div className="flex items-center justify-between px-6 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
-							<span className="label-mono-strong">Recent</span>
-						</div>
-						<div className="flex-1 overflow-y-auto">
-							{recentAndPinned.length === 0 ? (
+						{recentAndPinned.length === 0 ? (
+							<div className="flex-1 overflow-y-auto">
 								<EmptyRecent onNewNote={onNewNote} />
-							) : (
-								recentAndPinned.map((note) => (
-									<RecentRow
-										key={note.id}
-										note={note}
-										onSelect={() => onSelectNote(note.id)}
-										onHover={() => setHoveredId(note.id)}
-										onLeave={() => setHoveredId(null)}
+							</div>
+						) : (
+							<div className="flex-1 overflow-y-auto">
+								{pinnedNotes.length > 0 && (
+									<NoteListSection
+										label="Pinned"
+										notes={pinnedNotes}
+										onSelectNote={onSelectNote}
+										onHoverNote={setHoveredId}
+										onLeaveNote={() => setHoveredId(null)}
 									/>
-								))
-							)}
-						</div>
+								)}
+								{recentNotes.length > 0 && (
+									<NoteListSection
+										label="Recent"
+										notes={recentNotes}
+										onSelectNote={onSelectNote}
+										onHoverNote={setHoveredId}
+										onLeaveNote={() => setHoveredId(null)}
+										withTopBorder={pinnedNotes.length > 0}
+									/>
+								)}
+							</div>
+						)}
 					</div>
 
 					{/* Preview pane */}
@@ -508,6 +575,42 @@ function RecentRow({
 			</span>
 			<span className="label-mono">{formatRelativeTime(new Date(note.updatedAt || note.createdAt))}</span>
 		</button>
+	);
+}
+
+function NoteListSection({
+	label,
+	notes,
+	onSelectNote,
+	onHoverNote,
+	onLeaveNote,
+	withTopBorder = false,
+}: {
+	label: string;
+	notes: NoteFile[];
+	onSelectNote: (noteId: string) => void;
+	onHoverNote: (noteId: string) => void;
+	onLeaveNote: () => void;
+	withTopBorder?: boolean;
+}) {
+	return (
+		<section className={withTopBorder ? 'border-t-[1.5px] border-[var(--ink)]' : ''}>
+			<div className="flex items-center justify-between px-6 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+				<span className="label-mono-strong">{label}</span>
+				<span className="label-mono">{notes.length} files</span>
+			</div>
+			<div className="[&>*:last-child]:border-b-0">
+				{notes.map((note) => (
+					<RecentRow
+						key={note.id}
+						note={note}
+						onSelect={() => onSelectNote(note.id)}
+						onHover={() => onHoverNote(note.id)}
+						onLeave={onLeaveNote}
+					/>
+				))}
+			</div>
+		</section>
 	);
 }
 
