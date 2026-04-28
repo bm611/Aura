@@ -206,36 +206,31 @@
 @media (min-width: 768px) and (pointer: fine) {
   .mobile-action-bar--editor.mobile-action-bar--editor-desktop {
     display: flex;
-    position: absolute;
-    left: 50%;
-    bottom: 20px;
-    z-index: 30;
-    width: max-content;
-    max-width: min(calc(100vw - 2rem), 56rem);
-    transform: translateX(-50%);
+    position: relative;
+    width: 100%;
+    z-index: 20;
+    border-bottom: 1.5px solid var(--ink);
   }
 
   .mobile-action-bar--editor.mobile-action-bar--editor-desktop .mobile-bar-inner {
     display: flex;
     align-items: center;
-    width: auto;
-    max-width: inherit;
+    width: 100%;
     padding: 0;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--bg-surface) 90%, transparent);
-    border: 1px solid color-mix(in srgb, var(--border-subtle) 50%, transparent);
+    border-radius: 0;
+    background: var(--bg-surface);
+    border: none;
     box-shadow: none;
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   .mobile-action-bar--editor.mobile-action-bar--editor-desktop .mobile-editor-toolbar-inner {
     display: flex;
     align-items: center;
-    width: auto;
-    max-width: inherit;
+    width: 100%;
     gap: 2px;
-    padding: 4px 6px;
+    padding: 4px 12px;
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
@@ -255,7 +250,7 @@
     min-height: 30px;
     padding: 0;
     border: none;
-    border-radius: 6px;
+    border-radius: 0;
     background: transparent;
     color: var(--text-muted);
     cursor: pointer;

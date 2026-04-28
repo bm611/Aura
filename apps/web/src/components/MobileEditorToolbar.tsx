@@ -242,7 +242,7 @@ interface ColorPickerProps {
 
 function ColorPicker({ editor, isDesktop }: ColorPickerProps) {
   const [open, setOpen] = useState(false)
-  const [popoverPos, setPopoverPos] = useState<{ left: number; bottom: number } | null>(null)
+  const [popoverPos, setPopoverPos] = useState<{ left: number; top?: number; bottom?: number } | null>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const isDark = useIsDarkTheme()
@@ -251,12 +251,13 @@ function ColorPicker({ editor, isDesktop }: ColorPickerProps) {
   const openPicker = useCallback(() => {
     if (!btnRef.current) return
     const rect = btnRef.current.getBoundingClientRect()
-    setPopoverPos({
-      left: rect.left + rect.width / 2,
-      bottom: window.innerHeight - rect.top + 10,
-    })
+    if (isDesktop) {
+      setPopoverPos({ left: rect.left + rect.width / 2, top: rect.bottom + 8 })
+    } else {
+      setPopoverPos({ left: rect.left + rect.width / 2, bottom: window.innerHeight - rect.top + 10 })
+    }
     setOpen(true)
-  }, [])
+  }, [isDesktop])
 
   // Close on outside click — check both the trigger wrap and the portalled popover
   useEffect(() => {
@@ -314,7 +315,7 @@ function ColorPicker({ editor, isDesktop }: ColorPickerProps) {
       {open && popoverPos && createPortal(
         <div
           className="color-picker-popover"
-          style={{ position: 'fixed', left: popoverPos.left, bottom: popoverPos.bottom, transform: 'translateX(-50%)' }}
+          style={{ position: 'fixed', left: popoverPos.left, top: popoverPos.top, bottom: popoverPos.bottom, transform: 'translateX(-50%)' }}
         >
           <div className="color-picker-swatches">
             {ACCENT_COLORS.map((accent) => {
@@ -381,9 +382,9 @@ export default function MobileEditorToolbar({ editor }: MobileEditorToolbarProps
   return (
     <div
       className={`mobile-action-bar mobile-action-bar--editor${isDesktop ? ' mobile-action-bar--editor-desktop' : ''}`}
-      style={{
-        bottom: isDesktop ? 20 : bottom,
-        paddingBottom: isDesktop ? undefined : 'env(safe-area-inset-bottom, 0px)',
+      style={isDesktop ? undefined : {
+        bottom,
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
     >
       <div className="mobile-bar-inner">

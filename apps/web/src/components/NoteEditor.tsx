@@ -428,10 +428,11 @@ export default function NoteEditor({
 					<button
 						type="button"
 						onClick={() => onSelectNote(null)}
-						className="btn-cell hidden md:inline-flex"
+						className="btn-pill hidden md:inline-flex"
+						style={{ padding: '0 10px' }}
 						title="Home"
 					>
-						<Icon icon={Home01Icon} size={16} strokeWidth={1.5} />
+						<Icon icon={Home01Icon} size={14} strokeWidth={1.5} />
 					</button>
 
 					<SettingsMenu
@@ -489,6 +490,9 @@ export default function NoteEditor({
 					)}
 				</div>
 			</div>
+
+			{/* Editor formatting toolbar — sticky below header on desktop, floating above keyboard on mobile */}
+			<MobileEditorToolbar editor={editorInstance} />
 
 			{/* Scrollable content */}
 			<div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
@@ -646,8 +650,6 @@ export default function NoteEditor({
 				)}
 			</div>
 
-			{/* Mobile editor toolbar — floating formatting pill */}
-			<MobileEditorToolbar editor={editorInstance} />
 		</motion.div>
 	);
 }
