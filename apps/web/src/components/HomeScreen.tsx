@@ -402,7 +402,7 @@ export default function HomeScreen({
 							</section>
 						)}
 						{recentNotes.length > 0 && (
-							<section className="border-b-[1.5px] border-[var(--ink)] mt-6">
+							<section className={`border-b-[1.5px] border-[var(--ink)]${pinnedNotes.length > 0 ? ' border-t-[1.5px] mt-6' : ''}`}>
 								<div className="flex items-center justify-between px-5 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
 									<span className="label-mono-strong">Recent</span>
 									<span className="label-mono">{recentNotes.length} files</span>
