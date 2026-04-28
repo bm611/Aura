@@ -9,6 +9,8 @@ import {
 	CloudUploadIcon,
 	Calendar01Icon,
 	ArrowRight01Icon,
+	Sun01Icon,
+	MoonIcon,
 } from '@hugeicons/core-free-icons';
 
 import Icon from './Icon';
@@ -64,6 +66,8 @@ function CompactHeroPanel({
 	totalWords,
 	onNewNote,
 	onCreateDailyNote,
+	greeting,
+	displayName,
 }: {
 	dayOfWeek: string;
 	dateLabel: string;
@@ -73,17 +77,23 @@ function CompactHeroPanel({
 	totalWords: number;
 	onNewNote: () => void;
 	onCreateDailyNote: () => void;
+	greeting: string;
+	displayName: string;
 }) {
 	return (
 		<section className="border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-primary)]">
-			<div className="px-5 pt-5 pb-5">
-				<h1 className="title-script text-[clamp(3rem,15vw,4.6rem)] leading-[0.84] text-[var(--ink)]">
-					{dayOfWeek}.
-				</h1>
+			<div className="px-5 pt-3 pb-3">
+				<p className="font-mono text-[12px] uppercase tracking-[0.08em] text-[var(--ink)] mb-1.5">
+					{greeting}, <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{displayName}</span>
+				</p>
 
-				<p className="label-mono mt-2">{dateLabel}</p>
+				<p className="flex items-center gap-1.5 font-mono text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--ink)]">
+					{dayOfWeek}
+					<span style={{ color: 'var(--accent)' }}>·</span>
+					{dateLabel}
+				</p>
 
-				<div className="mt-5 border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+				<div className="mt-4 border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
 					{isGettingStarted ? (
 						<div className="px-4 py-5">
 							<div className="label-mono-strong">Getting started</div>
@@ -280,6 +290,16 @@ export default function HomeScreen({
 		year: 'numeric',
 	});
 
+	const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'there';
+	const greeting = (() => {
+		const hour = today.getHours();
+		if (hour < 12) return 'Good morning';
+		if (hour < 17) return 'Good afternoon';
+		return 'Good evening';
+	})();
+
+	const timeIcon = today.getHours() < 17 ? Sun01Icon : MoonIcon;
+
 	return (
 		<div className="flex flex-1 min-w-0 flex-col bg-[var(--bg-primary)] overflow-hidden">
 			{/* ── Top utility bar ── */}
@@ -364,6 +384,8 @@ export default function HomeScreen({
 					totalWords={totalWords}
 					onNewNote={onNewNote}
 					onCreateDailyNote={onCreateDailyNote}
+					greeting={greeting}
+					displayName={displayName}
 				/>
 
 				{recentAndPinned.length > 0 ? (
@@ -400,11 +422,15 @@ export default function HomeScreen({
 				{/* ── Dashboard grid: greeting | stats ── */}
 				<div className="grid grid-cols-1 md:grid-cols-[1fr_minmax(300px,420px)] border-b-[1.5px] border-[var(--ink)]">
 					{/* Greeting */}
-					<div className="px-6 py-8 md:py-10 border-b md:border-b-0 md:border-r-[1.5px] border-[var(--ink)] bg-[var(--bg-primary)]">
-						<h1 className="title-script text-[56px] md:text-[72px] leading-none mb-3">
-							{dayOfWeek}.
-						</h1>
-						<p className="font-mono text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--ink)] mt-2">
+					<div className="px-6 py-8 border-b md:border-b-0 md:border-r-[1.5px] border-[var(--ink)] bg-[var(--bg-primary)] flex flex-col justify-center">
+						{displayName && (
+							<p className="font-mono text-[40px] font-bold uppercase tracking-[-0.02em] leading-[0.9] text-[var(--ink)] mb-3">
+								{greeting}, <span style={{ color: 'var(--accent)' }}>{displayName}</span>
+							</p>
+						)}
+						<p className="font-mono text-[15px] font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">
+							{dayOfWeek}
+							<span style={{ color: 'var(--accent)' }}> · </span>
 							{dayNumber} {monthYear}
 						</p>
 					</div>
