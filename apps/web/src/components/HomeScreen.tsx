@@ -295,16 +295,19 @@ export default function HomeScreen({
 		<div className="flex flex-1 min-w-0 flex-col bg-[var(--bg-primary)] overflow-hidden">
 			{/* ── Top utility bar ── */}
 			<div className="flex items-center justify-between px-4 py-2 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
-				<button
-					type="button"
-					onClick={onToggleSidebar}
-					className={`btn-cell ${sidebarCollapsed ? '' : 'lg:hidden'}`}
-					title="Toggle sidebar"
-					aria-label="Toggle sidebar"
-				>
-					<Icon icon={SidebarLeftIcon} size={16} strokeWidth={1.5} />
-				</button>
-				{!sidebarCollapsed && <div className="hidden lg:block w-9" />}
+				{sidebarCollapsed ? (
+					<button
+						type="button"
+						onClick={onToggleSidebar}
+						className="btn-cell"
+						title="Toggle sidebar"
+						aria-label="Toggle sidebar"
+					>
+						<Icon icon={SidebarLeftIcon} size={16} strokeWidth={1.5} />
+					</button>
+				) : (
+					<div className="w-9" />
+				)}
 
 				<div className="ml-auto flex items-center gap-2 pr-1">
 					{/* Settings pill */}
@@ -421,15 +424,16 @@ export default function HomeScreen({
 
 			<div className="hidden lg:flex lg:flex-1 lg:min-h-0 lg:flex-col">
 				{/* ── Dashboard grid: greeting | stats ── */}
-				<div className="grid grid-cols-1 md:grid-cols-[1fr_minmax(280px,420px)] border-b-[1.5px] border-[var(--ink)]">
+				<div className="grid grid-cols-1 md:grid-cols-[1fr_minmax(300px,420px)] border-b-[1.5px] border-[var(--ink)]">
 					{/* Greeting */}
 					<div className="px-6 py-8 md:py-10 border-b md:border-b-0 md:border-r-[1.5px] border-[var(--ink)] bg-[var(--bg-primary)]">
 						<h1 className="title-script text-[56px] md:text-[72px] leading-none mb-3">
 							{greeting}.
 						</h1>
-						<p className="label-mono">
-							{dateLabel} — {motto}
+						<p className="font-mono text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--ink)] mt-2">
+							{dateLabel}
 						</p>
+						<p className="label-mono mt-1.5">{motto}</p>
 					</div>
 
 					{/* Stats + Actions */}
@@ -438,27 +442,29 @@ export default function HomeScreen({
 						<StatBlock label="Streak" value={String(streak)} />
 						<StatBlock label="Words" value={compactNumber(totalWords)} />
 
-						<button
-							type="button"
-							onClick={onNewNote}
-							className="btn-stamp btn-stamp-ghost border-r-[1.5px] border-t-[1.5px] border-[var(--ink)] !shadow-none rounded-none h-12 col-span-1"
-						>
-							<Icon icon={Add01Icon} size={14} strokeWidth={2} />
-							New
-						</button>
-						<button
-							type="button"
-							onClick={onCreateDailyNote}
-							className="btn-stamp btn-stamp-accent border-t-[1.5px] border-[var(--ink)] !shadow-none rounded-none h-12 col-span-2 justify-center"
-						>
-							<Icon icon={Calendar01Icon} size={14} strokeWidth={2} />
-							Daily
-						</button>
+						<div className="col-span-3 grid grid-cols-3 border-t-[1.5px] border-[var(--ink)]">
+							<button
+								type="button"
+								onClick={onNewNote}
+								className="flex items-center justify-center gap-2 h-12 col-span-1 border-r-[1.5px] border-[var(--ink)] bg-transparent text-[var(--ink)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] cursor-pointer hover:bg-[var(--bg-hover)] transition-colors active:bg-[var(--bg-deep)]"
+							>
+								<Icon icon={Add01Icon} size={13} strokeWidth={2} />
+								New
+							</button>
+							<button
+								type="button"
+								onClick={onCreateDailyNote}
+								className="flex items-center justify-center gap-2 h-12 col-span-2 bg-[var(--accent)] text-[var(--accent-text)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] cursor-pointer hover:bg-[var(--accent-hover)] transition-colors"
+							>
+								<Icon icon={Calendar01Icon} size={13} strokeWidth={2} />
+								Daily
+							</button>
+						</div>
 					</div>
 				</div>
 
 				{/* ── Recent + Preview ── */}
-				<div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_minmax(320px,460px)] min-h-0">
+				<div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_minmax(300px,420px)] min-h-0">
 					{/* Recent / Pinned list */}
 					<div className="flex flex-col border-b md:border-b-0 md:border-r-[1.5px] border-[var(--ink)] min-h-0">
 						<div className="flex items-center justify-between px-6 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">

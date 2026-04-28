@@ -203,7 +203,7 @@ function TreeNodeComponent({
     <div>
       <div
         ref={nodeRef}
-        className={`tree-node ${isFolder ? 'is-folder' : 'is-file'}${isActive ? ' active' : ''}`}
+        className={`tree-node ${isFolder ? 'is-folder' : 'is-file'}${isActive ? ' active' : ''}${isPinnedNote ? ' is-pinned' : ''}`}
         style={{ paddingLeft: depth * 18 + 12 }}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
@@ -233,6 +233,8 @@ function TreeNodeComponent({
         <span className="tn-icon">
           {node.icon && CATEGORY_ICON_MAP[node.icon] ? (
             <Icon icon={CATEGORY_ICON_MAP[node.icon]!} size={16} strokeWidth={1.5} style={{ display: 'block' }} />
+          ) : isPinnedNote ? (
+            <Icon icon={PinIcon} size={15} strokeWidth={2} style={{ display: 'block', color: 'var(--accent)' }} />
           ) : (
             <SidebarIcon n={isFolder ? 'folder' : 'file'} s={16} />
           )}
@@ -251,12 +253,7 @@ function TreeNodeComponent({
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
-          <span className="tn-name" title={node.name}>
-            {node.name}
-            {isPinnedNote && (
-              <Icon icon={PinIcon} size={12} strokeWidth={1.5} style={{ display: 'inline-block', marginLeft: 4, opacity: 0.5, verticalAlign: 'middle' }} />
-            )}
-          </span>
+          <span className="tn-name" title={node.name}>{node.name}</span>
         )}
         {hover && !renaming && (
           <span className="tn-actions" onClick={(e) => e.stopPropagation()}>

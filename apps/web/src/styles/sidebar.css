@@ -297,6 +297,21 @@
   background: var(--accent);
 }
 
+/* Pinned note — accent left bar + subtle tinted background */
+.tree-node.is-pinned:not(.active) {
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+.tree-node.is-pinned:not(.active)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent);
+}
+
 .tn-arrow {
   display: flex;
   align-items: center;
