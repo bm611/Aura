@@ -508,20 +508,22 @@ export default function NoteEditor({
 					) : (
 						<>
 							<div className="editor-stagger-2">
-								<NoteBanner
-									noteId={note.id}
-									title={note.title}
-									onTitleChange={(title) => onUpdateNote(note.id, { title })}
-									onTitleKeyDown={handleTitleKeyDown}
-								/>
-
-								<div className="flex flex-wrap items-center gap-3 mt-3">
-									<span className="label-mono">{createdAtLabel}</span>
-									<span className="text-[var(--text-muted)] opacity-40">·</span>
-									<TagInput
-										tags={note.tags || []}
-										onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
+								<div className="note-title-block">
+									<NoteBanner
+										noteId={note.id}
+										title={note.title}
+										icon={note.icon}
+										onTitleChange={(title) => onUpdateNote(note.id, { title })}
+										onTitleKeyDown={handleTitleKeyDown}
 									/>
+									<div className="flex flex-wrap items-center gap-3 mt-2">
+										<span className="label-mono">{createdAtLabel}</span>
+										<span className="text-[var(--text-muted)] opacity-40">·</span>
+										<TagInput
+											tags={note.tags || []}
+											onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
+										/>
+									</div>
 								</div>
 							</div>
 						</>

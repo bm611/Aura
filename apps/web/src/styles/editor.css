@@ -22,43 +22,38 @@
   border-bottom-color: color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
-/* ── Banner stroke-draw animation ── */
+/* ── Note title block — accent bar + inline title ── */
 
-@keyframes banner-pattern-draw {
-  from {
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
+.note-title-block {
+  border-left: 4px solid var(--accent);
+  padding-left: 20px;
+  padding-top: 6px;
+  padding-bottom: 8px;
 }
 
-@keyframes banner-shimmer-sweep {
-  0% {
-    transform: translateX(-110%);
-  }
-  40%,
-  100% {
-    transform: translateX(110%);
-  }
+.banner-title-input {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  font-family: 'Caveat', cursive;
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--text-primary);
+  padding: 0;
 }
 
-.banner-draw .banner-pattern {
-  animation: banner-pattern-draw 0.8s var(--ease-out-expo) both;
+.banner-title-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.35;
 }
 
-.banner-draw .banner-shimmer {
-  background: linear-gradient(
-    105deg,
-    transparent 0%,
-    transparent 35%,
-    rgba(255, 255, 255, 0.06) 44%,
-    rgba(255, 255, 255, 0.12) 50%,
-    rgba(255, 255, 255, 0.06) 56%,
-    transparent 65%,
-    transparent 100%
-  );
-  animation: banner-shimmer-sweep 1.2s var(--ease-out-quart) 0.1s both;
+.banner-title-input:focus {
+  outline: none;
 }
 
 /* ── Title ink-bleed focus effect ── */
