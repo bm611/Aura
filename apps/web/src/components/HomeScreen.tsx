@@ -19,8 +19,6 @@ import type { SyncStatus } from './noteEditorUtils';
 import {
 	formatRelativeTime,
 	compareRecentNotes,
-	getTimeGreeting,
-	getMotivationalMessage,
 } from './noteEditorUtils';
 
 interface HomeScreenProps {
@@ -69,80 +67,85 @@ function plainTextPreview(content: string | undefined, max = 280): string {
 }
 
 function CompactHeroPanel({
-	greeting,
-	dateLabel,
-	motto,
+	dayOfWeek,
+	dayNumber,
+	monthYear,
 	noteCount,
+	streak,
+	totalWords,
 }: {
-	greeting: string;
-	dateLabel: string;
-	motto: string;
+	dayOfWeek: string;
+	dayNumber: string;
+	monthYear: string;
 	noteCount: number;
+	streak: number;
+	totalWords: number;
 }) {
 	return (
 		<section className="border-b-[1.5px] border-[var(--ink)]">
-			<div className="grid grid-cols-[88px_minmax(0,1fr)]">
-				<div className="flex flex-col justify-between gap-6 border-r-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-3 py-4">
-					<span className="label-mono-strong">Issue</span>
-					<span className="font-mono text-[32px] font-bold leading-none text-[var(--ink)]">
-						{String(noteCount).padStart(2, '0')}
-					</span>
-					<span className="label-mono">Pocket</span>
+			<div className="grid grid-cols-[72px_1fr]">
+				{/* Day number column */}
+				<div className="flex flex-col items-center justify-center gap-1 border-r-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] py-6">
+					<span className="font-mono text-[36px] font-bold leading-none text-[var(--ink)]">{dayNumber}</span>
+					<span className="label-mono text-[var(--text-muted)]">{monthYear}</span>
 				</div>
-				<div className="px-5 py-5">
-					<p className="label-mono-strong">Field desk</p>
-					<h1 className="title-script mt-3 text-[clamp(3rem,14vw,4.75rem)] leading-[0.88]">
-						{greeting}.
-					</h1>
-					<p className="mt-4 max-w-[26ch] font-[var(--font-prose)] text-[15px] leading-[1.45] text-[var(--text-secondary)]">
-						{motto}
-					</p>
-					<p className="mt-4 label-mono">{dateLabel}</p>
+				{/* Day name column */}
+				<div className="px-5 py-5 flex flex-col justify-between">
+					<div>
+						<p className="label-mono text-[var(--text-muted)]">Field notes</p>
+						<h1 className="title-script text-[clamp(2.6rem,13vw,4rem)] leading-[0.88] text-[var(--ink)] mt-1">
+							{dayOfWeek}.
+						</h1>
+					</div>
+					<div className="flex items-center gap-3 mt-4 flex-wrap">
+						<span className="label-mono">
+							<span className="font-mono font-bold text-[var(--ink)]">{noteCount}</span> notes
+						</span>
+						<span className="text-[var(--border-subtle)]">·</span>
+						<span className="label-mono">
+							<span className="font-mono font-bold text-[var(--ink)]">{streak}</span> streak
+						</span>
+						<span className="text-[var(--border-subtle)]">·</span>
+						<span className="label-mono">
+							<span className="font-mono font-bold text-[var(--ink)]">{compactNumber(totalWords)}</span> words
+						</span>
+					</div>
 				</div>
 			</div>
 		</section>
 	);
 }
 
-function CompactStatCell({ label, value }: { label: string; value: string }) {
-	return (
-		<div className="flex flex-col gap-2 border-r-[1.5px] last:border-r-0 border-[var(--ink)] bg-[var(--bg-surface)] px-4 py-4">
-			<span className="font-mono text-[28px] font-bold leading-none text-[var(--ink)]">{value}</span>
-			<span className="label-mono">{label}</span>
-		</div>
-	);
-}
-
 function CompactFeaturedNote({ note, onOpen }: { note: NoteFile; onOpen: () => void }) {
 	const updated = formatRelativeTime(new Date(note.updatedAt || note.createdAt));
-	const preview = plainTextPreview(note.content, 220).replace(/\s+/g, ' ').trim();
-	const wordCount = compactNumber(countBodyWords(note.content));
+	const preview = plainTextPreview(note.content, 180).replace(/\s+/g, ' ').trim();
 
 	return (
-		<section className="border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-elevated)]">
-			<div className="flex items-center justify-between border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-5 py-3">
-				<span className="label-mono-strong">{isPinned(note) ? 'Pinned note' : 'Lead note'}</span>
-				<span className="label-mono">{updated}</span>
-			</div>
+		<section className="border-b-[1.5px] border-[var(--ink)]">
 			<button
 				type="button"
 				onClick={onOpen}
 				className="group block w-full text-left px-5 py-5 transition-colors hover:bg-[var(--bg-hover)]"
 			>
 				<div className="flex items-start justify-between gap-4">
-					<div className="min-w-0">
-						<p className="label-mono">{wordCount} words</p>
-						<h2 className="title-script mt-3 text-[42px] leading-[0.9] text-[var(--ink)]">
+					<div className="min-w-0 flex-1">
+						<div className="flex items-center gap-2 mb-3">
+							<span className="label-mono-strong">{isPinned(note) ? 'Pinned' : 'Recent'}</span>
+							<span className="label-mono text-[var(--text-muted)]">· {updated}</span>
+						</div>
+						<h2 className="title-script text-[38px] leading-[0.9] text-[var(--ink)]">
 							{getNoteDisplayTitle(note)}
 						</h2>
 					</div>
-					<span className="surface-inverse flex h-10 w-10 flex-shrink-0 items-center justify-center border-[1.5px] border-[var(--ink)] transition-transform group-hover:-translate-y-0.5">
-						<Icon icon={ArrowRight01Icon} size={16} strokeWidth={2} />
+					<span className="surface-inverse flex h-9 w-9 flex-shrink-0 items-center justify-center border-[1.5px] border-[var(--ink)] mt-1 transition-transform group-hover:-translate-y-0.5">
+						<Icon icon={ArrowRight01Icon} size={14} strokeWidth={2} />
 					</span>
 				</div>
-				<p className="mt-4 font-[var(--font-prose)] text-[15px] leading-relaxed text-[var(--text-secondary)]">
-					{preview || 'Blank page. Tap to start writing.'}
-				</p>
+				{preview && (
+					<p className="mt-3 font-[var(--font-prose)] text-[14px] leading-relaxed text-[var(--text-secondary)]">
+						{preview}
+					</p>
+				)}
 			</button>
 		</section>
 	);
@@ -150,7 +153,6 @@ function CompactFeaturedNote({ note, onOpen }: { note: NoteFile; onOpen: () => v
 
 function CompactRecentRow({
 	note,
-	index,
 	onOpen,
 }: {
 	note: NoteFile;
@@ -158,33 +160,18 @@ function CompactRecentRow({
 	onOpen: () => void;
 }) {
 	const updated = formatRelativeTime(new Date(note.updatedAt || note.createdAt));
-	const preview = plainTextPreview(note.content, 120).replace(/\s+/g, ' ').trim();
 
 	return (
 		<button
 			type="button"
 			onClick={onOpen}
-			className="grid w-full grid-cols-[64px_minmax(0,1fr)] text-left transition-colors hover:bg-[var(--bg-hover)]"
+			className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-[var(--bg-hover)] border-b border-[var(--border-subtle)] last:border-b-0"
 		>
-			<div className="flex flex-col items-center justify-center gap-1 border-r-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-2 py-4">
-				<span className="font-mono text-[18px] font-bold leading-none text-[var(--ink)]">
-					{String(index).padStart(2, '0')}
-				</span>
-				<span className={isPinned(note) ? 'label-mono-strong text-[var(--accent)]' : 'label-mono'}>
-					{isPinned(note) ? 'Pin' : 'Recent'}
-				</span>
-			</div>
-			<div className="px-4 py-4">
-				<div className="flex items-start justify-between gap-3">
-					<span className="min-w-0 font-mono text-[13px] font-semibold uppercase tracking-[0.06em] leading-tight text-[var(--ink)]">
-						{getNoteDisplayTitle(note)}
-					</span>
-					<span className="label-mono shrink-0">{updated}</span>
-				</div>
-				<p className="mt-2 font-[var(--font-prose)] text-[13px] leading-[1.45] text-[var(--text-secondary)]">
-					{preview || 'Blank page. Open it.'}
-				</p>
-			</div>
+			<span className="block w-1.5 h-1.5 border border-[var(--text-muted)] flex-shrink-0 mt-0.5" aria-hidden />
+			<span className="flex-1 min-w-0 font-mono text-[13px] font-semibold uppercase tracking-[0.05em] leading-tight text-[var(--ink)] truncate">
+				{getNoteDisplayTitle(note)}
+			</span>
+			<span className="label-mono flex-shrink-0">{updated}</span>
 		</button>
 	);
 }
@@ -281,13 +268,9 @@ export default function HomeScreen({
 	}, [hoveredId, fileNotes, recentAndPinned]);
 
 	const today = new Date();
-	const dateLabel = today
-		.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
-		.toUpperCase()
-		.replace(',', ' ·');
-
-	const greeting = getTimeGreeting();
-	const motto = getMotivationalMessage(streak);
+	const dayOfWeek = today.toLocaleDateString('en-US', { weekday: 'long' });
+	const dayNumber = String(today.getDate()).padStart(2, '0');
+	const monthYear = today.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase();
 	const featuredCompactNote = recentAndPinned[0] ?? null;
 	const compactQueue = featuredCompactNote ? recentAndPinned.slice(1, 7) : [];
 
@@ -366,60 +349,66 @@ export default function HomeScreen({
 			</div>
 
 			<div className="lg:hidden flex-1 overflow-y-auto">
-				<CompactHeroPanel greeting={greeting} dateLabel={dateLabel} motto={motto} noteCount={fileNotes.length} />
+				<CompactHeroPanel
+					dayOfWeek={dayOfWeek}
+					dayNumber={dayNumber}
+					monthYear={monthYear}
+					noteCount={fileNotes.length}
+					streak={streak}
+					totalWords={totalWords}
+				/>
 
-				<div className="grid grid-cols-3 border-b-[1.5px] border-[var(--ink)]">
-					<CompactStatCell label="Notes" value={compactNumber(fileNotes.length)} />
-					<CompactStatCell label="Streak" value={String(streak)} />
-					<CompactStatCell label="Words" value={compactNumber(totalWords)} />
-				</div>
-
-				<div className="grid grid-cols-2 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+				<div className="flex border-b-[1.5px] border-[var(--ink)]">
 					<button
 						type="button"
 						onClick={onNewNote}
-						className="btn-stamp btn-stamp-inverse h-14 rounded-none border-r-[1.5px] border-[var(--ink)] !shadow-none"
+						className="flex flex-1 items-center justify-center gap-2 h-12 border-r-[1.5px] border-[var(--ink)] bg-transparent text-[var(--ink)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] transition-colors hover:bg-[var(--bg-hover)] active:bg-[var(--bg-deep)]"
 					>
-						<Icon icon={Add01Icon} size={14} strokeWidth={2} />
+						<Icon icon={Add01Icon} size={13} strokeWidth={2} />
 						New note
 					</button>
 					<button
 						type="button"
 						onClick={onCreateDailyNote}
-						className="btn-stamp btn-stamp-accent h-14 rounded-none border-[var(--ink)] !shadow-none"
+						className="flex flex-1 items-center justify-center gap-2 h-12 bg-[var(--accent)] text-[var(--accent-text)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] transition-colors hover:opacity-90"
 					>
-						<Icon icon={Calendar01Icon} size={14} strokeWidth={2} />
+						<Icon icon={Calendar01Icon} size={13} strokeWidth={2} />
 						Daily
 					</button>
 				</div>
 
-				{featuredCompactNote ? (
-					<CompactFeaturedNote note={featuredCompactNote} onOpen={() => onSelectNote(featuredCompactNote.id)} />
-				) : (
+				{recentAndPinned.length > 0 ? (() => {
+					const pinned = recentAndPinned.filter(isPinned);
+					const recent = recentAndPinned.filter((n) => !isPinned(n));
+					return (
+						<>
+							{pinned.length > 0 && (
+								<section className="border-b-[1.5px] border-[var(--ink)]">
+									<div className="flex items-center justify-between px-5 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+										<span className="label-mono-strong">Pinned</span>
+										<span className="label-mono">{pinned.length} files</span>
+									</div>
+									{pinned.map((note, index) => (
+										<CompactRecentRow key={note.id} note={note} index={index + 1} onOpen={() => onSelectNote(note.id)} />
+									))}
+								</section>
+							)}
+							{recent.length > 0 && (
+								<section className="border-b-[1.5px] border-[var(--ink)] mt-6">
+									<div className="flex items-center justify-between px-5 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+										<span className="label-mono-strong">Recent</span>
+										<span className="label-mono">{recent.length} files</span>
+									</div>
+									{recent.map((note, index) => (
+										<CompactRecentRow key={note.id} note={note} index={index + 1} onOpen={() => onSelectNote(note.id)} />
+									))}
+								</section>
+							)}
+						</>
+					);
+				})() : (
 					<CompactEmptyState onNewNote={onNewNote} />
 				)}
-
-				<section className="border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-primary)]">
-					<div className="flex items-center justify-between border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-5 py-3">
-						<span className="label-mono-strong">Queue</span>
-						<span className="label-mono">{compactNumber(recentAndPinned.length)} files</span>
-					</div>
-					{compactQueue.length > 0 ? (
-						compactQueue.map((note, index) => (
-							<div key={note.id} className="border-b border-[var(--border-subtle)] last:border-b-0">
-								<CompactRecentRow note={note} index={index + 2} onOpen={() => onSelectNote(note.id)} />
-							</div>
-						))
-					) : featuredCompactNote ? (
-						<div className="px-5 py-5">
-							<p className="label-mono">No other recent notes yet.</p>
-						</div>
-					) : (
-						<div className="px-5 py-5">
-							<p className="label-mono">Your queue will build itself as soon as you start writing.</p>
-						</div>
-					)}
-				</section>
 			</div>
 
 			<div className="hidden lg:flex lg:flex-1 lg:min-h-0 lg:flex-col">
@@ -428,12 +417,11 @@ export default function HomeScreen({
 					{/* Greeting */}
 					<div className="px-6 py-8 md:py-10 border-b md:border-b-0 md:border-r-[1.5px] border-[var(--ink)] bg-[var(--bg-primary)]">
 						<h1 className="title-script text-[56px] md:text-[72px] leading-none mb-3">
-							{greeting}.
+							{dayOfWeek}.
 						</h1>
 						<p className="font-mono text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--ink)] mt-2">
-							{dateLabel}
+							{dayNumber} {monthYear}
 						</p>
-						<p className="label-mono mt-1.5">{motto}</p>
 					</div>
 
 					{/* Stats + Actions */}
