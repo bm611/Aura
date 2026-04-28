@@ -84,7 +84,7 @@ function CompactHeroPanel({
 		<section className="border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-primary)]">
 			<div className="px-5 pt-3 pb-3">
 				<p className="font-mono text-[12px] uppercase tracking-[0.08em] text-[var(--ink)] mb-1.5">
-					{greeting}, <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{displayName}</span>
+					{greeting}{displayName && <>, <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{displayName}</span></>}
 				</p>
 
 				<p className="flex items-center gap-1.5 font-mono text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--ink)]">
@@ -97,7 +97,7 @@ function CompactHeroPanel({
 					{isGettingStarted ? (
 						<div className="px-4 py-5">
 							<div className="label-mono-strong">Getting started</div>
-							<p className="mt-3 max-w-[28ch] font-[var(--font-prose)] text-[14px] leading-relaxed text-[var(--text-secondary)]">
+							<p className="mt-3 font-[var(--font-prose)] text-[14px] leading-relaxed text-[var(--text-secondary)]">
 								Start with a fresh note or capture today&apos;s entry. Your writing stats show up once you have notes of your own.
 							</p>
 						</div>
@@ -290,7 +290,7 @@ export default function HomeScreen({
 		year: 'numeric',
 	});
 
-	const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'there';
+	const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || '';
 	const greeting = (() => {
 		const hour = today.getHours();
 		if (hour < 12) return 'Good morning';
@@ -423,11 +423,9 @@ export default function HomeScreen({
 				<div className="grid grid-cols-1 md:grid-cols-[1fr_minmax(300px,420px)] border-b-[1.5px] border-[var(--ink)]">
 					{/* Greeting */}
 					<div className="px-6 py-8 border-b md:border-b-0 md:border-r-[1.5px] border-[var(--ink)] bg-[var(--bg-primary)] flex flex-col justify-center">
-						{displayName && (
-							<p className="font-mono text-[40px] font-bold uppercase tracking-[-0.02em] leading-[0.9] text-[var(--ink)] mb-3">
-								{greeting}, <span style={{ color: 'var(--accent)' }}>{displayName}</span>
-							</p>
-						)}
+						<p className="font-mono text-[40px] capitalize tracking-[-0.02em] leading-[0.9] text-[var(--ink)] mb-3">
+							{greeting}{displayName && <>, <span style={{ color: 'var(--accent)' }}>{displayName}</span></>}
+						</p>
 						<p className="font-mono text-[15px] font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">
 							{dayOfWeek}
 							<span style={{ color: 'var(--accent)' }}> · </span>
@@ -440,7 +438,7 @@ export default function HomeScreen({
 						<div className="flex flex-col bg-[var(--bg-surface)] self-stretch">
 							<div className="flex-1 px-5 py-6 border-b-[1.5px] border-[var(--ink)]">
 								<div className="label-mono-strong">Getting started</div>
-								<p className="mt-4 max-w-[28ch] font-[var(--font-prose)] text-[15px] leading-relaxed text-[var(--text-secondary)]">
+								<p className="mt-4 font-[var(--font-prose)] text-[15px] leading-relaxed text-[var(--text-secondary)]">
 									Start with a fresh note or capture today&apos;s entry. Your writing stats show up once you have notes of your own.
 								</p>
 							</div>
