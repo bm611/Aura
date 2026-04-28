@@ -68,89 +68,73 @@ function plainTextPreview(content: string | undefined, max = 280): string {
 
 function CompactHeroPanel({
 	dayOfWeek,
-	dayNumber,
-	monthYear,
+	dateLabel,
 	noteCount,
 	streak,
 	totalWords,
+	onNewNote,
+	onCreateDailyNote,
 }: {
 	dayOfWeek: string;
-	dayNumber: string;
-	monthYear: string;
+	dateLabel: string;
 	noteCount: number;
 	streak: number;
 	totalWords: number;
+	onNewNote: () => void;
+	onCreateDailyNote: () => void;
 }) {
 	return (
-		<section className="border-b-[1.5px] border-[var(--ink)]">
-			<div className="grid grid-cols-[72px_1fr]">
-				{/* Day number column */}
-				<div className="flex flex-col items-center justify-center gap-1 border-r-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] py-6">
-					<span className="font-mono text-[36px] font-bold leading-none text-[var(--ink)]">{dayNumber}</span>
-					<span className="label-mono text-[var(--text-muted)]">{monthYear}</span>
-				</div>
-				{/* Day name column */}
-				<div className="px-5 py-5 flex flex-col justify-between">
-					<div>
-						<p className="label-mono text-[var(--text-muted)]">Field notes</p>
-						<h1 className="title-script text-[clamp(2.6rem,13vw,4rem)] leading-[0.88] text-[var(--ink)] mt-1">
-							{dayOfWeek}.
-						</h1>
+		<section className="border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-primary)]">
+			<div className="px-5 pt-5 pb-5">
+				<h1 className="title-script text-[clamp(3rem,15vw,4.6rem)] leading-[0.84] text-[var(--ink)]">
+					{dayOfWeek}.
+				</h1>
+
+				<p className="label-mono mt-2">{dateLabel}</p>
+
+				<div className="mt-5 border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+					<div className="grid grid-cols-3">
+						<div className="flex flex-col gap-1 px-4 py-4 border-r-[1.5px] border-[var(--ink)]">
+							<span className="font-mono text-[22px] font-bold leading-none text-[var(--ink)]">
+								{compactNumber(noteCount)}
+							</span>
+							<span className="label-mono">Notes</span>
+						</div>
+						<div className="flex flex-col gap-1 px-4 py-4 border-r-[1.5px] border-[var(--ink)]">
+							<span className="font-mono text-[22px] font-bold leading-none text-[var(--ink)]">{streak}</span>
+							<span className="label-mono">Streak</span>
+						</div>
+						<div className="flex flex-col gap-1 px-4 py-4">
+							<span className="font-mono text-[22px] font-bold leading-none text-[var(--ink)]">
+								{compactNumber(totalWords)}
+							</span>
+							<span className="label-mono">Words</span>
+						</div>
 					</div>
-					<div className="flex items-center gap-3 mt-4 flex-wrap">
-						<span className="label-mono">
-							<span className="font-mono font-bold text-[var(--ink)]">{noteCount}</span> notes
-						</span>
-						<span className="text-[var(--border-subtle)]">·</span>
-						<span className="label-mono">
-							<span className="font-mono font-bold text-[var(--ink)]">{streak}</span> streak
-						</span>
-						<span className="text-[var(--border-subtle)]">·</span>
-						<span className="label-mono">
-							<span className="font-mono font-bold text-[var(--ink)]">{compactNumber(totalWords)}</span> words
-						</span>
+
+					<div className="grid grid-cols-1 min-[360px]:grid-cols-2 border-t-[1.5px] border-[var(--ink)]">
+						<button
+							type="button"
+							onClick={onNewNote}
+							className="flex items-center justify-center gap-2 min-h-12 px-4 py-3 border-b-[1.5px] min-[360px]:border-b-0 min-[360px]:border-r-[1.5px] border-[var(--ink)] bg-transparent text-[var(--ink)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] transition-colors hover:bg-[var(--bg-hover)] active:bg-[var(--bg-deep)]"
+						>
+							<Icon icon={Add01Icon} size={13} strokeWidth={2} />
+							New note
+						</button>
+						<button
+							type="button"
+							onClick={onCreateDailyNote}
+							className="flex items-center justify-center gap-2 min-h-12 px-4 py-3 bg-[var(--accent)] text-[var(--accent-text)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] transition-colors hover:opacity-90"
+						>
+							<Icon icon={Calendar01Icon} size={13} strokeWidth={2} />
+							Daily
+						</button>
 					</div>
 				</div>
 			</div>
 		</section>
 	);
 }
-
-function CompactFeaturedNote({ note, onOpen }: { note: NoteFile; onOpen: () => void }) {
-	const updated = formatRelativeTime(new Date(note.updatedAt || note.createdAt));
-	const preview = plainTextPreview(note.content, 180).replace(/\s+/g, ' ').trim();
-
-	return (
-		<section className="border-b-[1.5px] border-[var(--ink)]">
-			<button
-				type="button"
-				onClick={onOpen}
-				className="group block w-full text-left px-5 py-5 transition-colors hover:bg-[var(--bg-hover)]"
-			>
-				<div className="flex items-start justify-between gap-4">
-					<div className="min-w-0 flex-1">
-						<div className="flex items-center gap-2 mb-3">
-							<span className="label-mono-strong">{isPinned(note) ? 'Pinned' : 'Recent'}</span>
-							<span className="label-mono text-[var(--text-muted)]">· {updated}</span>
-						</div>
-						<h2 className="title-script text-[38px] leading-[0.9] text-[var(--ink)]">
-							{getNoteDisplayTitle(note)}
-						</h2>
-					</div>
-					<span className="surface-inverse flex h-9 w-9 flex-shrink-0 items-center justify-center border-[1.5px] border-[var(--ink)] mt-1 transition-transform group-hover:-translate-y-0.5">
-						<Icon icon={ArrowRight01Icon} size={14} strokeWidth={2} />
-					</span>
-				</div>
-				{preview && (
-					<p className="mt-3 font-[var(--font-prose)] text-[14px] leading-relaxed text-[var(--text-secondary)]">
-						{preview}
-					</p>
-				)}
-			</button>
-		</section>
-	);
-}
-
 function CompactRecentRow({
 	note,
 	onOpen,
@@ -271,8 +255,11 @@ export default function HomeScreen({
 	const dayOfWeek = today.toLocaleDateString('en-US', { weekday: 'long' });
 	const dayNumber = String(today.getDate()).padStart(2, '0');
 	const monthYear = today.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase();
-	const featuredCompactNote = recentAndPinned[0] ?? null;
-	const compactQueue = featuredCompactNote ? recentAndPinned.slice(1, 7) : [];
+	const dateLabel = today.toLocaleDateString('en-US', {
+		month: 'short',
+		day: 'numeric',
+		year: 'numeric',
+	});
 
 	return (
 		<div className="flex flex-1 min-w-0 flex-col bg-[var(--bg-primary)] overflow-hidden">
@@ -351,31 +338,13 @@ export default function HomeScreen({
 			<div className="lg:hidden flex-1 overflow-y-auto">
 				<CompactHeroPanel
 					dayOfWeek={dayOfWeek}
-					dayNumber={dayNumber}
-					monthYear={monthYear}
+					dateLabel={dateLabel}
 					noteCount={fileNotes.length}
 					streak={streak}
 					totalWords={totalWords}
+					onNewNote={onNewNote}
+					onCreateDailyNote={onCreateDailyNote}
 				/>
-
-				<div className="flex border-b-[1.5px] border-[var(--ink)]">
-					<button
-						type="button"
-						onClick={onNewNote}
-						className="flex flex-1 items-center justify-center gap-2 h-12 border-r-[1.5px] border-[var(--ink)] bg-transparent text-[var(--ink)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] transition-colors hover:bg-[var(--bg-hover)] active:bg-[var(--bg-deep)]"
-					>
-						<Icon icon={Add01Icon} size={13} strokeWidth={2} />
-						New note
-					</button>
-					<button
-						type="button"
-						onClick={onCreateDailyNote}
-						className="flex flex-1 items-center justify-center gap-2 h-12 bg-[var(--accent)] text-[var(--accent-text)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] transition-colors hover:opacity-90"
-					>
-						<Icon icon={Calendar01Icon} size={13} strokeWidth={2} />
-						Daily
-					</button>
-				</div>
 
 				{recentAndPinned.length > 0 ? (() => {
 					const pinned = recentAndPinned.filter(isPinned);
