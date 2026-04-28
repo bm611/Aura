@@ -1,5 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import {
 	SidebarLeftIcon,
@@ -51,20 +53,6 @@ function compactNumber(n: number): string {
 
 function isPinned(note: NoteFile): boolean {
 	return Array.isArray(note.tags) && note.tags.some((t) => t === 'favorite' || t === 'pinned');
-}
-
-function plainTextPreview(content: string | undefined, max = 280): string {
-	if (!content) return '';
-	const stripped = content
-		.replace(/^---[\s\S]*?---/, '')
-		.replace(/^#{1,6}\s+/gm, '')
-		.replace(/\*\*(.+?)\*\*/g, '$1')
-		.replace(/\*(.+?)\*/g, '$1')
-		.replace(/`([^`]+)`/g, '$1')
-		.replace(/\[(.+?)\]\(.+?\)/g, '$1')
-		.replace(/\n{2,}/g, '\n\n')
-		.trim();
-	return stripped.length > max ? stripped.slice(0, max) + '…' : stripped;
 }
 
 function CompactHeroPanel({
@@ -616,7 +604,6 @@ function NoteListSection({
 
 function PreviewPane({ note, onOpen }: { note: NoteFile; onOpen: () => void }) {
 	const updated = formatRelativeTime(new Date(note.updatedAt || note.createdAt));
-	const preview = plainTextPreview(note.content);
 	return (
 		<div className="flex-1 overflow-y-auto">
 			{/* Title block — inverted */}
@@ -634,10 +621,32 @@ function PreviewPane({ note, onOpen }: { note: NoteFile; onOpen: () => void }) {
 			</button>
 
 			<div className="px-6 py-5 space-y-3">
-				{preview ? (
-					<pre className="whitespace-pre-wrap font-[var(--font-prose)] text-[14px] leading-relaxed text-[var(--text-secondary)]">
-						{preview}
-					</pre>
+				{note.content ? (
+					<div className="preview-markdown font-[var(--font-prose)] text-[14px] leading-relaxed text-[var(--text-secondary)] space-y-3">
+						<ReactMarkdown
+							remarkPlugins={[remarkGfm]}
+							components={{
+								h1: ({ children }) => <h1 className="mb-3 mt-4 text-lg font-bold text-[var(--ink)]">{children}</h1>,
+								h2: ({ children }) => <h2 className="mb-2 mt-3 text-base font-bold text-[var(--ink)]">{children}</h2>,
+								h3: ({ children }) => <h3 className="mb-2 mt-3 text-sm font-bold text-[var(--ink)]">{children}</h3>,
+								p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+								ul: ({ children }) => <ul className="mb-2 list-disc pl-5 last:mb-0 space-y-1">{children}</ul>,
+								ol: ({ children }) => <ol className="mb-2 list-decimal pl-5 last:mb-0 space-y-1">{children}</ol>,
+								li: ({ children }) => <li className="pl-1">{children}</li>,
+								blockquote: ({ children }) => <blockquote className="border-l-4 border-[var(--accent)] pl-3 italic my-2">{children}</blockquote>,
+								a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] hover:underline">{children}</a>,
+								code: ({ className, children }) =>
+									className ? (
+										<code className="block bg-[var(--bg-hover)] p-3 overflow-x-auto text-[13px]">{children}</code>
+									) : (
+										<code className="px-1 py-0.5 bg-[var(--bg-hover)] text-[var(--ink)] text-[13px]">{children}</code>
+									),
+								pre: ({ children }) => <pre className="my-2 overflow-x-auto">{children}</pre>,
+							}}
+						>
+							{note.content}
+						</ReactMarkdown>
+					</div>
 				) : (
 					<p className="label-mono">No content yet.</p>
 				)}
