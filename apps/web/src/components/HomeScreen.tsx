@@ -9,8 +9,6 @@ import {
 	CloudUploadIcon,
 	Calendar01Icon,
 	ArrowRight01Icon,
-	Sun01Icon,
-	MoonIcon,
 	PinIcon,
 	Clock03Icon,
 } from '@hugeicons/core-free-icons';
@@ -299,8 +297,6 @@ export default function HomeScreen({
 		if (hour < 17) return 'Good afternoon';
 		return 'Good evening';
 	})();
-
-	const timeIcon = today.getHours() < 17 ? Sun01Icon : MoonIcon;
 
 	return (
 		<div className="flex flex-1 min-w-0 flex-col bg-[var(--bg-primary)] overflow-hidden">
