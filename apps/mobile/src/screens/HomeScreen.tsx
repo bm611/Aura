@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 import {
   View,
   TouchableOpacity,
@@ -8,6 +8,8 @@ import {
   Pressable,
   ScrollView,
   useWindowDimensions,
+  Animated,
+  Easing,
 } from 'react-native'
 import type { NoteFile, TreeNode } from '@folio/shared'
 import { formatCreatedAt } from '@folio/shared'
@@ -58,6 +60,48 @@ export default function HomeScreen({ navigation }: any) {
   const { tree, createNote } = useNotes()
   const { user } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  
+  // Animation refs for Emil-style stagger
+  const fadeAnim = useRef(new Animated.Value(0)).current
+  const slideAnim = useRef(new Animated.Value(20)).current
+  const sidebarAnim = useRef(new Animated.Value(0)).current
+
+  // Entrance animation on mount
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 400,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start()
+  }, [])
+
+  // Sidebar animation
+  useEffect(() => {
+    if (sidebarOpen) {
+      Animated.timing(sidebarAnim, {
+        toValue: 1,
+        duration: 250,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start()
+    } else {
+      Animated.timing(sidebarAnim, {
+        toValue: 0,
+        duration: 200,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start()
+    }
+  }, [sidebarOpen])
 
   const allFiles = useMemo(() => collectFiles(tree), [tree])
   const recentNotes = useMemo(
@@ -108,26 +152,28 @@ export default function HomeScreen({ navigation }: any) {
 
   return (
     <Screen safeEdges={['top']}>
-      <ScrollView
+      <Animated.ScrollView
         contentContainerStyle={{
           paddingHorizontal: theme.spacing[5],
           paddingBottom: 110,
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }],
         }}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => setSidebarOpen(true)} hitSlop={10}>
+          <PressableScale onPress={() => setSidebarOpen(true)} hitSlop={10}>
             <View style={styles.iconRow}>
               <View style={[styles.line, { backgroundColor: theme.colors.textPrimary }]} />
               <View style={[styles.line, { backgroundColor: theme.colors.textPrimary, width: 16 }]} />
               <View style={[styles.line, { backgroundColor: theme.colors.textPrimary }]} />
             </View>
-          </TouchableOpacity>
+          </PressableScale>
           <View style={styles.headerRight}>
-            <TouchableOpacity hitSlop={10} onPress={() => navigation.navigate('AiTab' as any)}>
+            <PressableScale hitSlop={10} onPress={() => navigation.navigate('AiTab' as any)}>
               <Text style={{ color: theme.colors.textPrimary, fontSize: 20 }}>⌕</Text>
-            </TouchableOpacity>
+            </PressableScale>
             <View
               style={[
                 styles.avatar,
@@ -168,48 +214,7 @@ export default function HomeScreen({ navigation }: any) {
         {/* Categories */}
         <View style={[styles.grid, { marginTop: theme.spacing[5], gap: theme.spacing[3] }]}>
           {categories.map((cat, idx) => (
-            <TouchableOpacity
-              key={cat.key}
-              style={{ width: '48.5%' }}
-              activeOpacity={0.85}
-              onPress={() => setSidebarOpen(true)}
-            >
-              <Card tone={cat.tone} padded style={{ paddingVertical: 18 }}>
-                <View style={styles.catIconWrap}>
-                  <View
-                    style={[
-                      styles.catIcon,
-                      {
-                        backgroundColor: 'rgba(255,255,255,0.55)',
-                      },
-                    ]}
-                  >
-                    <Text style={{ fontSize: 18, color: getInk(cat.tone) }}>{cat.glyph}</Text>
-                  </View>
-                </View>
-                <Text
-                  style={{
-                    fontFamily: theme.fonts.bodySemibold,
-                    fontSize: 16,
-                    color: getInk(cat.tone),
-                    marginTop: 12,
-                  }}
-                >
-                  {cat.label}
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: theme.fonts.body,
-                    fontSize: 14,
-                    color: getInk(cat.tone),
-                    opacity: 0.72,
-                    marginTop: 2,
-                  }}
-                >
-                  {cat.count}
-                </Text>
-              </Card>
-            </TouchableOpacity>
+            <StaggerCard key={cat.key} index={idx} style={{ width: '48.5%' }} onPress={() => setSidebarOpen(true)} theme={theme} cat={cat} getInk={getInk} />
           ))}
         </View>
 
@@ -225,7 +230,7 @@ export default function HomeScreen({ navigation }: any) {
           >
             Recent Notes
           </Text>
-          <TouchableOpacity onPress={() => setSidebarOpen(true)} hitSlop={8}>
+          <PressableScale onPress={() => setSidebarOpen(true)} hitSlop={8}>
             <Text
               style={{
                 fontFamily: theme.fonts.bodyMedium,
@@ -235,7 +240,7 @@ export default function HomeScreen({ navigation }: any) {
             >
               View all
             </Text>
-          </TouchableOpacity>
+          </PressableScale>
         </View>
 
         {/* Recent notes list */}
@@ -262,9 +267,8 @@ export default function HomeScreen({ navigation }: any) {
             </Card>
           ) : (
             recentNotes.map((note, idx) => (
-              <TouchableOpacity
+              <PressableScale
                 key={note.id}
-                activeOpacity={0.75}
                 onPress={() => handleOpenNote(note)}
               >
                 <Card tone="elevated" padded={false} style={{ paddingVertical: 14, paddingHorizontal: 14 }}>
@@ -314,26 +318,31 @@ export default function HomeScreen({ navigation }: any) {
                     ) : null}
                   </View>
                 </Card>
-              </TouchableOpacity>
+              </PressableScale>
             ))
           )}
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       <Modal
         visible={sidebarOpen}
-        animationType="fade"
         transparent
         onRequestClose={() => setSidebarOpen(false)}
+        animationType="none"
       >
         <View style={styles.sidebarOverlay}>
-          <View
+          <Animated.View
             style={[
               styles.sidebarPanel,
               {
                 width: Math.min(width * 0.9, 380),
                 backgroundColor: theme.colors.bgPrimary,
                 borderRightColor: theme.colors.borderSubtle,
+                opacity: sidebarAnim,
+                transform: [{ translateX: sidebarAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-20, 0],
+                }) }],
               },
             ]}
           >
@@ -367,8 +376,8 @@ export default function HomeScreen({ navigation }: any) {
               </TouchableOpacity>
             </View>
             <NoteListScreen onNoteOpen={() => setSidebarOpen(false)} />
-          </View>
-          <Pressable style={styles.sidebarBackdrop} onPress={() => setSidebarOpen(false)} />
+          </Animated.View>
+          <AnimatedPressable style={styles.sidebarBackdrop} onPress={() => setSidebarOpen(false)} />
         </View>
       </Modal>
     </Screen>
@@ -449,3 +458,117 @@ const styles = StyleSheet.create({
     borderRightWidth: StyleSheet.hairlineWidth,
   },
 })
+
+// Emil: Scale-based press feedback for responsive feel
+function PressableScale({ children, onPress, hitSlop, style }: any) {
+  const scaleAnim = useRef(new Animated.Value(1)).current
+
+  const onPressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.97,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 4,
+    }).start()
+  }
+
+  const onPressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 4,
+    }).start()
+  }
+
+  return (
+    <Pressable
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      onPress={onPress}
+      hitSlop={hitSlop}
+      style={style}
+    >
+      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+        {children}
+      </Animated.View>
+    </Pressable>
+  )
+}
+
+// Emil: Stagger animation for category cards
+function StaggerCard({ index, style, onPress, theme, cat, getInk }: any) {
+  const fadeAnim = useRef(new Animated.Value(0)).current
+  const slideAnim = useRef(new Animated.Value(15)).current
+
+  useEffect(() => {
+    const delay = index * 50 // Emil: 30-80ms stagger delays
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        delay,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        delay,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start()
+  }, [index])
+
+  return (
+    <PressableScale style={style} onPress={onPress}>
+      <Animated.View
+        style={{
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }],
+        }}
+      >
+        <Card tone={cat.tone} padded style={{ paddingVertical: 18 }}>
+          <View style={styles.catIconWrap}>
+            <View
+              style={[
+                styles.catIcon,
+                {
+                  backgroundColor: 'rgba(255,255,255,0.55)',
+                },
+              ]}
+            >
+              <Text style={{ fontSize: 18, color: getInk(cat.tone) }}>{cat.glyph}</Text>
+            </View>
+          </View>
+          <Text
+            style={{
+              fontFamily: theme.fonts.bodySemibold,
+              fontSize: 16,
+              color: getInk(cat.tone),
+              marginTop: 12,
+            }}
+          >
+            {cat.label}
+          </Text>
+          <Text
+            style={{
+              fontFamily: theme.fonts.body,
+              fontSize: 14,
+              color: getInk(cat.tone),
+              opacity: 0.72,
+              marginTop: 2,
+            }}
+          >
+            {cat.count}
+          </Text>
+        </Card>
+      </Animated.View>
+    </PressableScale>
+  )
+}
+
+function AnimatedPressable({ style, onPress }: any) {
+  return <Pressable style={style} onPress={onPress} />
+}

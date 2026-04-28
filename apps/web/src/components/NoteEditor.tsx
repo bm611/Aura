@@ -131,7 +131,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 		<motion.div
 			initial={{ opacity: 0, y: -4 }}
 			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
+			transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
 			className="inline-flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] mb-4 px-2 py-1 border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] uppercase tracking-[0.06em] font-mono"
 		>
 			{/* Folder path */}
@@ -399,7 +399,7 @@ export default function NoteEditor({
 						<button
 							type="button"
 							onClick={() => onSelectNote(null)}
-							className="glass-icon md:hidden relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.96]"
+							className="glass-icon md:hidden relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-160 hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.97]" style={{ transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
 							title="Back to Home"
 						>
 						<Icon icon={ArrowLeft01Icon} size={22} strokeWidth={2} />
@@ -409,7 +409,7 @@ export default function NoteEditor({
 						<button
 							type="button"
 							onClick={onToggleSidebar}
-							className="glass-icon hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.96]"
+							className="glass-icon hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-160 hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.97]" style={{ transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
 							title="Open sidebar (Cmd+B)"
 						>
 							<Icon
@@ -554,9 +554,9 @@ export default function NoteEditor({
 				{/* Save status */}
 				<motion.span
 					key={saveStatus.state}
-					initial={saveStatus.state === 'syncing' ? { scale: 0.9 } : undefined}
-					animate={saveStatus.state === 'syncing' ? { scale: [0.9, 1.08, 1] } : undefined}
-					transition={saveStatus.state === 'syncing' ? { duration: 0.4, ease: [0.25, 1, 0.5, 1] } : undefined}
+					initial={saveStatus.state === 'syncing' ? { scale: 0.92 } : undefined}
+					animate={saveStatus.state === 'syncing' ? { scale: [0.92, 1.05, 1] } : undefined}
+					transition={saveStatus.state === 'syncing' ? { duration: 0.25, ease: [0.23, 1, 0.32, 1] } : undefined}
 					className={`inline-flex items-center gap-1 font-medium ${getSaveTextClass(saveStatus.state)}`}
 					title={saveError || (lastSavedAt ? `Last saved ${formatRelativeSaveTime(lastSavedAt)}` : saveDetail)}
 				>
