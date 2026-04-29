@@ -23,6 +23,7 @@ import {
   updateFileNode,
 } from './utils/tree'
 import NoteEditor from './components/NoteEditor'
+import SharedNoteViewer from './components/SharedNoteViewer'
 import AiChatPage from './components/AiChatPage'
 import CommandPalette from './components/CommandPalette'
 import type { PaletteItem } from './components/CommandPalette'
@@ -40,6 +41,8 @@ import { exportNoteAsMarkdown } from './utils/exportNote'
 import { ACCENT_COLORS } from './config/accents'
 import { FONT_OPTIONS } from './config/fonts'
 import { THEMES } from './config/themes'
+import { fetchSharedNote, getSharedNoteToken } from './lib/sharedNotes'
+import type { SharedNoteData } from './lib/sharedNotes'
 import type { TreeNode, NoteFile, NoteFolder, FlatNode } from './types'
 import type { EditorApi } from './components/LiveMarkdownEditor'
 import type { Template } from './config/templates'
@@ -68,6 +71,13 @@ interface DeletedNoteState {
   syncableNodes: TreeNode[]
   nodeIds: string[]
   parentId: string | null
+}
+
+interface SharedNotePageState {
+  token: string | null
+  status: 'idle' | 'loading' | 'ready' | 'missing' | 'error'
+  note: SharedNoteData | null
+  error: string | null
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -232,6 +242,41 @@ function matchesQuery(query: string, values: (string | undefined)[]): boolean {
   }
 
   return values.some((value) => value?.toLowerCase().includes(normalizedQuery))
+}
+
+function getInitialSharedNoteState(): SharedNotePageState {
+  const token = getSharedNoteToken()
+
+  if (!token) {
+    return {
+      token: null,
+      status: 'idle',
+      note: null,
+      error: null,
+    }
+  }
+
+  return {
+    token,
+    status: 'loading',
+    note: null,
+    error: null,
+  }
+}
+
+function SharedNoteStatusPage({ title, detail }: { title: string; detail: string }) {
+  return (
+    <div className="min-h-screen bg-[var(--bg-primary)] px-6 text-[var(--text-primary)]">
+      <div className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center text-center">
+        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+          <Icon icon={File01Icon} size={22} strokeWidth={1.5} className="text-[var(--text-muted)]" />
+        </div>
+        <h1 className="text-2xl font-semibold text-[var(--ink)]">{title}</h1>
+        <p className="mt-3 max-w-md text-sm leading-relaxed text-[var(--text-muted)]">{detail}</p>
+        <a href="/" className="btn-pill mt-6">Open Folio</a>
+      </div>
+    </div>
+  )
 }
 
 /**
@@ -454,6 +499,7 @@ function AppInner() {
   const pendingDeleteIdsRef = useRef<string[]>([])
   const hydrationInFlightRef = useRef(false)
   const [showWelcomeModal, setShowWelcomeModal] = useState(false)
+  const [sharedNotePage, setSharedNotePage] = useState<SharedNotePageState>(getInitialSharedNoteState)
 
   const hasPendingCloudSaves = useCallback(() => {
     return Object.values(cloudSaveTimers.current).some(Boolean)
@@ -929,6 +975,75 @@ function AppInner() {
     }
     localStorage.setItem('canvas-accent', accentId)
   }, [accentId])
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const token = getSharedNoteToken()
+
+      setSharedNotePage(token ? {
+        token,
+        status: 'loading',
+        note: null,
+        error: null,
+      } : {
+        token: null,
+        status: 'idle',
+        note: null,
+        error: null,
+      })
+    }
+
+    window.addEventListener('popstate', handleLocationChange)
+
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange)
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    if (!sharedNotePage.token || sharedNotePage.status !== 'loading') {
+      return () => {
+        cancelled = true
+      }
+    }
+
+    fetchSharedNote(sharedNotePage.token)
+      .then((note) => {
+        if (cancelled) {
+          return
+        }
+
+        setSharedNotePage(note ? {
+          token: sharedNotePage.token,
+          status: 'ready',
+          note,
+          error: null,
+        } : {
+          token: sharedNotePage.token,
+          status: 'missing',
+          note: null,
+          error: 'This shared note no longer exists or the link is invalid.',
+        })
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return
+        }
+
+        setSharedNotePage({
+          token: sharedNotePage.token,
+          status: 'error',
+          note: null,
+          error: (error as Error)?.message || 'This shared note could not be loaded.',
+        })
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [sharedNotePage.status, sharedNotePage.token])
 
   const openCommandPalette = useCallback(() => {
     setCommandPaletteQuery('')
@@ -1707,6 +1822,28 @@ function AppInner() {
     // Show welcome modal for demo mode testing
     setShowWelcomeModal(true)
   }, [])
+
+  if (sharedNotePage.token) {
+    if (sharedNotePage.note) {
+      return <SharedNoteViewer note={sharedNotePage.note} />
+    }
+
+    if (sharedNotePage.status === 'loading') {
+      return (
+        <SharedNoteStatusPage
+          title="Loading shared note"
+          detail="Fetching the latest shared snapshot."
+        />
+      )
+    }
+
+    return (
+      <SharedNoteStatusPage
+        title="Shared note unavailable"
+        detail={sharedNotePage.error || 'This shared note could not be loaded.'}
+      />
+    )
+  }
 
   // While auth is resolving, render nothing so the HTML loading indicator stays
   // visible and we avoid flashing the LandingPage for signed-in users.

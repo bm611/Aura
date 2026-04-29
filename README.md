@@ -103,6 +103,7 @@ For the application to function correctly, you need to set up certain environmen
 | ------------------------ | ------------------------------------- | ----------------------- |
 | `VITE_SUPABASE_URL`      | `apps/web/.env`                       | Supabase project URL    |
 | `VITE_SUPABASE_ANON_KEY` | `apps/web/.env`                       | Supabase anonymous key  |
+| `SUPABASE_SERVICE_ROLE_KEY` | Netlify env only                   | Public shared-note lookup |
 | `OPENROUTER_API_KEY`     | Netlify env / shell env / Tauri store | AI chat proxy API key   |
 
 Do not commit `.env` files.

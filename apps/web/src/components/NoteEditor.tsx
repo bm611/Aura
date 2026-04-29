@@ -12,6 +12,8 @@ import {
 	Folder01Icon,
 	ArrowRight01Icon,
 	SidebarLeftIcon,
+	Share01Icon,
+	Copy01Icon,
 } from '@hugeicons/core-free-icons';
 
 import Icon from './Icon';
@@ -32,6 +34,7 @@ import NoteBanner from './NoteBanner';
 
 import type { NoteFile, TreeNode } from '../types';
 import { getBreadcrumbPath } from '../utils/tree';
+import { createSharedNote, generateSharedNoteUrl } from '../lib/sharedNotes';
 import { useAuth } from '../contexts/AuthContext';
 import HomeScreen from './HomeScreen';
 import type { SaveStatus, SyncStatus } from './noteEditorUtils';
@@ -291,6 +294,8 @@ export default function NoteEditor({
 	const { user } = useAuth();
 	const [profileOpen, setProfileOpen] = useState(false);
 	const profileAnchorRef = useRef<HTMLDivElement>(null);
+	const [shareStatus, setShareStatus] = useState<'idle' | 'sharing' | 'copied' | 'error'>('idle');
+	const shareTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const fileNotes = useMemo(() => notes.filter((n): n is NoteFile => n.type === 'file'), [notes]);
 
@@ -341,6 +346,55 @@ export default function NoteEditor({
 			editorApiRef.current?.focus();
 		}
 	};
+
+	const handleShareNote = useCallback(async () => {
+		if (!note) return;
+
+		if (!user) {
+			onOpenAuthModal();
+			return;
+		}
+
+		clearTimeout(shareTimerRef.current ?? undefined);
+		setShareStatus('sharing');
+
+		try {
+			const token = await createSharedNote(note, user.id);
+			const url = generateSharedNoteUrl(token);
+			await navigator.clipboard.writeText(url);
+			setShareStatus('copied');
+			shareTimerRef.current = setTimeout(() => {
+				setShareStatus('idle');
+				shareTimerRef.current = null;
+			}, 2000);
+		} catch (error) {
+			console.error(error);
+			setShareStatus('error');
+			shareTimerRef.current = setTimeout(() => {
+				setShareStatus('idle');
+				shareTimerRef.current = null;
+			}, 3000);
+		}
+	}, [note, onOpenAuthModal, user])
+
+	useEffect(() => {
+		return () => {
+			clearTimeout(shareTimerRef.current ?? undefined)
+		}
+	}, [])
+
+	const shareLabel = shareStatus === 'sharing'
+		? 'Sharing…'
+		: shareStatus === 'copied'
+			? 'Copied'
+			: shareStatus === 'error'
+				? 'Retry'
+				: 'Share';
+	const shareTitle = !user
+		? 'Sign in to share this note'
+		: shareStatus === 'sharing'
+			? 'Creating a share link'
+			: 'Copy shareable link';
 
 	// ── Home screen (no note selected) ─────────────────────────────────────────
 
@@ -433,6 +487,18 @@ export default function NoteEditor({
 						title="Home"
 					>
 						<Icon icon={Home01Icon} size={14} strokeWidth={1.5} />
+					</button>
+
+					{/* Share button */}
+					<button
+						type="button"
+						onClick={handleShareNote}
+						disabled={shareStatus === 'sharing'}
+						className="btn-pill"
+						title={shareTitle}
+					>
+						<Icon icon={shareStatus === 'copied' ? Copy01Icon : Share01Icon} size={14} strokeWidth={1.5} />
+						<span className="hidden md:inline ml-1">{shareLabel}</span>
 					</button>
 
 					<SettingsMenu
