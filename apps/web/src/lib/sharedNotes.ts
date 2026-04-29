@@ -3,6 +3,7 @@ import type { NoteFile } from '../types'
 import { supabase } from './supabase'
 
 const SHARE_PATH_PREFIX = '/s/'
+const SHARE_TOKEN_PATTERN = /^[A-Za-z0-9_-]{22}$/
 
 export interface SharedNoteData {
   title: string
@@ -142,5 +143,6 @@ export function getSharedNoteToken(pathname: string = window.location.pathname):
     return null
   }
 
-  return decodeURIComponent(segments[1])
+  const token = decodeURIComponent(segments[1])
+  return SHARE_TOKEN_PATTERN.test(token) ? token : null
 }

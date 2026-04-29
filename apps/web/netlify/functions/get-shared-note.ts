@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? ''
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
+const SHARE_TOKEN_PATTERN = /^[A-Za-z0-9_-]{22}$/
 
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -30,6 +31,10 @@ export default async function handler(req: Request): Promise<Response> {
 
   if (!token) {
     return json(400, { error: 'Missing token' })
+  }
+
+  if (!SHARE_TOKEN_PATTERN.test(token)) {
+    return json(400, { error: 'Invalid token' })
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {

@@ -39,6 +39,8 @@ const baseTree = [
   },
 ] as unknown as TreeNode[]
 
+type FolderNode = TreeNode & { children: TreeNode[] }
+
 describe('tree utilities', () => {
   it('inserts nodes at the requested location', () => {
     const nextTree = insertNode(baseTree, 'folder-a', {
@@ -49,7 +51,7 @@ describe('tree utilities', () => {
       content: 'three',
     } as unknown as TreeNode)
 
-    expect((nextTree[0] as any).children).toHaveLength(2)
+    expect((nextTree[0] as FolderNode).children).toHaveLength(2)
     expect(flattenTree(nextTree).map((node) => node.id)).toEqual(['file-a', 'file-c', 'file-b'])
   })
 
@@ -58,7 +60,7 @@ describe('tree utilities', () => {
     const updatedTree = updateFileNode(renamedTree, 'file-a', { content: 'updated' })
 
     expect(updatedTree[1]).toMatchObject({ name: 'Updated Inbox', title: 'Updated Inbox' })
-    expect((updatedTree[0] as any).children[0].content).toBe('updated')
+    expect((updatedTree[0] as FolderNode).children[0]).toMatchObject({ content: 'updated' })
   })
 
   it('deletes nested nodes and only returns visible files from expanded folders', () => {
@@ -85,7 +87,7 @@ describe('tree utilities', () => {
     const filteredTree = filterTreeNodes(mixedTree, 'rece')
 
     expect(filteredTree[0]).toMatchObject({ id: 'folder-b' })
-    expect((filteredTree[0] as any).children[0]).toMatchObject({ id: 'file-c' })
+    expect((filteredTree[0] as FolderNode).children[0]).toMatchObject({ id: 'file-c' })
   })
 
   it('flattens full node trees with parent ids and rebuilds the same structure', () => {

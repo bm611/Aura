@@ -1,52 +1,216 @@
 import OpenAI from 'openai'
+import { createClient } from '@supabase/supabase-js'
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY ?? ''
+const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? ''
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY ?? ''
 const MODEL = "x-ai/grok-4.1-fast"
+const MAX_BODY_BYTES = 64 * 1024
+const MAX_QUESTION_CHARS = 4000
+const MAX_NOTES = 8
+const MAX_NOTE_TITLE_CHARS = 200
+const MAX_NOTE_CONTENT_CHARS = 12000
+const MAX_CONTEXT_CHARS = 50000
+const USER_REQUESTS_PER_MINUTE = 12
+const USER_REQUESTS_PER_DAY = 120
+const IP_REQUESTS_PER_MINUTE = 30
+const ONE_MINUTE_MS = 60 * 1000
+const ONE_DAY_MS = 24 * 60 * 60 * 1000
+
+interface ChatRequestBody {
+  question?: unknown
+  noteContents?: unknown
+  mode?: unknown
+}
+
+interface NoteContent {
+  title: string
+  content: string
+}
+
+interface RateBucket {
+  minute: number[]
+  day: number[]
+}
+
+const rateBuckets = new Map<string, RateBucket>()
+
+function json(status: number, body: unknown, headers: HeadersInit = {}): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      'Cache-Control': 'no-store',
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+  })
+}
+
+function getClientIp(req: Request): string {
+  const forwarded = req.headers.get('x-nf-client-connection-ip')
+    ?? req.headers.get('cf-connecting-ip')
+    ?? req.headers.get('x-real-ip')
+    ?? req.headers.get('x-forwarded-for')
+    ?? ''
+
+  return forwarded.split(',')[0]?.trim() || 'unknown'
+}
+
+function pruneWindow(values: number[], cutoff: number): number[] {
+  return values.filter((value) => value > cutoff)
+}
+
+function checkRateLimit(key: string, perMinute: number, perDay: number): { allowed: boolean; retryAfterSeconds?: number } {
+  const now = Date.now()
+  const bucket = rateBuckets.get(key) ?? { minute: [], day: [] }
+  bucket.minute = pruneWindow(bucket.minute, now - ONE_MINUTE_MS)
+  bucket.day = pruneWindow(bucket.day, now - ONE_DAY_MS)
+
+  if (bucket.minute.length >= perMinute) {
+    const oldest = bucket.minute[0] ?? now
+    return {
+      allowed: false,
+      retryAfterSeconds: Math.max(1, Math.ceil((oldest + ONE_MINUTE_MS - now) / 1000)),
+    }
+  }
+
+  if (bucket.day.length >= perDay) {
+    const oldest = bucket.day[0] ?? now
+    return {
+      allowed: false,
+      retryAfterSeconds: Math.max(1, Math.ceil((oldest + ONE_DAY_MS - now) / 1000)),
+    }
+  }
+
+  bucket.minute.push(now)
+  bucket.day.push(now)
+  rateBuckets.set(key, bucket)
+  return { allowed: true }
+}
+
+function normalizeNotes(value: unknown): NoteContent[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  let remainingChars = MAX_CONTEXT_CHARS
+  const notes: NoteContent[] = []
+
+  for (const rawNote of value.slice(0, MAX_NOTES)) {
+    if (!rawNote || typeof rawNote !== 'object') {
+      continue
+    }
+
+    const note = rawNote as Record<string, unknown>
+    const title = String(note.title ?? 'Untitled').slice(0, MAX_NOTE_TITLE_CHARS)
+    const rawContent = String(note.content ?? '')
+    const contentLimit = Math.min(MAX_NOTE_CONTENT_CHARS, remainingChars)
+
+    if (contentLimit <= 0) {
+      break
+    }
+
+    const content = rawContent.slice(0, contentLimit)
+    remainingChars -= content.length
+    notes.push({ title, content })
+  }
+
+  return notes
+}
+
+async function readJsonBody(req: Request): Promise<ChatRequestBody | Response> {
+  const contentLength = Number(req.headers.get('content-length') ?? 0)
+  if (contentLength > MAX_BODY_BYTES) {
+    return json(413, { error: 'Request is too large' })
+  }
+
+  const rawBody = await req.text()
+  if (new TextEncoder().encode(rawBody).length > MAX_BODY_BYTES) {
+    return json(413, { error: 'Request is too large' })
+  }
+
+  try {
+    return JSON.parse(rawBody) as ChatRequestBody
+  } catch {
+    return json(400, { error: 'Invalid JSON body' })
+  }
+}
+
+async function getAuthenticatedUserId(req: Request): Promise<string | Response> {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    return json(500, { error: 'Supabase auth service is not configured' })
+  }
+
+  const authorization = req.headers.get('authorization') ?? ''
+  const token = authorization.match(/^Bearer\s+(.+)$/i)?.[1]
+  if (!token) {
+    return json(401, { error: 'Sign in to use Folio AI' })
+  }
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
+
+  const { data, error } = await supabase.auth.getUser(token)
+  if (error || !data.user) {
+    return json(401, { error: 'Invalid or expired session' })
+  }
+
+  return data.user.id
+}
 
 export default async function handler(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-    })
+    return new Response(null, { status: 204 })
   }
 
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    return json(405, { error: 'Method not allowed' })
   }
 
   if (!OPENROUTER_API_KEY) {
-    return new Response(
-      JSON.stringify({ error: 'OPENROUTER_API_KEY is not configured' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    )
+    return json(500, { error: 'AI service is not configured' })
   }
 
-  let body: { question: string; noteContents: { title: string; content: string }[]; mode?: 'chat' | 'inline' }
-
-  try {
-    body = await req.json()
-  } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
+  const ip = getClientIp(req)
+  const ipLimit = checkRateLimit(`ip:${ip}`, IP_REQUESTS_PER_MINUTE, USER_REQUESTS_PER_DAY * 4)
+  if (!ipLimit.allowed) {
+    return json(429, { error: 'Too many AI requests. Try again shortly.' }, {
+      'Retry-After': String(ipLimit.retryAfterSeconds ?? 60),
     })
   }
 
-  const { question, noteContents, mode } = body
+  const userId = await getAuthenticatedUserId(req)
+  if (userId instanceof Response) {
+    return userId
+  }
 
-  if (!question || typeof question !== 'string') {
-    return new Response(JSON.stringify({ error: 'Missing "question" field' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
+  const userLimit = checkRateLimit(`user:${userId}`, USER_REQUESTS_PER_MINUTE, USER_REQUESTS_PER_DAY)
+  if (!userLimit.allowed) {
+    return json(429, { error: 'AI usage limit reached. Try again later.' }, {
+      'Retry-After': String(userLimit.retryAfterSeconds ?? 60),
     })
   }
 
-  const contextBlock = (noteContents ?? [])
+  const body = await readJsonBody(req)
+  if (body instanceof Response) {
+    return body
+  }
+
+  const question = typeof body.question === 'string' ? body.question.trim().slice(0, MAX_QUESTION_CHARS) : ''
+  const noteContents = normalizeNotes(body.noteContents)
+  const mode = body.mode === 'inline' ? 'inline' : 'chat'
+
+  if (!question) {
+    return json(400, { error: 'Missing "question" field' })
+  }
+
+  const contextBlock = noteContents
     .map(
-      (n: { title: string; content: string }, i: number) =>
+      (n, i) =>
         `--- Note ${i + 1}: "${n.title}" ---\n${n.content}`
     )
     .join('\n\n')
@@ -116,10 +280,8 @@ export default async function handler(req: Request): Promise<Response> {
       },
     })
   } catch (err) {
-    return new Response(
-      JSON.stringify({ error: (err as Error).message }),
-      { status: 502, headers: { 'Content-Type': 'application/json' } }
-    )
+    console.error('AI upstream request failed', err)
+    return json(502, { error: 'AI service request failed' })
   }
 }
 

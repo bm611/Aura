@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import type { IconSvgElement } from '@hugeicons/react'
 import {
   Cancel01Icon,
   SparklesIcon,
@@ -22,11 +23,11 @@ function TipItem({
   icon: IconComponent,
   title,
   description,
-}: {
-  icon: any
-  title: string
-  description: string
-}) {
+	}: {
+	  icon: IconSvgElement
+	  title: string
+	  description: string
+	}) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -12 }}

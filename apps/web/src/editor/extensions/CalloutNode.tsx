@@ -185,10 +185,10 @@ export const CalloutNode = Node.create({
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const extension = this
     return {
-      insertCallout:
-        (attrs: Record<string, unknown> = {}) =>
-        ({ commands }: { commands: any }) =>
-          commands.insertContent({
+	      insertCallout:
+	        (attrs: Record<string, unknown> = {}) =>
+	        ({ commands }: { commands: { insertContent: (content: unknown) => boolean } }) =>
+	          commands.insertContent({
             type: extension.name,
             attrs: {
               calloutKind: attrs.calloutKind || 'note',

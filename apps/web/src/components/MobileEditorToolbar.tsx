@@ -23,14 +23,14 @@ import {
 import Icon from './Icon'
 import { ACCENT_COLORS } from '../config/accents'
 
-export interface ToolbarAction {
+interface ToolbarAction {
   id: string
   icon: typeof Heading01Icon
   title: string
   action: (editor: Editor) => void
 }
 
-export const TOOLBAR_ACTIONS: ToolbarAction[] = [
+const TOOLBAR_ACTIONS: ToolbarAction[] = [
   {
     id: 'h1',
     icon: Heading01Icon,

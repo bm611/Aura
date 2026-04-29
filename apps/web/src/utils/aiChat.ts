@@ -1,3 +1,5 @@
+import { supabase } from '../lib/supabase'
+
 interface AiChatRequest {
   question: string
   noteContents: { title: string; content: string }[]
@@ -20,9 +22,15 @@ export async function streamAiChat(
   let response: Response
 
   try {
+    const { data } = await supabase.auth.getSession()
+    const accessToken = data.session?.access_token
+
     response = await fetch('/.netlify/functions/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
       body: JSON.stringify(request),
       signal,
     })

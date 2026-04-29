@@ -9,7 +9,6 @@
     "core:window:default",
     "dialog:default",
     "dialog:allow-save",
-    "fs:default",
     "fs:allow-write-text-file",
     "window-state:default"
   ]
