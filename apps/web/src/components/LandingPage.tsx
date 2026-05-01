@@ -80,7 +80,7 @@ function FadeBlur({
 function Label({ children }: { children: React.ReactNode }) {
   return (
     <span
-      className="mb-4 inline-block rounded-full border border-[var(--border-default)] bg-[var(--bg-surface)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]"
+      className="mb-4 inline-block border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-3 py-1 label-mono-strong shadow-[var(--stamp-shadow)]"
     >
       {children}
     </span>
@@ -98,12 +98,12 @@ const GRAIN_SVG =
 
 function EditorMock() {
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-primary)] shadow-[0_32px_80px_rgba(0,0,0,0.45)]">
+    <div className="w-full overflow-hidden panel-bordered-thick">
       {/* Chrome bar */}
-      <div className="flex items-center gap-1.5 border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] px-4 py-3">
-        <span className="h-2.5 w-2.5 rounded-full bg-[var(--danger)] opacity-70" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[var(--warning)] opacity-70" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[var(--success)] opacity-70" />
+      <div className="flex items-center gap-1.5 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-4 py-3">
+        <span className="h-2.5 w-2.5 border-[1px] border-[var(--ink)] bg-[var(--danger)]" />
+        <span className="h-2.5 w-2.5 border-[1px] border-[var(--ink)] bg-[var(--warning)]" />
+        <span className="h-2.5 w-2.5 border-[1px] border-[var(--ink)] bg-[var(--success)]" />
         <span className="ml-4 text-[11px] text-[var(--text-muted)]">Weekly Planning</span>
       </div>
 
@@ -115,13 +115,13 @@ function EditorMock() {
         </div>
 
         {/* Callout — tip */}
-        <div className="flex gap-3 rounded-xl border border-[#5ea8c8]/25 bg-[#5ea8c8]/8 px-4 py-3">
+        <div className="flex gap-3 border-[1.5px] border-[var(--ink)] bg-[#5ea8c8]/10 px-4 py-3 shadow-[var(--stamp-shadow)]">
           <span className="mt-0.5 shrink-0 text-[#5ea8c8]">
             <Icon icon={FireIcon} size={15} strokeWidth={1.5} />
           </span>
           <div>
             <span className="text-xs font-semibold text-[#5ea8c8]">Tip</span>
-            <p className="mt-0.5 text-xs text-[var(--text-secondary)]">Use <code className="rounded bg-[var(--bg-hover)] px-1 text-[var(--accent)]">/</code> to insert any block — headings, tables, code, callouts and more.</p>
+            <p className="mt-0.5 text-xs text-[var(--text-secondary)]">Use <code className="border-[1.5px] border-[var(--ink)] bg-[var(--bg-hover)] px-1 text-[var(--accent)] shadow-[2px_2px_0_var(--ink)]">/</code> to insert any block — headings, tables, code, callouts and more.</p>
           </div>
         </div>
 
@@ -140,7 +140,7 @@ function EditorMock() {
           ].map((t, i) => (
             <div key={i} className="flex items-center gap-2.5">
               <span
-                className="flex h-4 w-4 shrink-0 items-center justify-center rounded"
+                className="flex h-4 w-4 shrink-0 items-center justify-center border-[1.5px] border-[var(--ink)]"
                 style={{
                   background: t.done ? 'var(--accent)' : 'transparent',
                   border: t.done ? 'none' : '1.5px solid var(--border-default)',
@@ -165,7 +165,7 @@ function EditorMock() {
         </div>
 
         {/* Callout — warning */}
-        <div className="flex gap-3 rounded-xl border border-[var(--accent)]/20 bg-[var(--accent)]/6 px-4 py-3">
+        <div className="flex gap-3 border-[1.5px] border-[var(--ink)] bg-[var(--accent)]/10 px-4 py-3 shadow-[var(--stamp-shadow)]">
           <span className="mt-0.5 shrink-0" style={{ color: 'var(--accent)' }}>
             <Icon icon={AlertCircleIcon} size={15} strokeWidth={1.5} />
           </span>
@@ -176,8 +176,8 @@ function EditorMock() {
         </div>
 
         {/* Code block */}
-        <div className="overflow-hidden rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
-          <div className="flex items-center justify-between border-b border-[var(--border-subtle)] px-3 py-2">
+        <div className="overflow-hidden border-[1.5px] border-[var(--ink)] bg-[var(--bg-elevated)] shadow-[var(--stamp-shadow)]">
+          <div className="flex items-center justify-between border-b-[1.5px] border-[var(--ink)] px-3 py-2">
             <span className="text-[10px] font-medium text-[var(--text-muted)]">typescript</span>
           </div>
           <pre className="px-4 py-3 text-[11px] leading-relaxed text-[var(--text-secondary)]">
@@ -220,7 +220,7 @@ function SectionEditor() {
             </FadeUp>
             <FadeUp delay={0.12}>
               <p className="mb-10 max-w-md text-base leading-relaxed text-[var(--text-secondary)]">
-                A rich text editor that stays out of your way. Type <code className="rounded bg-[var(--bg-surface)] px-1.5 py-0.5 text-sm text-[var(--accent)]">/</code> for slash commands, paste Markdown and watch it transform, or just write.
+                A rich text editor that stays out of your way. Type <code className="border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-1.5 py-0.5 text-sm text-[var(--accent)] shadow-[2px_2px_0_var(--ink)]">/</code> for slash commands, paste Markdown and watch it transform, or just write.
               </p>
             </FadeUp>
             <FadeUp delay={0.18}>
@@ -231,7 +231,7 @@ function SectionEditor() {
                   { icon: TextFontIcon, label: 'Code blocks', desc: 'Syntax highlighting across 36 languages with a language picker.' },
                 ].map(({ icon, label, desc }) => (
                   <div key={label} className="flex gap-4">
-                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--accent)]">
+                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] text-[var(--accent)] shadow-[var(--stamp-shadow)]">
                       <Icon icon={icon} size={15} strokeWidth={1.5} />
                     </span>
                     <div>
@@ -260,14 +260,14 @@ function SectionEditor() {
 
 function AiMock() {
   return (
-    <div className="mx-auto w-full max-w-lg overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-primary)] shadow-[0_32px_80px_rgba(0,0,0,0.45)]">
+    <div className="mx-auto w-full max-w-lg overflow-hidden panel-bordered-thick">
       {/* Prompt input */}
-      <div className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] px-4 py-3">
+      <div className="border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-4 py-3">
         <div className="mb-2 flex flex-wrap gap-1.5">
           {['Q2 Roadmap', 'Meeting Notes'].map((note) => (
             <span
               key={note}
-              className="inline-flex items-center gap-1 rounded-full border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-2.5 py-0.5 text-[11px] font-medium text-[var(--accent)]"
+              className="inline-flex items-center gap-1 border-[1px] border-[var(--ink)] bg-[var(--accent)] px-2.5 py-0.5 font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-[var(--bg-primary)] shadow-[2px_2px_0_var(--ink)]"
             >
               <span className="opacity-60">@</span>{note}
             </span>
@@ -284,11 +284,11 @@ function AiMock() {
         <div className="flex items-center gap-2 text-xs font-semibold text-[var(--color-h2)]">
           <Icon icon={SparklesIcon} size={13} strokeWidth={1.5} />
           <span>Folio AI</span>
-          <span className="ml-auto rounded-full bg-[var(--success)]/15 px-2 py-0.5 text-[10px] font-medium text-[var(--success)]">Streaming…</span>
+          <span className="ml-auto border-[1.5px] border-[var(--ink)] bg-[var(--success)] px-2 py-0.5 font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-[var(--bg-primary)] shadow-[2px_2px_0_var(--ink)]">Streaming…</span>
         </div>
 
         {/* Callout in response */}
-        <div className="flex gap-3 rounded-xl border border-[var(--accent)]/20 bg-[var(--accent)]/6 px-3.5 py-3">
+        <div className="flex gap-3 border-[1.5px] border-[var(--ink)] bg-[var(--accent)]/10 px-3.5 py-3 shadow-[var(--stamp-shadow)]">
           <span className="mt-0.5 shrink-0" style={{ color: 'var(--accent)' }}>
             <Icon icon={AlertCircleIcon} size={14} strokeWidth={1.5} />
           </span>
@@ -306,7 +306,7 @@ function AiMock() {
             'No fallback plan documented for the API migration',
           ].map((item, i) => (
             <div key={i} className="flex gap-2.5 text-xs text-[var(--text-secondary)]">
-              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[var(--text-muted)]" />
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-[var(--text-muted)]" />
               <span>{item}</span>
             </div>
           ))}
@@ -344,7 +344,7 @@ function SectionAI() {
           </FadeUp>
           <FadeUp delay={0.13}>
             <p className="mx-auto max-w-xl text-base leading-relaxed text-[var(--text-secondary)]">
-              Type <code className="rounded bg-[var(--bg-surface)] px-1.5 py-0.5 text-sm" style={{ color: 'var(--color-h2)' }}>/ai</code> anywhere in a note, <code className="rounded bg-[var(--bg-surface)] px-1.5 py-0.5 text-sm text-[var(--accent)]">@mention</code> other notes as context, and get a streamed response that replaces the block with rich formatted content.
+              Type <code className="border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-1.5 py-0.5 text-sm shadow-[2px_2px_0_var(--ink)]" style={{ color: 'var(--color-h2)' }}>/ai</code> anywhere in a note, <code className="border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-1.5 py-0.5 text-sm text-[var(--accent)] shadow-[2px_2px_0_var(--ink)]">@mention</code> other notes as context, and get a streamed response that replaces the block with rich formatted content.
             </p>
           </FadeUp>
         </div>
@@ -383,7 +383,7 @@ function PaletteMock() {
     {
       label: 'Actions',
       color: 'var(--accent)',
-      items: ['New note', 'Toggle dark mode', 'Open search'],
+      items: ['New note', 'Open search', 'Export .md'],
     },
     {
       label: 'Notes',
@@ -398,14 +398,14 @@ function PaletteMock() {
   ];
 
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-[0_32px_80px_rgba(0,0,0,0.5)]">
+    <div className="w-full overflow-hidden panel-bordered-thick">
       {/* Search bar */}
-      <div className="flex items-center gap-3 border-b border-[var(--border-subtle)] px-4 py-3.5">
+      <div className="flex items-center gap-3 border-b-[1.5px] border-[var(--ink)] px-4 py-3.5">
         <svg className="h-4 w-4 shrink-0 text-[var(--text-muted)]" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth={1.5}>
           <circle cx="7" cy="7" r="4.5" /><path d="M10.5 10.5L14 14" strokeLinecap="round" />
         </svg>
         <span className="flex-1 text-sm text-[var(--text-muted)]">Search or type a command…</span>
-        <kbd className="rounded border border-[var(--border-default)] bg-[var(--bg-surface)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--text-muted)]">⌘K</kbd>
+        <kbd className="border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-1.5 py-0.5 label-mono shadow-[2px_2px_0_var(--ink)]">⌘K</kbd>
       </div>
 
       {/* Results */}
@@ -418,15 +418,15 @@ function PaletteMock() {
             {group.items.map((item, ii) => (
               <div
                 key={item}
-                className={`flex items-center gap-2.5 rounded-lg px-2 py-2 text-xs ${gi === 0 && ii === 0 ? 'bg-[var(--bg-hover)] text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}
+                className={`flex items-center gap-2.5 px-2 py-2 text-xs font-mono uppercase tracking-wide border-[1px] border-transparent ${gi === 0 && ii === 0 ? "surface-inverse border-[var(--ink)]" : "text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"}`}
               >
                 <span
-                  className="h-1.5 w-1.5 rounded-full"
+                  className="h-1.5 w-1.5"
                   style={{ background: group.color, opacity: 0.7 }}
                 />
                 {item}
                 {gi === 0 && ii === 0 && (
-                  <kbd className="ml-auto rounded border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-1.5 py-0.5 text-[9px] text-[var(--text-muted)]">↵</kbd>
+                  <kbd className="ml-auto border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-1.5 py-0.5 label-mono shadow-[2px_2px_0_var(--ink)]">↵</kbd>
                 )}
               </div>
             ))}
@@ -463,15 +463,15 @@ function SectionPalette() {
             </FadeUp>
             <FadeUp delay={0.13}>
               <p className="mb-10 max-w-md text-base leading-relaxed text-[var(--text-secondary)]">
-                Press <kbd className="rounded border border-[var(--border-default)] bg-[var(--bg-surface)] px-2 py-0.5 text-sm text-[var(--text-primary)]">⌘K</kbd> to open a spotlight-style palette. Navigate notes, run actions, insert blocks, switch fonts — all without touching the mouse.
+                Press <kbd className="border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-2 py-0.5 label-mono-strong shadow-[2px_2px_0_var(--ink)]">⌘K</kbd> to open a spotlight-style palette. Navigate notes, run actions, and insert blocks — all without touching the mouse.
               </p>
             </FadeUp>
             <FadeUp delay={0.18}>
               <div className="flex flex-wrap gap-2">
-                {['New note', 'Search notes', 'Insert block', 'Switch font', 'Export .md', 'Toggle theme'].map((cap) => (
+                {['New note', 'Search notes', 'Insert block', 'Export .md'].map((cap) => (
                   <span
                     key={cap}
-                    className="rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 py-1 text-xs text-[var(--text-muted)]"
+                    className="border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-3 py-1 label-mono shadow-[var(--stamp-shadow)]"
                   >
                     {cap}
                   </span>
@@ -537,7 +537,7 @@ function SectionSync() {
             <FadeUp key={title} delay={0.1 * i}>
               <div className={`px-0 py-8 lg:px-10 ${i > 0 ? 'border-t border-[var(--border-subtle)] lg:border-t-0 lg:border-l' : ''}`}>
                 <span
-                  className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]"
+                  className="mb-5 flex h-10 w-10 items-center justify-center border-[1.5px] border-[var(--ink)] bg-[var(--bg-elevated)] shadow-[var(--stamp-shadow)]"
                   style={{ color }}
                 >
                   <Icon icon={icon} size={18} strokeWidth={1.5} />
@@ -559,9 +559,9 @@ function SectionSync() {
             ].map(({ dot, label }) => (
               <div
                 key={label}
-                className="flex items-center gap-2 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-4 py-2 text-xs text-[var(--text-muted)]"
+                className="flex items-center gap-2 border-[1.5px] border-[var(--ink)] bg-[var(--bg-elevated)] px-4 py-2 label-mono shadow-[var(--stamp-shadow)]"
               >
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: dot }} />
+                <span className="h-1.5 w-1.5" style={{ background: dot }} />
                 {label}
               </div>
             ))}
@@ -584,7 +584,7 @@ const ACCENT_SWATCHES = [
   { label: 'Sage',     color: '#7abc8a' },
 ];
 
-const FONTS = ['Outfit', 'Lora', 'Fraunces', 'Newsreader', 'Inter', 'DM Sans'];
+
 
 function SectionPersonalization() {
   const swatchRef = useRef(null);
@@ -610,7 +610,7 @@ function SectionPersonalization() {
             </FadeUp>
             <FadeUp delay={0.13}>
               <p className="mb-10 max-w-md text-base leading-relaxed text-[var(--text-secondary)]">
-                Five accent palettes, eight editor fonts, dark and light mode, and a wide layout toggle. Every preference is saved locally — no account needed.
+                Five accent palettes and a wide layout toggle. Every preference is saved locally — no account needed.
               </p>
             </FadeUp>
 
@@ -628,7 +628,7 @@ function SectionPersonalization() {
                     className="group relative cursor-default"
                   >
                     <div
-                      className="h-8 w-8 rounded-full ring-2 ring-offset-2 ring-offset-[var(--bg-deep)] transition-transform duration-200 group-hover:scale-110"
+                      className="h-8 w-8 border-[1.5px] border-[var(--ink)] transition-transform duration-200 group-hover:-translate-y-1 shadow-[var(--stamp-shadow)]"
                       style={{ background: color, ['--tw-ring-color' as string]: color }}
                     />
                     <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[9px] text-[var(--text-muted)] opacity-0 transition-opacity group-hover:opacity-100">
@@ -639,51 +639,12 @@ function SectionPersonalization() {
               </div>
             </FadeUp>
 
-            {/* Font pills */}
-            <FadeUp delay={0.28}>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Font</p>
-              <div className="flex flex-wrap gap-2">
-                {FONTS.map((font, i) => (
-                  <span
-                    key={font}
-                    className={`rounded-full border px-3 py-1 text-xs transition-colors ${i === 0 ? 'border-[var(--accent)]/50 bg-[var(--accent)]/10 text-[var(--accent)]' : 'border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-muted)]'}`}
-                    style={{ fontFamily: font }}
-                  >
-                    {font}
-                  </span>
-                ))}
-              </div>
-            </FadeUp>
           </div>
 
           {/* Right — theme toggle mock */}
           <FadeBlur delay={0.1}>
-            <div className="overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-primary)] p-8 shadow-[0_32px_80px_rgba(0,0,0,0.45)]">
+            <div className="overflow-hidden panel-bordered-thick p-8">
               <p className="mb-5 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Appearance</p>
-
-              {/* Theme toggles */}
-              <div className="mb-6 space-y-2">
-                {[
-                  { label: 'Dark', active: true },
-                  { label: 'Light', active: false },
-                ].map(({ label, active }) => (
-                  <div
-                    key={label}
-                    className={`flex items-center justify-between rounded-xl border px-4 py-3 ${active ? 'border-[var(--accent)]/30 bg-[var(--accent)]/8' : 'border-[var(--border-subtle)] bg-[var(--bg-surface)]'}`}
-                  >
-                    <span className={`text-sm ${active ? 'font-medium text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`}>{label}</span>
-                    {active && (
-                      <span className="flex h-4 w-4 items-center justify-center rounded-full" style={{ background: 'var(--accent)' }}>
-                        <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                          <path d="M1.5 4L3 5.5L6.5 2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className="mb-2 h-px bg-[var(--border-subtle)]" />
 
               {/* Wide mode */}
               <div className="mt-4 flex items-center justify-between">
@@ -691,16 +652,16 @@ function SectionPersonalization() {
                   <p className="text-sm font-medium text-[var(--text-primary)]">Wide mode</p>
                   <p className="text-xs text-[var(--text-muted)]">Full-width editor layout</p>
                 </div>
-                <div className="flex h-5 w-9 items-center rounded-full bg-[var(--accent)] px-0.5">
-                  <div className="ml-auto h-4 w-4 rounded-full bg-white shadow-sm" />
+                <div className="flex h-5 w-9 items-center border-[1.5px] border-[var(--ink)] bg-[var(--accent)] px-0.5 shadow-[2px_2px_0_var(--ink)]">
+                  <div className="ml-auto h-3.5 w-3.5 border-[1px] border-[var(--ink)] bg-white" />
                 </div>
               </div>
 
               {/* Icon preview */}
-              <div className="mt-6 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4">
-                <p className="mb-3 text-[10px] uppercase tracking-widest text-[var(--text-muted)]">Active accent</p>
+              <div className="mt-6 border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] p-4 shadow-[var(--stamp-shadow)]">
+                <p className="mb-3 label-mono">Active accent</p>
                 <div className="flex items-center gap-3">
-                  <div className="h-5 w-5 rounded-full" style={{ background: 'var(--accent)' }} />
+                  <div className="h-5 w-5 border-[1.5px] border-[var(--ink)] shadow-[2px_2px_0_var(--ink)]" style={{ background: "var(--accent)" }} />
                   <span className="text-sm font-medium" style={{ color: 'var(--accent)' }}>Rose</span>
                   <span className="ml-auto text-xs text-[var(--text-muted)]">#e07a8a</span>
                 </div>
@@ -762,17 +723,17 @@ function SectionCTA({ onStart, onSignIn }: { onStart: () => void; onSignIn: () =
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <button
               onClick={onStart}
-              className="glass-accent group inline-flex items-center gap-3 rounded-full bg-[var(--accent)] px-8 py-4 font-medium text-white transition-[transform,filter,box-shadow] duration-200 hover:brightness-110 active:scale-[0.96]"
+              className="btn-stamp btn-stamp-accent group inline-flex items-center gap-3 px-8 py-4 text-base"
             >
               <span className="text-base font-semibold tracking-wide">Get Started</span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 shadow-sm transition-[transform,background-color] duration-150 group-hover:translate-x-1 group-hover:bg-white/30">
+              <div className="flex h-8 w-8 items-center justify-center transition-[transform] duration-150 group-hover:translate-x-1">
                 <Icon icon={ArrowRight01Icon} size={16} stroke={2} />
               </div>
             </button>
 
             <button
               onClick={onSignIn}
-              className="glass-ghost group inline-flex items-center gap-2.5 rounded-full px-6 py-3.5 text-[14px] font-medium text-[var(--text-muted)] transition-[transform,color,border-color,box-shadow,background-color] duration-200 ease-out hover:text-[var(--text-primary)] active:scale-[0.96]"
+              className="btn-stamp btn-stamp-ghost group inline-flex items-center gap-2.5 px-6 py-3.5"
             >
               <Icon icon={CloudIcon} size={16} stroke={1.5} className="transition-colors duration-150 group-hover:text-[var(--accent)]" />
               <span>Sign in to sync</span>
@@ -866,17 +827,17 @@ export default function LandingPage({ onStart, onSignIn }: LandingPageProps) {
                 <div className="flex flex-wrap items-center gap-4">
                   <button
                     onClick={onStart}
-                    className="glass-accent group inline-flex items-center gap-3 rounded-full bg-[var(--accent)] px-8 py-4 font-medium text-white transition-[transform,filter,box-shadow] duration-200 hover:brightness-110 active:scale-[0.96]"
+                    className="btn-stamp btn-stamp-accent group inline-flex items-center gap-3 px-8 py-4 text-base"
                   >
                     <span className="text-base font-semibold tracking-wide">Get Started</span>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 shadow-sm transition-[transform,background-color] duration-150 group-hover:translate-x-1 group-hover:bg-white/30">
+                    <div className="flex h-8 w-8 items-center justify-center transition-[transform] duration-150 group-hover:translate-x-1">
                       <Icon icon={ArrowRight01Icon} size={16} stroke={2} />
                     </div>
                   </button>
 
                   <button
                     onClick={onSignIn}
-                    className="glass-ghost group inline-flex items-center gap-2.5 rounded-full px-6 py-3.5 text-[14px] font-medium text-[var(--text-muted)] transition-[transform,color,border-color,box-shadow,background-color] duration-200 ease-out hover:text-[var(--text-primary)] active:scale-[0.96]"
+                    className="btn-stamp btn-stamp-ghost group inline-flex items-center gap-2.5 px-6 py-3.5"
                   >
                     <Icon icon={CloudIcon} size={16} stroke={1.5} className="transition-colors duration-150 group-hover:text-[var(--accent)]" />
                     <span>Sign in to sync</span>
