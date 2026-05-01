@@ -440,7 +440,7 @@ export default function MobileEditorToolbar({ editor }: MobileEditorToolbarProps
                     if (enabled) action.command(editor)
                   }}
                   disabled={!enabled}
-                  className={`mobile-editor-toolbar-btn !w-auto min-w-[4.5rem] rounded-full px-2.5 text-[10px] font-medium ${
+                  className={`mobile-editor-toolbar-btn !w-auto min-w-[4.5rem] rounded-none px-2.5 text-[10px] uppercase font-mono tracking-wider ${
                     action.danger ? 'text-[var(--danger)]' : 'text-[var(--text-secondary)]'
                   } disabled:opacity-40`}
                   title={action.label}

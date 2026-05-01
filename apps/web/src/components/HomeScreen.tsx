@@ -145,30 +145,7 @@ function CompactHeroPanel({
 		</section>
 	);
 }
-function CompactRecentRow({
-	note,
-	onOpen,
-}: {
-	note: NoteFile;
-	index: number;
-	onOpen: () => void;
-}) {
-	const updated = formatRelativeTime(new Date(note.updatedAt || note.createdAt));
 
-	return (
-		<button
-			type="button"
-			onClick={onOpen}
-			className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-[var(--bg-hover)] border-b border-[var(--border-subtle)] last:border-b-0"
-		>
-			<span className="block w-1.5 h-1.5 border border-[var(--text-muted)] flex-shrink-0 mt-0.5" aria-hidden />
-			<span className="flex-1 min-w-0 font-mono text-[13px] font-semibold uppercase tracking-[0.05em] leading-tight text-[var(--ink)] truncate">
-				{getNoteDisplayTitle(note)}
-			</span>
-			<span className="label-mono flex-shrink-0">{updated}</span>
-		</button>
-	);
-}
 
 function CompactEmptyState({ onNewNote }: { onNewNote: () => void }) {
 	return (
@@ -389,26 +366,22 @@ export default function HomeScreen({
 				{recentAndPinned.length > 0 ? (
 					<>
 						{pinnedNotes.length > 0 && (
-							<section>
-								<div className="flex items-center justify-between px-5 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
-									<span className="label-mono-strong inline-flex items-center gap-1.5"><Icon icon={PinIcon} size={13} strokeWidth={2} style={{ color: 'var(--accent)' }} />Pinned</span>
-									<span className="label-mono">{pinnedNotes.length} files</span>
-								</div>
-								{pinnedNotes.map((note, index) => (
-									<CompactRecentRow key={note.id} note={note} index={index + 1} onOpen={() => onSelectNote(note.id)} />
-								))}
-							</section>
+							<PinnedGridSection
+								notes={pinnedNotes}
+								onSelectNote={onSelectNote}
+								onHoverNote={() => {}}
+								onLeaveNote={() => {}}
+							/>
 						)}
 						{recentNotes.length > 0 && (
-							<section className={pinnedNotes.length > 0 ? 'border-t-[1.5px] border-[var(--ink)] mt-6' : ''}>
-								<div className="flex items-center justify-between px-5 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
-									<span className="label-mono-strong inline-flex items-center gap-1.5"><Icon icon={Clock03Icon} size={13} strokeWidth={2} style={{ color: 'var(--accent)' }} />Recent</span>
-									<span className="label-mono">{recentNotes.length} files</span>
-								</div>
-								{recentNotes.map((note, index) => (
-									<CompactRecentRow key={note.id} note={note} index={index + 1} onOpen={() => onSelectNote(note.id)} />
-								))}
-							</section>
+							<NoteListSection
+								label="Recent"
+								notes={recentNotes}
+								onSelectNote={onSelectNote}
+								onHoverNote={() => {}}
+								onLeaveNote={() => {}}
+								withTopBorder={pinnedNotes.length > 0}
+							/>
 						)}
 					</>
 				) : (
@@ -499,8 +472,7 @@ export default function HomeScreen({
 						) : (
 							<div className="flex-1 overflow-y-auto">
 								{pinnedNotes.length > 0 && (
-									<NoteListSection
-										label="Pinned"
+									<PinnedGridSection
 										notes={pinnedNotes}
 										onSelectNote={onSelectNote}
 										onHoverNote={setHoveredId}
@@ -560,6 +532,78 @@ function StatBlock({ label, value }: { label: string; value: string }) {
 	);
 }
 
+function PinnedRow({
+	note,
+	index,
+	onSelect,
+	onHover,
+	onLeave,
+}: {
+	note: NoteFile;
+	index: number;
+	onSelect: () => void;
+	onHover: () => void;
+	onLeave: () => void;
+}) {
+	return (
+		<button
+			type="button"
+			onClick={onSelect}
+			onMouseEnter={onHover}
+			onMouseLeave={onLeave}
+			className="group flex flex-col md:flex-row md:items-center w-full gap-2 md:gap-6 px-5 md:px-8 py-5 md:py-8 text-left border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-primary)] hover:bg-[var(--ink)] transition-colors cursor-pointer"
+		>
+			<span className="font-mono text-[14px] md:text-[18px] font-bold text-[var(--accent)] w-8 flex-shrink-0">
+				{(index).toString().padStart(2, '0')}
+			</span>
+			<span className="flex-1 font-[var(--font-script)] text-[28px] md:text-[42px] leading-[1.1] text-[var(--ink)] group-hover:text-[var(--bg-primary)] truncate transition-colors">
+				{getNoteDisplayTitle(note)}
+			</span>
+			<span className="label-mono text-[var(--text-muted)] group-hover:text-[var(--bg-primary)] group-hover:opacity-70 transition-colors flex-shrink-0">
+				{formatRelativeTime(new Date(note.updatedAt || note.createdAt))}
+			</span>
+		</button>
+	);
+}
+
+function PinnedGridSection({
+	notes,
+	onSelectNote,
+	onHoverNote,
+	onLeaveNote,
+	withTopBorder = false,
+}: {
+	notes: NoteFile[];
+	onSelectNote: (noteId: string) => void;
+	onHoverNote: (noteId: string) => void;
+	onLeaveNote: () => void;
+	withTopBorder?: boolean;
+}) {
+	return (
+		<section className={`bg-[var(--bg-primary)] ${withTopBorder ? 'border-t-[1.5px] border-[var(--ink)]' : ''}`}>
+			<div className="flex items-center justify-between px-5 md:px-8 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+				<span className="font-mono text-[13px] font-bold uppercase tracking-[0.1em] text-[var(--ink)] flex items-center gap-2">
+					<Icon icon={PinIcon} size={14} strokeWidth={2.5} style={{ color: 'var(--accent)' }} />
+					Pinned
+				</span>
+				<span className="label-mono">{notes.length} files</span>
+			</div>
+			<div className="flex flex-col [&>*:last-child]:border-b-0">
+				{notes.map((note, index) => (
+					<PinnedRow
+						key={note.id}
+						note={note}
+						index={index + 1}
+						onSelect={() => onSelectNote(note.id)}
+						onHover={() => onHoverNote(note.id)}
+						onLeave={onLeaveNote}
+					/>
+				))}
+			</div>
+		</section>
+	);
+}
+
 function RecentRow({
 	note,
 	onSelect,
@@ -577,13 +621,14 @@ function RecentRow({
 			onClick={onSelect}
 			onMouseEnter={onHover}
 			onMouseLeave={onLeave}
-			className="flex items-center w-full gap-3 px-6 py-4 text-left border-b border-[var(--border-subtle)] hover:bg-[var(--bg-hover)] transition-colors"
+			className="group flex items-center w-full gap-4 px-5 md:px-8 py-3 text-left border-b border-[var(--border-subtle)] hover:bg-[var(--bg-surface)] transition-colors"
 		>
-			<span className="block w-1.5 h-1.5 border border-[var(--text-muted)] flex-shrink-0" aria-hidden />
-			<span className="flex-1 font-mono text-[14px] font-medium truncate text-[var(--ink)]">
+			<span className="flex-1 font-mono text-[13px] uppercase tracking-[0.05em] truncate text-[var(--text-secondary)] group-hover:text-[var(--ink)] transition-colors">
 				{getNoteDisplayTitle(note)}
 			</span>
-			<span className="label-mono">{formatRelativeTime(new Date(note.updatedAt || note.createdAt))}</span>
+			<span className="label-mono text-[var(--text-muted)] flex-shrink-0">
+				{formatRelativeTime(new Date(note.updatedAt || note.createdAt))}
+			</span>
 		</button>
 	);
 }
@@ -604,12 +649,15 @@ function NoteListSection({
 	withTopBorder?: boolean;
 }) {
 	return (
-		<section className={withTopBorder ? 'border-t-[1.5px] border-[var(--ink)]' : ''}>
-			<div className="flex items-center justify-between px-6 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
-				<span className="label-mono-strong inline-flex items-center gap-1.5"><Icon icon={label === 'Pinned' ? PinIcon : Clock03Icon} size={13} strokeWidth={2} style={{ color: 'var(--accent)' }} />{label}</span>
+		<section className={`${withTopBorder ? 'border-t-[1.5px] border-[var(--ink)]' : ''}`}>
+			<div className="flex items-center justify-between px-5 md:px-8 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+				<span className="font-mono text-[13px] font-bold uppercase tracking-[0.1em] text-[var(--ink)] flex items-center gap-2">
+					<Icon icon={label === 'Pinned' ? PinIcon : Clock03Icon} size={14} strokeWidth={2.5} style={{ color: 'var(--text-muted)' }} />
+					{label}
+				</span>
 				<span className="label-mono">{notes.length} files</span>
 			</div>
-			<div className="[&>*:last-child]:border-b-0">
+			<div className="[&>*:last-child]:border-b-0 flex flex-col">
 				{notes.map((note) => (
 					<RecentRow
 						key={note.id}
