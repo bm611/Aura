@@ -163,6 +163,12 @@
   line-height: 1.58;
 }
 
+@media (max-width: 767px) {
+  .folio-editor .ProseMirror {
+    font-size: 0.9rem;
+  }
+}
+
 .folio-editor .ProseMirror>*:first-child {
   margin-top: 0;
 }

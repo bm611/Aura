@@ -796,13 +796,13 @@ export default function LandingPage({ onStart, onSignIn }: LandingPageProps) {
 
         <div className="relative z-20 grid w-full grid-cols-1 lg:grid-cols-2">
           {/* Left Content */}
-          <div className="flex flex-col justify-center px-6 sm:px-16 lg:px-24">
-            <div>
+          <div className="flex flex-col justify-between py-24 px-6 sm:px-16 lg:justify-center lg:py-0 lg:px-24">
+            <div className="mt-12 lg:mt-0">
               <motion.h1
                 initial={{ opacity: 0, y: 18, filter: 'blur(6px)' }}
                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                 transition={{ ...contentTransition, delay: 0.08 }}
-                className="mb-6 max-w-2xl text-5xl leading-[1.05] tracking-tight text-[var(--accent)] sm:text-7xl lg:text-8xl xl:text-[10rem]"
+                className="mb-6 max-w-2xl text-[5.5rem] leading-[0.95] tracking-tighter text-[var(--accent)] sm:text-7xl lg:text-8xl xl:text-[10rem]"
                 style={{ fontFamily: 'var(--font-logo)', textWrap: 'balance' }}
               >
                 Folio.
@@ -812,52 +812,52 @@ export default function LandingPage({ onStart, onSignIn }: LandingPageProps) {
                 initial={{ opacity: 0, y: 18, filter: 'blur(6px)' }}
                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                 transition={{ ...contentTransition, delay: 0.18 }}
-                className="mb-14 max-w-lg text-lg leading-relaxed text-[var(--text-secondary)] sm:text-xl"
+                className="mb-8 max-w-lg text-xl leading-relaxed text-[var(--text-secondary)] sm:text-2xl lg:mb-14 lg:text-xl"
                 style={{ textWrap: 'pretty' }}
               >
                 Write it. Own it. Local-first by default — sync to the cloud when you choose.
               </motion.p>
-
-              <motion.div
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ ...contentTransition, delay: 0.28 }}
-                className="flex flex-col gap-4"
-              >
-                <div className="flex flex-wrap items-center gap-4">
-                  <button
-                    onClick={onStart}
-                    className="btn-stamp btn-stamp-accent group inline-flex items-center gap-3 px-8 py-4 text-base"
-                  >
-                    <span className="text-base font-semibold tracking-wide">Get Started</span>
-                    <div className="flex h-8 w-8 items-center justify-center transition-[transform] duration-150 group-hover:translate-x-1">
-                      <Icon icon={ArrowRight01Icon} size={16} stroke={2} />
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={onSignIn}
-                    className="btn-stamp btn-stamp-ghost group inline-flex items-center gap-2.5 px-6 py-3.5"
-                  >
-                    <Icon icon={CloudIcon} size={16} stroke={1.5} className="transition-colors duration-150 group-hover:text-[var(--accent)]" />
-                    <span>Sign in to sync</span>
-                  </button>
-                </div>
-
-                {/* Scroll hint */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.2, duration: 0.6 }}
-                  className="mt-6 flex items-center gap-2 text-xs text-[var(--text-muted)]"
-                >
-                  <svg className="h-4 w-4 animate-bounce" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth={1.5}>
-                    <path d="M8 3v10M4 9l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span>Explore features</span>
-                </motion.div>
-              </motion.div>
             </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...contentTransition, delay: 0.28 }}
+              className="mb-8 flex flex-col gap-6 lg:mb-0 lg:gap-4"
+            >
+              <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
+                <button
+                  onClick={onStart}
+                  className="btn-stamp btn-stamp-accent group flex h-16 w-full items-center justify-between px-6 text-lg sm:w-auto sm:px-8 lg:h-auto lg:justify-center lg:py-4 lg:text-base"
+                >
+                  <span className="font-bold tracking-wide">Get Started</span>
+                  <div className="flex h-8 w-8 items-center justify-center transition-[transform] duration-150 group-hover:translate-x-1">
+                    <Icon icon={ArrowRight01Icon} size={22} stroke={2.5} />
+                  </div>
+                </button>
+
+                <button
+                  onClick={onSignIn}
+                  className="btn-stamp btn-stamp-ghost group flex h-16 w-full items-center justify-center gap-3 px-6 text-lg sm:w-auto sm:px-6 lg:h-auto lg:py-3.5 lg:text-base"
+                >
+                  <Icon icon={CloudIcon} size={22} stroke={1.5} className="transition-colors duration-150 group-hover:text-[var(--accent)]" />
+                  <span className="font-bold tracking-wide">Sign in to sync</span>
+                </button>
+              </div>
+
+              {/* Scroll hint */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.2, duration: 0.6 }}
+                className="mt-4 flex items-center justify-center gap-2 text-sm text-[var(--text-muted)] sm:justify-start lg:mt-6 lg:text-xs"
+              >
+                <svg className="h-5 w-5 animate-bounce lg:h-4 lg:w-4" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth={1.5}>
+                  <path d="M8 3v10M4 9l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span>Explore features</span>
+              </motion.div>
+            </motion.div>
           </div>
 
           {/* Right Abstract Art */}
