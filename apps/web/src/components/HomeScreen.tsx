@@ -9,8 +9,6 @@ import {
 	CloudUploadIcon,
 	Calendar01Icon,
 	ArrowRight01Icon,
-	PinIcon,
-	Clock03Icon,
 } from '@hugeicons/core-free-icons';
 
 import Icon from './Icon';
@@ -81,81 +79,105 @@ function CompactHeroPanel({
 	displayName: string;
 }) {
 	return (
-		<section className="border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-primary)]">
-			<div className="px-5 pt-3 pb-3">
-				<p className="font-mono text-[12px] uppercase tracking-[0.08em] text-[var(--ink)] mb-1.5">
-					{greeting}{displayName && <>, <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{displayName}</span></>}
+		<section className="home-section-in border-b border-[var(--border-subtle)] bg-[var(--bg-primary)] px-5 sm:px-6 pt-7 pb-8">
+			{/* Eyebrow date with live dot */}
+			<div className="flex items-center gap-2 mb-3">
+				<span
+					aria-hidden
+					className="home-pulse-dot inline-block w-1.5 h-1.5 rounded-full"
+					style={{ background: 'var(--accent)' }}
+				/>
+				<p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
+					{dayOfWeek} <span className="opacity-50 mx-0.5">·</span> {dateLabel}
 				</p>
+			</div>
 
-				<p className="flex items-center gap-1.5 font-mono text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--ink)]">
-					{dayOfWeek}
-					<span style={{ color: 'var(--accent)' }}>·</span>
-					{dateLabel}
+			{/* Greeting */}
+			<h1 className="font-[var(--font-prose)] font-extralight text-[26px] min-[400px]:text-[28px] sm:text-[32px] leading-[1.1] tracking-[-0.025em] text-[var(--ink)]">
+				{greeting}
+				{displayName && (
+					<>
+						<span className="text-[var(--text-muted)]">,</span>{' '}
+						<span className="font-normal italic" style={{ color: 'var(--accent)' }}>
+							{displayName}
+						</span>
+					</>
+				)}
+				<span className="text-[var(--accent)] font-light">.</span>
+			</h1>
+
+			{/* Stats row OR getting-started */}
+			{isGettingStarted ? (
+				<p className="mt-5 font-[var(--font-prose)] text-[14px] leading-relaxed text-[var(--text-secondary)] max-w-[42ch]">
+					Start with a fresh note or capture today&apos;s entry. Your writing stats appear once you have notes of your own.
 				</p>
-
-				<div className="mt-4 border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
-					{isGettingStarted ? (
-						<div className="px-4 py-5">
-							<div className="label-mono-strong">Getting started</div>
-							<p className="mt-3 font-[var(--font-prose)] text-[14px] leading-relaxed text-[var(--text-secondary)]">
-								Start with a fresh note or capture today&apos;s entry. Your writing stats show up once you have notes of your own.
-							</p>
-						</div>
-					) : (
-						<div className="grid grid-cols-3">
-							<div className="flex flex-col gap-1 px-4 py-4 border-r-[1.5px] border-[var(--ink)]">
-								<span className="font-mono text-[22px] font-bold leading-none text-[var(--ink)]">
-									{compactNumber(noteCount)}
-								</span>
-								<span className="label-mono">Notes</span>
-							</div>
-							<div className="flex flex-col gap-1 px-4 py-4 border-r-[1.5px] border-[var(--ink)]">
-								<span className="font-mono text-[22px] font-bold leading-none text-[var(--ink)]">{streak}</span>
-								<span className="label-mono">Streak</span>
-							</div>
-							<div className="flex flex-col gap-1 px-4 py-4">
-								<span className="font-mono text-[22px] font-bold leading-none text-[var(--ink)]">
-									{compactNumber(totalWords)}
-								</span>
-								<span className="label-mono">Words</span>
-							</div>
-						</div>
-					)}
-
-					<div className="grid grid-cols-1 min-[360px]:grid-cols-2 border-t-[1.5px] border-[var(--ink)]">
-						<button
-							type="button"
-							onClick={onNewNote}
-							className="flex items-center justify-center gap-2 min-h-12 px-4 py-3 border-b-[1.5px] min-[360px]:border-b-0 min-[360px]:border-r-[1.5px] border-[var(--ink)] bg-transparent text-[var(--ink)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] transition-colors hover:bg-[var(--bg-hover)] active:bg-[var(--bg-deep)]"
-						>
-							<Icon icon={Add01Icon} size={13} strokeWidth={2} />
-							New note
-						</button>
-						<button
-							type="button"
-							onClick={onCreateDailyNote}
-							className="flex items-center justify-center gap-2 min-h-12 px-4 py-3 bg-[var(--accent)] text-[var(--accent-text)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] transition-colors hover:opacity-90"
-						>
-							<Icon icon={Calendar01Icon} size={13} strokeWidth={2} />
-							Today&apos;s entry
-						</button>
-					</div>
+			) : (
+				<div className="mt-6 flex items-end gap-5 sm:gap-7">
+					<MobileStat label="Notes" value={compactNumber(noteCount)} />
+					<span className="h-7 w-px bg-[var(--border-subtle)]" aria-hidden />
+					<MobileStat label="Streak" value={String(streak)} />
+					<span className="h-7 w-px bg-[var(--border-subtle)]" aria-hidden />
+					<MobileStat label="Words" value={compactNumber(totalWords)} />
 				</div>
+			)}
+
+			{/* Action pills */}
+			<div className="mt-6 flex flex-wrap items-center gap-2.5">
+				<button
+					type="button"
+					onClick={onCreateDailyNote}
+					className="home-tactile inline-flex items-center justify-center gap-2 h-10 px-4 sm:px-5 rounded-full bg-[var(--ink)] text-[var(--bg-primary)] font-[var(--font-prose)] text-[13px] font-medium tracking-[0.01em] hover:bg-[var(--ink-soft)]"
+				>
+					<Icon icon={Calendar01Icon} size={13} strokeWidth={2} />
+					Today&apos;s entry
+				</button>
+				<button
+					type="button"
+					onClick={onNewNote}
+					className="home-tactile inline-flex items-center justify-center gap-2 h-10 px-4 sm:px-5 rounded-full border border-[var(--border-subtle)] bg-transparent text-[var(--ink)] font-[var(--font-prose)] text-[13px] font-medium tracking-[0.01em] hover:bg-[var(--bg-surface)] hover:border-[var(--ink-soft)]"
+				>
+					<Icon icon={Add01Icon} size={13} strokeWidth={2} />
+					New note
+				</button>
 			</div>
 		</section>
+	);
+}
+
+function MobileStat({ label, value }: { label: string; value: string }) {
+	return (
+		<div className="flex flex-col items-start gap-1.5">
+			<span className="font-mono font-light text-[24px] leading-none tracking-[-0.04em] text-[var(--ink)] tabular-nums">
+				{value}
+			</span>
+			<span className="font-mono text-[9.5px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
+				{label}
+			</span>
+		</div>
 	);
 }
 
 
 function CompactEmptyState({ onNewNote }: { onNewNote: () => void }) {
 	return (
-		<section className="border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-elevated)] px-5 py-12">
-			<div className="panel-bordered inline-flex px-4 py-2 label-mono-strong">[ Blank desk ]</div>
-			<h2 className="title-script mt-6 text-[42px] leading-[0.92] text-[var(--ink)]">Start here.</h2>
-			<p className="mt-4 max-w-[30ch] font-[var(--font-prose)] text-[15px] leading-relaxed text-[var(--text-secondary)]">
-				Your mobile home is ready for the first page. Create a note and this desk turns into a live queue.
+		<section className="home-section-in px-5 sm:px-6 py-14 flex flex-col items-start">
+			<div className="flex items-center gap-2 mb-4">
+				<span aria-hidden className="inline-block w-1 h-1 rounded-full bg-[var(--accent)]" />
+				<span className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
+					Empty
+				</span>
+			</div>
+			<h2 className="font-[var(--font-prose)] font-extralight text-[28px] leading-[1.1] tracking-[-0.02em] text-[var(--ink)]">
+				Start here<span className="text-[var(--accent)]">.</span>
+			</h2>
+			<p className="mt-4 max-w-[36ch] font-[var(--font-prose)] text-[14px] leading-relaxed text-[var(--text-secondary)]">
+				Create your first note. It&apos;ll show up in your queue.
 			</p>
-			<button type="button" onClick={onNewNote} className="btn-stamp btn-stamp-accent mt-6 h-12 px-5">
+			<button
+				type="button"
+				onClick={onNewNote}
+				className="home-tactile mt-6 inline-flex items-center gap-2 h-10 px-5 rounded-full bg-[var(--ink)] text-[var(--bg-primary)] font-[var(--font-prose)] text-[13px] font-medium tracking-[0.01em] hover:bg-[var(--ink-soft)]"
+			>
 				<Icon icon={Add01Icon} size={14} strokeWidth={2} />
 				New note
 			</button>
@@ -278,7 +300,7 @@ export default function HomeScreen({
 	return (
 		<div className="flex flex-1 min-w-0 flex-col bg-[var(--bg-primary)] overflow-hidden">
 			{/* ── Top utility bar ── */}
-			<div className="flex items-center justify-between px-4 py-2 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+			<div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border-subtle)] bg-[var(--bg-primary)]">
 				{sidebarCollapsed ? (
 					<button
 						type="button"
@@ -364,7 +386,7 @@ export default function HomeScreen({
 				/>
 
 				{recentAndPinned.length > 0 ? (
-					<>
+					<div className="px-7 sm:px-8 py-7">
 						{pinnedNotes.length > 0 && (
 							<PinnedGridSection
 								notes={pinnedNotes}
@@ -383,94 +405,93 @@ export default function HomeScreen({
 								withTopBorder={pinnedNotes.length > 0}
 							/>
 						)}
-					</>
+					</div>
 				) : (
 					<CompactEmptyState onNewNote={onNewNote} />
 				)}
 			</div>
 
-			<div className="hidden lg:flex lg:flex-1 lg:min-h-0 lg:flex-col">
-				{/* ── Dashboard grid: greeting | stats ── */}
-				<div className="grid grid-cols-1 md:grid-cols-[1fr_minmax(300px,420px)] border-b-[1.5px] border-[var(--ink)]">
-					{/* Greeting */}
-					<div className="px-6 py-8 border-b md:border-b-0 md:border-r-[1.5px] border-[var(--ink)] bg-[var(--bg-primary)] flex flex-col justify-center">
-						<p className="font-mono text-[40px] capitalize tracking-[-0.02em] leading-[0.9] text-[var(--ink)] mb-3">
-							{greeting}{displayName && <>, <span style={{ color: 'var(--accent)' }}>{displayName}</span></>}
-						</p>
-						<p className="font-mono text-[15px] font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">
-							{dayOfWeek}
-							<span style={{ color: 'var(--accent)' }}> · </span>
-							{dayNumber} {monthYear}
-						</p>
+			<div className="hidden lg:flex lg:flex-1 lg:min-h-0 lg:flex-col overflow-y-auto">
+				{/* ── Editorial hero: eyebrow → greeting → stats → actions ── */}
+				<div className="home-section-in border-b border-[var(--border-subtle)]">
+					<div className="mx-auto w-full max-w-[1180px] px-10 xl:px-14 pt-14 pb-12">
+						<div className="grid grid-cols-12 gap-10 items-end">
+							{/* Greeting block — left 7 cols */}
+							<div className="col-span-12 lg:col-span-7 min-w-0">
+								<div className="flex items-center gap-2.5 mb-5">
+									<span
+										aria-hidden
+										className="home-pulse-dot inline-block w-1.5 h-1.5 rounded-full"
+										style={{ background: 'var(--accent)' }}
+									/>
+									<p className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
+										{dayOfWeek} <span className="text-[var(--text-muted)] opacity-50 mx-0.5">·</span> {dayNumber} {monthYear}
+									</p>
+								</div>
+								<h1 className="font-[var(--font-prose)] font-extralight text-[44px] leading-[1.05] tracking-[-0.025em] text-[var(--ink)]">
+									{greeting}
+									{displayName && (
+										<>
+											<span className="text-[var(--text-muted)]">,</span>{' '}
+											<span className="font-normal italic" style={{ color: 'var(--accent)' }}>
+												{displayName}
+											</span>
+										</>
+									)}
+									<span className="text-[var(--accent)] font-light">.</span>
+								</h1>
+							</div>
+
+							{/* Stats — right 5 cols, airy */}
+							{!isGettingStarted && (
+								<div className="col-span-12 lg:col-span-5 flex items-end justify-end gap-9">
+									<AiryStat label="Notes" value={compactNumber(userNotes.length)} />
+									<span className="h-9 w-px bg-[var(--border-subtle)]" aria-hidden />
+									<AiryStat label="Streak" value={String(streak)} />
+									<span className="h-9 w-px bg-[var(--border-subtle)]" aria-hidden />
+									<AiryStat label="Words" value={compactNumber(totalWords)} />
+								</div>
+							)}
+						</div>
+
+						{/* Getting started copy */}
+						{isGettingStarted && (
+							<p className="mt-6 max-w-[52ch] font-[var(--font-prose)] text-[15px] leading-relaxed text-[var(--text-secondary)]">
+								Start with a fresh note or capture today&apos;s entry. Your writing
+								stats appear once you have notes of your own.
+							</p>
+						)}
+
+						{/* Actions — calm pill row */}
+						<div className="mt-9 flex items-center gap-3">
+							<button
+								type="button"
+								onClick={onCreateDailyNote}
+								className="home-tactile inline-flex items-center gap-2 h-10 px-5 rounded-full bg-[var(--ink)] text-[var(--bg-primary)] font-[var(--font-prose)] text-[13px] font-medium tracking-[0.01em] hover:bg-[var(--ink-soft)]"
+							>
+								<Icon icon={Calendar01Icon} size={14} strokeWidth={2} />
+								Today&apos;s entry
+							</button>
+							<button
+								type="button"
+								onClick={onNewNote}
+								className="home-tactile inline-flex items-center gap-2 h-10 px-5 rounded-full border border-[var(--border-subtle)] bg-transparent text-[var(--ink)] font-[var(--font-prose)] text-[13px] font-medium tracking-[0.01em] hover:bg-[var(--bg-surface)] hover:border-[var(--ink-soft)]"
+							>
+								<Icon icon={Add01Icon} size={14} strokeWidth={2} />
+								New note
+							</button>
+						</div>
 					</div>
-
-					{/* Stats + Actions */}
-					{isGettingStarted ? (
-						<div className="flex flex-col bg-[var(--bg-surface)] self-stretch">
-							<div className="flex-1 px-5 py-6 border-b-[1.5px] border-[var(--ink)]">
-								<div className="label-mono-strong">Getting started</div>
-								<p className="mt-4 font-[var(--font-prose)] text-[15px] leading-relaxed text-[var(--text-secondary)]">
-									Start with a fresh note or capture today&apos;s entry. Your writing stats show up once you have notes of your own.
-								</p>
-							</div>
-
-							<div className="grid grid-cols-2">
-								<button
-									type="button"
-									onClick={onNewNote}
-									className="flex items-center justify-center gap-2 h-12 border-r-[1.5px] border-[var(--ink)] bg-transparent text-[var(--ink)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] cursor-pointer hover:bg-[var(--bg-hover)] transition-colors active:bg-[var(--bg-deep)]"
-								>
-									<Icon icon={Add01Icon} size={13} strokeWidth={2} />
-									New note
-								</button>
-								<button
-									type="button"
-									onClick={onCreateDailyNote}
-									className="flex items-center justify-center gap-2 h-12 bg-[var(--accent)] text-[var(--accent-text)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] cursor-pointer hover:bg-[var(--accent-hover)] transition-colors"
-								>
-									<Icon icon={Calendar01Icon} size={13} strokeWidth={2} />
-									Today&apos;s entry
-								</button>
-							</div>
-						</div>
-					) : (
-						<div className="grid grid-cols-3 grid-rows-[1fr_auto] bg-[var(--bg-surface)] self-stretch">
-							<StatBlock label="Notes" value={compactNumber(userNotes.length)} />
-							<StatBlock label="Streak" value={String(streak)} />
-							<StatBlock label="Words" value={compactNumber(totalWords)} />
-
-							<div className="col-span-3 grid grid-cols-3 border-t-[1.5px] border-[var(--ink)]">
-								<button
-									type="button"
-									onClick={onNewNote}
-									className="flex items-center justify-center gap-2 h-12 col-span-1 border-r-[1.5px] border-[var(--ink)] bg-transparent text-[var(--ink)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] cursor-pointer hover:bg-[var(--bg-hover)] transition-colors active:bg-[var(--bg-deep)]"
-								>
-									<Icon icon={Add01Icon} size={13} strokeWidth={2} />
-									New note
-								</button>
-								<button
-									type="button"
-									onClick={onCreateDailyNote}
-									className="flex items-center justify-center gap-2 h-12 col-span-2 bg-[var(--accent)] text-[var(--accent-text)] font-mono text-[11px] font-medium uppercase tracking-[0.08em] cursor-pointer hover:bg-[var(--accent-hover)] transition-colors"
-								>
-									<Icon icon={Calendar01Icon} size={13} strokeWidth={2} />
-									Today&apos;s entry
-								</button>
-							</div>
-						</div>
-					)}
 				</div>
 
-				{/* ── Recent / Pinned ── */}
-				<div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_minmax(300px,420px)] min-h-0">
+				{/* ── Lists / Preview ── */}
+				<div className="flex-1 mx-auto w-full max-w-[1180px] px-10 xl:px-14 py-10 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-10 xl:gap-14 min-h-0">
 					{/* Pinned + Recent list */}
-					<div className="flex flex-col border-b md:border-b-0 md:border-r-[1.5px] border-[var(--ink)] min-h-0">
+					<div className="flex flex-col min-h-0">
 						{recentAndPinned.length === 0 ? (
-							<div className="flex-1 overflow-y-auto">
-								<EmptyRecent onNewNote={onNewNote} />
-							</div>
+							<EmptyRecent onNewNote={onNewNote} />
 						) : (
-							<div className="flex-1 overflow-y-auto">
+							<>
 								{pinnedNotes.length > 0 && (
 									<PinnedGridSection
 										notes={pinnedNotes}
@@ -489,21 +510,21 @@ export default function HomeScreen({
 										withTopBorder={pinnedNotes.length > 0}
 									/>
 								)}
-							</div>
+							</>
 						)}
 					</div>
 
 					{/* Preview pane */}
-					<div className="flex flex-col bg-[var(--bg-primary)] min-h-0">
-						<div className="flex items-center justify-between px-6 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
-							<span className="label-mono-strong">Preview</span>
+					<div className="flex flex-col rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden min-h-0 self-start sticky top-10">
+						<div className="flex items-center justify-between px-7 py-4 border-b border-[var(--border-subtle)]">
+							<span className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--ink)] font-medium">Preview</span>
 							{previewNote && (
 								<button
 									type="button"
 									onClick={() => onSelectNote(previewNote.id)}
-									className="label-mono-strong text-[var(--accent)] inline-flex items-center gap-1 hover:underline"
+									className="home-link-arrow home-tactile font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--accent)]"
 								>
-									Open <Icon icon={ArrowRight01Icon} size={12} strokeWidth={2} />
+									Open <Icon icon={ArrowRight01Icon} size={11} strokeWidth={2} />
 								</button>
 							)}
 						</div>
@@ -513,7 +534,6 @@ export default function HomeScreen({
 						) : (
 							<EmptyPreview />
 						)}
-
 					</div>
 				</div>
 			</div>
@@ -521,13 +541,15 @@ export default function HomeScreen({
 	);
 }
 
-function StatBlock({ label, value }: { label: string; value: string }) {
+function AiryStat({ label, value }: { label: string; value: string }) {
 	return (
-		<div className="flex flex-col items-start justify-center px-4 py-5 border-r-[1.5px] last:border-r-0 border-[var(--ink)] bg-[var(--bg-surface)]">
-			<div className="font-mono font-bold text-[28px] md:text-[34px] leading-none text-[var(--ink)]">
+		<div className="flex flex-col items-start gap-2">
+			<span className="font-mono font-light text-[32px] leading-none tracking-[-0.04em] text-[var(--ink)] tabular-nums">
 				{value}
-			</div>
-			<div className="label-mono mt-2">{label}</div>
+			</span>
+			<span className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
+				{label}
+			</span>
 		</div>
 	);
 }
@@ -551,18 +573,43 @@ function PinnedRow({
 			onClick={onSelect}
 			onMouseEnter={onHover}
 			onMouseLeave={onLeave}
-			className="group flex flex-col md:flex-row md:items-center w-full gap-2 md:gap-6 px-5 md:px-8 py-5 md:py-8 text-left border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-primary)] hover:bg-[var(--ink)] transition-colors cursor-pointer"
+			style={{ ['--row-index' as string]: index }}
+			className="home-row-stagger home-row-tactile group relative flex items-center w-full gap-5 pl-5 pr-4 py-3 -mx-3 text-left rounded-md hover:bg-[var(--bg-hover)] cursor-pointer"
 		>
-			<span className="font-mono text-[14px] md:text-[18px] font-bold text-[var(--accent)] w-8 flex-shrink-0">
-				{(index).toString().padStart(2, '0')}
+			<span
+				aria-hidden
+				className="absolute left-1.5 top-2 bottom-2 w-[2px] rounded-full bg-[var(--accent)] opacity-0 scale-y-50 group-hover:opacity-100 group-hover:scale-y-100 transition-all duration-200 origin-center"
+			/>
+			<span className="font-mono text-[10px] tabular-nums text-[var(--text-muted)] group-hover:text-[var(--accent)] w-6 flex-shrink-0 transition-colors">
+				{index.toString().padStart(2, '0')}
 			</span>
-			<span className="flex-1 font-[var(--font-script)] text-[28px] md:text-[42px] leading-[1.1] text-[var(--ink)] group-hover:text-[var(--bg-primary)] truncate transition-colors">
+			<span className="flex-1 font-[var(--font-prose)] text-[15px] leading-snug text-[var(--ink)] group-hover:font-medium truncate transition-all duration-200">
 				{getNoteDisplayTitle(note)}
 			</span>
-			<span className="label-mono text-[var(--text-muted)] group-hover:text-[var(--bg-primary)] group-hover:opacity-70 transition-colors flex-shrink-0">
+			<span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--text-muted)] group-hover:text-[var(--ink)] flex-shrink-0 tabular-nums transition-colors">
 				{formatRelativeTime(new Date(note.updatedAt || note.createdAt))}
 			</span>
 		</button>
+	);
+}
+
+function SectionHeader({
+	label,
+	count,
+}: {
+	label: string;
+	count: number;
+}) {
+	return (
+		<div className="flex items-baseline gap-3 mb-5">
+			<span className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--ink)] font-medium">
+				{label}
+			</span>
+			<span className="flex-1 h-px bg-[var(--border-subtle)]" aria-hidden />
+			<span className="font-mono text-[10px] tracking-[0.1em] text-[var(--text-muted)] tabular-nums">
+				{String(count).padStart(2, '0')}
+			</span>
+		</div>
 	);
 }
 
@@ -571,7 +618,6 @@ function PinnedGridSection({
 	onSelectNote,
 	onHoverNote,
 	onLeaveNote,
-	withTopBorder = false,
 }: {
 	notes: NoteFile[];
 	onSelectNote: (noteId: string) => void;
@@ -580,15 +626,9 @@ function PinnedGridSection({
 	withTopBorder?: boolean;
 }) {
 	return (
-		<section className={`bg-[var(--bg-primary)] ${withTopBorder ? 'border-t-[1.5px] border-[var(--ink)]' : ''}`}>
-			<div className="flex items-center justify-between px-5 md:px-8 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
-				<span className="font-mono text-[13px] font-bold uppercase tracking-[0.1em] text-[var(--ink)] flex items-center gap-2">
-					<Icon icon={PinIcon} size={14} strokeWidth={2.5} style={{ color: 'var(--accent)' }} />
-					Pinned
-				</span>
-				<span className="label-mono">{notes.length} files</span>
-			</div>
-			<div className="flex flex-col [&>*:last-child]:border-b-0">
+		<section className="home-section-in">
+			<SectionHeader label="Pinned" count={notes.length} />
+			<div className="flex flex-col">
 				{notes.map((note, index) => (
 					<PinnedRow
 						key={note.id}
@@ -606,11 +646,13 @@ function PinnedGridSection({
 
 function RecentRow({
 	note,
+	index,
 	onSelect,
 	onHover,
 	onLeave,
 }: {
 	note: NoteFile;
+	index: number;
 	onSelect: () => void;
 	onHover: () => void;
 	onLeave: () => void;
@@ -621,12 +663,17 @@ function RecentRow({
 			onClick={onSelect}
 			onMouseEnter={onHover}
 			onMouseLeave={onLeave}
-			className="group flex items-center w-full gap-4 px-5 md:px-8 py-3 text-left border-b border-[var(--border-subtle)] hover:bg-[var(--bg-surface)] transition-colors"
+			style={{ ['--row-index' as string]: index }}
+			className="home-row-stagger home-row-tactile group relative flex items-center w-full gap-4 pl-5 pr-4 py-2.5 -mx-3 text-left rounded-md hover:bg-[var(--bg-hover)]"
 		>
-			<span className="flex-1 font-mono text-[13px] uppercase tracking-[0.05em] truncate text-[var(--text-secondary)] group-hover:text-[var(--ink)] transition-colors">
+			<span
+				aria-hidden
+				className="absolute left-1.5 top-2 bottom-2 w-[2px] rounded-full bg-[var(--accent)] opacity-0 scale-y-50 group-hover:opacity-100 group-hover:scale-y-100 transition-all duration-200 origin-center"
+			/>
+			<span className="flex-1 font-[var(--font-prose)] text-[14px] truncate text-[var(--text-secondary)] group-hover:text-[var(--ink)] group-hover:font-medium transition-all duration-200">
 				{getNoteDisplayTitle(note)}
 			</span>
-			<span className="label-mono text-[var(--text-muted)] flex-shrink-0">
+			<span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--text-muted)] group-hover:text-[var(--ink)] flex-shrink-0 tabular-nums transition-colors">
 				{formatRelativeTime(new Date(note.updatedAt || note.createdAt))}
 			</span>
 		</button>
@@ -649,19 +696,18 @@ function NoteListSection({
 	withTopBorder?: boolean;
 }) {
 	return (
-		<section className={`${withTopBorder ? 'border-t-[1.5px] border-[var(--ink)]' : ''}`}>
-			<div className="flex items-center justify-between px-5 md:px-8 py-3 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
-				<span className="font-mono text-[13px] font-bold uppercase tracking-[0.1em] text-[var(--ink)] flex items-center gap-2">
-					<Icon icon={label === 'Pinned' ? PinIcon : Clock03Icon} size={14} strokeWidth={2.5} style={{ color: 'var(--text-muted)' }} />
-					{label}
-				</span>
-				<span className="label-mono">{notes.length} files</span>
-			</div>
-			<div className="[&>*:last-child]:border-b-0 flex flex-col">
-				{notes.map((note) => (
+		<section
+			className={`home-section-in ${
+				withTopBorder ? 'mt-10 pt-10 border-t border-[var(--border-subtle)]' : ''
+			}`}
+		>
+			<SectionHeader label={label} count={notes.length} />
+			<div className="flex flex-col">
+				{notes.map((note, idx) => (
 					<RecentRow
 						key={note.id}
 						note={note}
+						index={idx}
 						onSelect={() => onSelectNote(note.id)}
 						onHover={() => onHoverNote(note.id)}
 						onLeave={onLeaveNote}
@@ -676,40 +722,42 @@ function PreviewPane({ note, onOpen }: { note: NoteFile; onOpen: () => void }) {
 	const updated = formatRelativeTime(new Date(note.updatedAt || note.createdAt));
 	return (
 		<div className="flex-1 overflow-y-auto">
-			{/* Title block — inverted */}
 			<button
 				type="button"
 				onClick={onOpen}
-				className="block w-full text-left px-6 py-5 surface-inverse border-b-[1.5px] border-[var(--ink)] hover:bg-[var(--ink-soft)] transition-colors"
+				className="home-section-in block w-full text-left px-7 pt-7 pb-5 transition-colors hover:bg-[var(--bg-hover)]/30"
 			>
-				<div className="title-script text-[36px] mb-1" style={{ color: 'var(--text-inverse)' }}>
-					{getNoteDisplayTitle(note)}
+				<div className="flex items-center gap-2 mb-3">
+					<span aria-hidden className="inline-block w-1 h-1 rounded-full bg-[var(--accent)]" />
+					<span className="font-mono text-[9.5px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
+						Updated {updated} ago
+					</span>
 				</div>
-				<div className="label-mono" style={{ color: 'rgba(245,241,230,0.6)' }}>
-					Updated {updated} ago
+				<div className="font-[var(--font-prose)] font-light text-[24px] leading-[1.2] tracking-[-0.02em] text-[var(--ink)]">
+					{getNoteDisplayTitle(note)}
 				</div>
 			</button>
 
-			<div className="px-6 py-5 space-y-3">
+			<div className="px-7 pb-8">
 				{note.content ? (
 					<div className="preview-markdown font-[var(--font-prose)] text-[14px] leading-relaxed text-[var(--text-secondary)] space-y-3">
 						<ReactMarkdown
 							remarkPlugins={[remarkGfm]}
 							components={{
-								h1: ({ children }) => <h1 className="mb-3 mt-4 text-lg font-bold text-[var(--ink)]">{children}</h1>,
-								h2: ({ children }) => <h2 className="mb-2 mt-3 text-base font-bold text-[var(--ink)]">{children}</h2>,
-								h3: ({ children }) => <h3 className="mb-2 mt-3 text-sm font-bold text-[var(--ink)]">{children}</h3>,
+								h1: ({ children }) => <h1 className="mb-3 mt-4 text-[15px] font-semibold text-[var(--ink)]">{children}</h1>,
+								h2: ({ children }) => <h2 className="mb-2 mt-3 text-[14px] font-semibold text-[var(--ink)]">{children}</h2>,
+								h3: ({ children }) => <h3 className="mb-2 mt-3 text-[13px] font-semibold text-[var(--ink)]">{children}</h3>,
 								p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
 								ul: ({ children }) => <ul className="mb-2 list-disc pl-5 last:mb-0 space-y-1">{children}</ul>,
 								ol: ({ children }) => <ol className="mb-2 list-decimal pl-5 last:mb-0 space-y-1">{children}</ol>,
 								li: ({ children }) => <li className="pl-1">{children}</li>,
-								blockquote: ({ children }) => <blockquote className="border-l-4 border-[var(--accent)] pl-3 italic my-2">{children}</blockquote>,
+								blockquote: ({ children }) => <blockquote className="border-l-2 border-[var(--accent)] pl-3 italic my-2 text-[var(--text-muted)]">{children}</blockquote>,
 								a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] hover:underline">{children}</a>,
 								code: ({ className, children }) =>
 									className ? (
-										<code className="block bg-[var(--bg-hover)] p-3 overflow-x-auto text-[13px]">{children}</code>
+										<code className="block bg-[var(--bg-hover)] rounded p-3 overflow-x-auto text-[13px]">{children}</code>
 									) : (
-										<code className="px-1 py-0.5 bg-[var(--bg-hover)] text-[var(--ink)] text-[13px]">{children}</code>
+										<code className="px-1 py-0.5 bg-[var(--bg-hover)] rounded text-[var(--ink)] text-[13px]">{children}</code>
 									),
 								pre: ({ children }) => <pre className="my-2 overflow-x-auto">{children}</pre>,
 							}}
@@ -718,7 +766,7 @@ function PreviewPane({ note, onOpen }: { note: NoteFile; onOpen: () => void }) {
 						</ReactMarkdown>
 					</div>
 				) : (
-					<p className="label-mono">No content yet.</p>
+					<p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--text-muted)]">No content yet.</p>
 				)}
 			</div>
 		</div>
@@ -728,11 +776,14 @@ function PreviewPane({ note, onOpen }: { note: NoteFile; onOpen: () => void }) {
 function EmptyRecent({ onNewNote }: { onNewNote: () => void }) {
 	return (
 		<div className="flex flex-col items-center justify-center h-full py-16 px-6 gap-5">
-			<div className="panel-bordered px-5 py-3 label-mono-strong">[ Nothing here ]</div>
-			<p className="label-mono text-center max-w-xs">
-				Start a note and it shows up here. Pin it with <span className="text-[var(--ink)]">★</span> to keep it on top.
+			<p className="font-[var(--font-prose)] text-[15px] text-[var(--text-muted)] text-center max-w-xs leading-relaxed">
+				Start a note and it shows up here. Pin one to keep it on top.
 			</p>
-			<button type="button" onClick={onNewNote} className="btn-stamp btn-stamp-accent">
+			<button
+				type="button"
+				onClick={onNewNote}
+				className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-[var(--accent)] text-[var(--accent-text)] font-[var(--font-prose)] text-[13px] font-medium tracking-[0.01em] transition-opacity hover:opacity-90"
+			>
 				<Icon icon={Add01Icon} size={14} strokeWidth={2} />
 				New note
 			</button>
@@ -742,9 +793,9 @@ function EmptyRecent({ onNewNote }: { onNewNote: () => void }) {
 
 function EmptyPreview() {
 	return (
-		<div className="flex-1 flex flex-col items-center justify-center px-6 gap-3">
-			<div className="title-script text-[40px] text-[var(--text-muted)]">empty.</div>
-			<p className="label-mono text-center">Hover a note to peek inside.</p>
+		<div className="flex-1 flex flex-col items-center justify-center px-6 gap-2">
+			<p className="font-[var(--font-prose)] text-[15px] text-[var(--text-muted)]">No preview</p>
+			<p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Hover a note to peek inside</p>
 		</div>
 	);
 }

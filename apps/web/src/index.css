@@ -25,6 +25,7 @@
 @import "./styles/sidebar.css";
 @import "./styles/settings.css";
 @import "./styles/auth.css";
+@import "./styles/home-screen.css";
 
 /* ── Layout ── */
 @import "./styles/mobile.css";

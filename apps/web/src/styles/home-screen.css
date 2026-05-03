@@ -1,0 +1,101 @@
+/* ── Home screen polish ── */
+
+/* Subtle breathing pulse for "live now" date dot */
+@keyframes home-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.65;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+}
+
+.home-pulse-dot {
+  animation: home-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Stagger entrance for note rows */
+@keyframes home-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.home-row-stagger {
+  opacity: 0;
+  animation: home-row-in 380ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--row-index, 0) * 40ms + 60ms);
+}
+
+/* Section reveal */
+@keyframes home-section-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.home-section-in {
+  animation: home-section-in 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Premium tactile button — depresses with gentle spring on click */
+.home-tactile {
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 180ms ease,
+              background-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.home-tactile:active {
+  transform: translateY(0.5px) scale(0.985);
+}
+
+/* Row tactile — slightly lighter touch */
+.home-row-tactile {
+  transition: background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.home-row-tactile:active {
+  transform: scale(0.997);
+}
+
+/* Underline grow accent for "Open" affordance */
+.home-link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.home-link-arrow::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 18px;
+  bottom: -3px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.home-link-arrow:hover::after {
+  transform: scaleX(1);
+}
