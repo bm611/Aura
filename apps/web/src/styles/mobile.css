@@ -209,16 +209,17 @@
     position: relative;
     width: 100%;
     z-index: 20;
-    border-bottom: 1.5px solid var(--ink);
+    border-bottom: 1px solid var(--border-subtle);
   }
 
   .mobile-action-bar--editor.mobile-action-bar--editor-desktop .mobile-bar-inner {
     display: flex;
     align-items: center;
+    justify-content: center;
     width: 100%;
     padding: 0;
     border-radius: 0;
-    background: var(--bg-surface);
+    background: var(--bg-primary);
     border: none;
     box-shadow: none;
     backdrop-filter: none;
@@ -228,9 +229,12 @@
   .mobile-action-bar--editor.mobile-action-bar--editor-desktop .mobile-editor-toolbar-inner {
     display: flex;
     align-items: center;
-    width: 100%;
+    justify-content: center;
+    flex-wrap: nowrap;
+    width: auto;
+    max-width: 100%;
     gap: 2px;
-    padding: 4px 12px;
+    padding: 6px 12px;
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
