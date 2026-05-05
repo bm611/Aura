@@ -801,18 +801,19 @@ function AppInner() {
     }
   }, [])
 
-  const reconcileWithCloud = useCallback(async (options: { preserveSelection?: boolean } = {}) => {
+  const reconcileWithCloud = useCallback(async (options: { preserveSelection?: boolean } = {}): Promise<TreeNode[] | undefined> => {
     if (!user) {
-      return
+      return undefined
     }
 
     const { preserveSelection = true } = options
 
     if (!navigator.onLine) {
       hydrationInFlightRef.current = false
-      setTree(buildTreeFromCloudAndPending([], pendingUpsertsRef.current, pendingDeleteIdsRef.current))
+      const offlineTree = buildTreeFromCloudAndPending([], pendingUpsertsRef.current, pendingDeleteIdsRef.current)
+      setTree(offlineTree)
       setSyncError('Offline — changes are saved and will sync when online.')
-      return
+      return offlineTree
     }
 
     hydrationInFlightRef.current = true
@@ -837,6 +838,8 @@ function AppInner() {
 
         return currentId && findNode(mergedTree, currentId) ? currentId : null
       })
+
+      return mergedTree
     } finally {
       hydrationInFlightRef.current = false
     }
@@ -894,17 +897,16 @@ function AppInner() {
     setTree(optimisticTree.length > 0 ? optimisticTree : cachedTree)
 
     reconcileWithCloud({ preserveSelection: true })
-      .then(() => {
+      .then((mergedTree) => {
         if (cancelled) {
           return
         }
         // Show welcome modal for new users with no notes
-        if (!hasSeenOnboarding(user.id) && tree.length === 0) {
-          // Create onboarding note automatically
+        if (!hasSeenOnboarding(user.id) && (!mergedTree || mergedTree.length === 0)) {
+          // Create onboarding notes automatically
           const onboardingTree = makeOnboardingTree()
           setTree(onboardingTree)
-          const note = onboardingTree[0]
-          if (note) {
+          for (const note of onboardingTree) {
             queuePendingUpsert(note)
             setSyncing(true)
             syncNoteToCloud(note).finally(() => {
